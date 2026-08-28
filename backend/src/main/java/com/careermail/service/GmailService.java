@@ -103,68 +103,51 @@ public class GmailService {
 
             ParameterizedTypeReference<Map<String, Object>> mapType = new ParameterizedTypeReference<>() {};
 
-            // Tier 1: Search last 3-4 months (newer_than:120d)
-            // Evaluated dynamically on Google servers, unaffected by local system clock
-            List<String> queryTiers = Arrays.asList(
-                    "newer_than:120d", // All messages in last ~4 months
-                    ""                 // Fallback: Latest messages regardless of date if mailbox has older emails
-            );
-
+            String query = "newer_than:120d";
             List<Map<String, Object>> allMessageSummaries = new ArrayList<>();
             Set<String> seenMessageIds = new HashSet<>();
+            String pageToken = null;
+            int pageNum = 1;
 
-            for (String query : queryTiers) {
-                if (!allMessageSummaries.isEmpty()) {
-                    break; // Already found messages in earlier tier
+            log.info("Executing Gmail API query: '{}' (Last 120 Days / 3-4 Months)", query);
+
+            do {
+                int pageSize = Math.min(targetLimit - allMessageSummaries.size(), 100);
+                if (pageSize <= 0) break;
+
+                String url = GMAIL_MESSAGES_ENDPOINT + "?maxResults=" + pageSize + "&q=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
+                if (pageToken != null && !pageToken.isBlank()) {
+                    url += "&pageToken=" + URLEncoder.encode(pageToken, StandardCharsets.UTF_8);
                 }
 
-                String pageToken = null;
-                int pageNum = 1;
-                log.info("Attempting Gmail API query tier: '{}'", query.isEmpty() ? "(all recent messages)" : query);
+                log.debug("Calling Gmail endpoint: {}", url);
+                ResponseEntity<Map<String, Object>> listResp = restTemplate.exchange(url, HttpMethod.GET, request, mapType);
+                if (!listResp.getStatusCode().is2xxSuccessful() || listResp.getBody() == null) {
+                    log.warn("Gmail API list returned status: {}", listResp.getStatusCode());
+                    break;
+                }
 
-                do {
-                    int pageSize = Math.min(targetLimit - allMessageSummaries.size(), 100);
-                    if (pageSize <= 0) break;
+                Map<String, Object> body = listResp.getBody();
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> messages = (List<Map<String, Object>>) body.get("messages");
+                pageToken = (String) body.get("nextPageToken");
 
-                    String url = GMAIL_MESSAGES_ENDPOINT + "?maxResults=" + pageSize;
-                    if (!query.isBlank()) {
-                        url += "&q=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
-                    }
-                    if (pageToken != null && !pageToken.isBlank()) {
-                        url += "&pageToken=" + URLEncoder.encode(pageToken, StandardCharsets.UTF_8);
-                    }
+                int foundOnPage = messages != null ? messages.size() : 0;
+                log.info("Page {} returned {} message headers. Next page available: {}", pageNum, foundOnPage, pageToken != null);
 
-                    log.debug("Calling Gmail endpoint: {}", url);
-                    ResponseEntity<Map<String, Object>> listResp = restTemplate.exchange(url, HttpMethod.GET, request, mapType);
-                    if (!listResp.getStatusCode().is2xxSuccessful() || listResp.getBody() == null) {
-                        log.warn("Gmail API list returned status: {}", listResp.getStatusCode());
-                        break;
-                    }
-
-                    Map<String, Object> body = listResp.getBody();
-                    @SuppressWarnings("unchecked")
-                    List<Map<String, Object>> messages = (List<Map<String, Object>>) body.get("messages");
-                    pageToken = (String) body.get("nextPageToken");
-
-                    int foundOnPage = messages != null ? messages.size() : 0;
-                    log.info("Page {} returned {} message headers. Next page available: {}", pageNum, foundOnPage, pageToken != null);
-
-                    if (messages != null) {
-                        for (Map<String, Object> m : messages) {
-                            String msgId = (String) m.get("id");
-                            if (msgId != null && seenMessageIds.add(msgId)) {
-                                allMessageSummaries.add(m);
-                            }
+                if (messages != null) {
+                    for (Map<String, Object> m : messages) {
+                        String msgId = (String) m.get("id");
+                        if (msgId != null && seenMessageIds.add(msgId)) {
+                            allMessageSummaries.add(m);
                         }
                     }
+                }
 
-                    pageNum++;
-                } while (pageToken != null && allMessageSummaries.size() < targetLimit);
+                pageNum++;
+            } while (pageToken != null && allMessageSummaries.size() < targetLimit);
 
-                log.info("Query '{}' retrieved {} total message summaries.", query.isEmpty() ? "(all recent)" : query, allMessageSummaries.size());
-            }
-
-            log.info("Total message headers to process: {}", allMessageSummaries.size());
+            log.info("Total Gmail message headers retrieved for last 120 days: {}", allMessageSummaries.size());
 
             // Process each retrieved Gmail message
             int totalToProcess = allMessageSummaries.size();
@@ -220,8 +203,13 @@ public class GmailService {
             log.info("Duplicates skipped: {}", duplicatesSkipped);
             log.info("=========================================");
 
-            String summaryMessage = String.format("Scanned %d emails from your Gmail. Found %d job-related updates (%d created, %d updated).",
-                    scannedCount, jobEmailsFound, appsCreated, appsUpdated);
+            String summaryMessage;
+            if (scannedCount == 0) {
+                summaryMessage = "No emails found in your Gmail within the last 120 days.";
+            } else {
+                summaryMessage = String.format("Scanned %d emails from your Gmail (last 120 days). Found %d job-related updates (%d created, %d updated).",
+                        scannedCount, jobEmailsFound, appsCreated, appsUpdated);
+            }
 
             return new GmailSyncResponse(
                     true,
