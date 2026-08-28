@@ -126,6 +126,10 @@ export interface AnalyticsData {
   thisMonthRejections: number;
   thisMonthResponseRateDelta: number;
   applicationsOverTime: MonthlyTrend[];
+  thisMonthTrends?: MonthlyTrend[];
+  last3MonthsTrends?: MonthlyTrend[];
+  last6MonthsTrends?: MonthlyTrend[];
+  last12MonthsTrends?: MonthlyTrend[];
   applicationStatus: StatusDistribution[];
 }
 

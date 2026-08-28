@@ -79,25 +79,60 @@ public class AnalyticsService {
         response.setThisMonthRejections(thisMonthRejs);
         response.setThisMonthResponseRateDelta(0);
 
-        // Dynamic Applications Over Time: Real counts for the last 6 calendar months
-        List<AnalyticsResponse.MonthlyTrend> trends = new ArrayList<>();
+        // Dynamic Trend Calculations: 12-Month, 6-Month, 3-Month, and This Month (Weekly)
         DateTimeFormatter shortMonthFmt = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH);
         DateTimeFormatter longMonthFmt = DateTimeFormatter.ofPattern("MMM yyyy", Locale.ENGLISH);
 
-        for (int i = 5; i >= 0; i--) {
+        // 1. Last 12 Months
+        List<AnalyticsResponse.MonthlyTrend> last12Months = new ArrayList<>();
+        for (int i = 11; i >= 0; i--) {
             YearMonth targetMonth = currentYearMonth.minusMonths(i);
             int countInMonth = (int) applications.stream()
                     .filter(a -> a.getDateApplied() != null && YearMonth.from(a.getDateApplied()).equals(targetMonth))
                     .count();
             String monthShort = targetMonth.format(shortMonthFmt);
             String monthLong = targetMonth.format(longMonthFmt);
-            trends.add(new AnalyticsResponse.MonthlyTrend(
+            last12Months.add(new AnalyticsResponse.MonthlyTrend(
                     monthShort,
                     countInMonth,
                     String.format("%s: %d Application%s", monthLong, countInMonth, countInMonth == 1 ? "" : "s")
             ));
         }
-        response.setApplicationsOverTime(trends);
+        response.setLast12MonthsTrends(last12Months);
+
+        // 2. Last 6 Months & Default applicationsOverTime
+        List<AnalyticsResponse.MonthlyTrend> last6Months = new ArrayList<>(last12Months.subList(6, 12));
+        response.setLast6MonthsTrends(last6Months);
+        response.setApplicationsOverTime(last6Months);
+
+        // 3. Last 3 Months
+        List<AnalyticsResponse.MonthlyTrend> last3Months = new ArrayList<>(last12Months.subList(9, 12));
+        response.setLast3MonthsTrends(last3Months);
+
+        // 4. This Month (Weekly Breakdown)
+        List<AnalyticsResponse.MonthlyTrend> thisMonthTrends = new ArrayList<>();
+        int daysInMonth = currentYearMonth.lengthOfMonth();
+        int[][] weekRanges = {
+                {1, 7},
+                {8, 14},
+                {15, 21},
+                {22, daysInMonth}
+        };
+        String monthName = now.format(shortMonthFmt);
+        for (int w = 0; w < weekRanges.length; w++) {
+            int startDay = weekRanges[w][0];
+            int endDay = weekRanges[w][1];
+            int countInWeek = (int) applications.stream()
+                    .filter(a -> a.getDateApplied() != null &&
+                            YearMonth.from(a.getDateApplied()).equals(currentYearMonth) &&
+                            a.getDateApplied().getDayOfMonth() >= startDay &&
+                            a.getDateApplied().getDayOfMonth() <= endDay)
+                    .count();
+            String weekTitle = "W" + (w + 1);
+            String weekLabel = String.format("Week %d (%s %d-%d): %d Application%s", w + 1, monthName, startDay, endDay, countInWeek, countInWeek == 1 ? "" : "s");
+            thisMonthTrends.add(new AnalyticsResponse.MonthlyTrend(weekTitle, countInWeek, weekLabel));
+        }
+        response.setThisMonthTrends(thisMonthTrends);
 
         // Dynamic Status Distribution
         long donutInterviews = screenCount + interviewCount + finalInterviewCount;
