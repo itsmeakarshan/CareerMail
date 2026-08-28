@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, User, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { gmailApi } from '../services/api';
 
 export const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -74,6 +75,39 @@ export const RegisterPage: React.FC = () => {
           <p className="text-xs text-slate-400">
             Start organizing your job search directly from your inbox
           </p>
+        </div>
+
+        {/* Google OAuth Quick Action */}
+        <button
+          type="button"
+          onClick={async () => {
+            setError('');
+            try {
+              const res = await gmailApi.getAuthUrl();
+              if (res.url) {
+                window.location.href = res.url;
+              }
+            } catch (err: any) {
+              setError(err.message || 'Failed to initiate Google Sign Up');
+            }
+          }}
+          className="w-full py-2.5 px-4 bg-white hover:bg-slate-100 text-slate-900 rounded-2xl text-xs font-bold shadow-md flex items-center justify-center gap-2.5 transition-all hover:scale-[1.01]"
+        >
+          <svg viewBox="0 0 24 24" className="w-4 h-4">
+            <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.7 1 4 3.5 2.2 7.1l3.7 2.8C6.7 7.3 9.1 5 12 5z"/>
+            <path fill="#4285F4" d="M22.6 12.3c0-.8-.1-1.5-.2-2.3H12v4.3h6c-.3 1.4-1 2.5-2.2 3.3v2.8h3.6c2.1-1.9 3.2-4.7 3.2-8.1z"/>
+            <path fill="#FBBC05" d="M5.9 14.1c-.2-.7-.3-1.4-.3-2.1s.1-1.4.3-2.1V7.1H2.2C1.4 8.6 1 10.2 1 12s.4 3.4 1.2 4.9l3.7-2.8z"/>
+            <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.8c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.2v2.8C4 20.5 7.7 23 12 23z"/>
+          </svg>
+          <span>Sign up with Google / Gmail</span>
+        </button>
+
+        <div className="flex items-center gap-3">
+          <div className="h-px bg-slate-800 flex-1" />
+          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+            Or register with email
+          </span>
+          <div className="h-px bg-slate-800 flex-1" />
         </div>
 
         {error && (

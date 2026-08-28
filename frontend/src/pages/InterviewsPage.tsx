@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Video, MapPin, Clock, CheckCircle2, AlertCircle, X } from 'lucide-react';
-import { interviewsApi, applicationsApi } from '../services/api';
-import { Interview, JobApplication } from '../types';
+import { Calendar, Plus, Video, MapPin, Clock, X } from 'lucide-react';
+import { interviewsApi } from '../services/api';
+import { Interview } from '../types';
 import { CompanyLogo } from '../components/common/CompanyLogo';
 
 export const InterviewsPage: React.FC = () => {
   const [interviews, setInterviews] = useState<Interview[]>([]);
-  const [applications, setApplications] = useState<JobApplication[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   // Form state
@@ -16,24 +14,16 @@ export const InterviewsPage: React.FC = () => {
   const [dateTime, setDateTime] = useState('');
   const [type, setType] = useState('Technical Interview');
   const [interviewer, setInterviewer] = useState('');
-  const [location, setLocation] = useState('Google Meet');
+  const [location] = useState('Google Meet');
   const [meetingLink, setMeetingLink] = useState('');
   const [prepNotes, setPrepNotes] = useState('');
-  const [jobAppId, setJobAppId] = useState<number | undefined>();
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      const [intRes, appsRes] = await Promise.all([
-        interviewsApi.getAll(),
-        applicationsApi.getAll(),
-      ]);
+      const intRes = await interviewsApi.getAll();
       setInterviews(intRes);
-      setApplications(appsRes);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -55,7 +45,6 @@ export const InterviewsPage: React.FC = () => {
         location,
         meetingLink,
         preparationNotes: prepNotes,
-        jobApplicationId: jobAppId,
         status: 'SCHEDULED',
       });
       setIsModalOpen(false);
@@ -213,6 +202,24 @@ export const InterviewsPage: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* Empty state when no interviews */}
+      {interviews.length === 0 && (
+        <div className="p-12 text-center rounded-2xl bg-[#101626] border border-[#1e2640] space-y-3 animate-fadeIn">
+          <Calendar className="w-10 h-10 text-purple-400 mx-auto opacity-60" />
+          <h3 className="text-sm font-bold text-white">No upcoming interviews found</h3>
+          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            Connect your Gmail account and sync emails to automatically detect scheduled interviews, or click &quot;Schedule Interview&quot; to add one manually.
+          </p>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="mt-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-xs font-semibold shadow-glow-purple inline-flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Schedule Interview</span>
+          </button>
+        </div>
+      )}
 
       {/* Schedule Interview Modal */}
       {isModalOpen && (

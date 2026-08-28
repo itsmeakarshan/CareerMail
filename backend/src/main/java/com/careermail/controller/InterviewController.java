@@ -36,7 +36,12 @@ public class InterviewController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Interview> updateInterview(@PathVariable Long id, @Valid @RequestBody InterviewRequest request) {
+    public ResponseEntity<Interview> updateInterview(@PathVariable Long id, @RequestBody InterviewRequest request) {
+        return ResponseEntity.ok(interviewService.updateInterview(id, request));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Interview> patchInterview(@PathVariable Long id, @RequestBody InterviewRequest request) {
         return ResponseEntity.ok(interviewService.updateInterview(id, request));
     }
 

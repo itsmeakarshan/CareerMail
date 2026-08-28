@@ -1,11 +1,13 @@
 package com.careermail.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "timeline_events")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class TimelineEvent {
 
     @Id
@@ -43,6 +45,10 @@ public class TimelineEvent {
 
     public JobApplication getJobApplication() { return jobApplication; }
     public void setJobApplication(JobApplication jobApplication) { this.jobApplication = jobApplication; }
+
+    public Long getJobApplicationId() {
+        return jobApplication != null ? jobApplication.getId() : null;
+    }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

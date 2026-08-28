@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Plus, Clock, CheckCircle2, Mail, Trash2, X, Send } from 'lucide-react';
-import { followUpsApi, applicationsApi } from '../services/api';
-import { FollowUp, JobApplication } from '../types';
+import { Bell, Plus, CheckCircle2, Trash2, X, Send } from 'lucide-react';
+import { followUpsApi } from '../services/api';
+import { FollowUp } from '../types';
 import { CompanyLogo } from '../components/common/CompanyLogo';
 import { ComposeEmailModal } from '../components/email/ComposeEmailModal';
 
 export const FollowUpsPage: React.FC = () => {
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
-  const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isComposeOpen, setIsComposeOpen] = useState<boolean>(false);
@@ -21,12 +20,8 @@ export const FollowUpsPage: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [fRes, appsRes] = await Promise.all([
-        followUpsApi.getAll(),
-        applicationsApi.getAll(),
-      ]);
+      const fRes = await followUpsApi.getAll();
       setFollowUps(fRes);
-      setApplications(appsRes);
     } catch (err) {
       console.error(err);
     } finally {
@@ -157,8 +152,19 @@ export const FollowUpsPage: React.FC = () => {
         })}
 
         {followUps.length === 0 && !loading && (
-          <div className="p-12 text-center text-xs text-slate-500">
-            No follow-ups pending. Great job staying on top of your job search!
+          <div className="p-12 text-center rounded-2xl bg-[#101626] border border-[#1e2640] space-y-3 animate-fadeIn">
+            <Bell className="w-10 h-10 text-purple-400 mx-auto opacity-60" />
+            <h3 className="text-sm font-bold text-white">No follow-ups due</h3>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              Connect your Gmail account and sync emails to automatically detect follow-up deadlines, or create one manually.
+            </p>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="mt-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-xs font-semibold shadow-glow-purple inline-flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Follow-Up</span>
+            </button>
           </div>
         )}
       </div>

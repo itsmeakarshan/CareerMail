@@ -1,19 +1,12 @@
 package com.careermail.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public class FollowUpRequest {
 
     private Long jobApplicationId;
-
-    @NotBlank(message = "Company is required")
     private String company;
-
     private String role;
-
-    @NotNull(message = "Due date is required")
     private LocalDate dueDate;
 
     private String notes;

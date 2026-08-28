@@ -95,6 +95,9 @@ export interface Email {
   detectedCompany?: string;
   detectedRole?: string;
   detectedStatus?: string;
+  classification?: string;
+  gmailMessageId?: string;
+  gmailThreadId?: string;
   jobApplication?: JobApplication;
 }
 
@@ -130,4 +133,41 @@ export interface AssistantResponse {
   reply: string;
   suggestions: string[];
   data?: any;
+}
+
+export interface GmailStatus {
+  connected: boolean;
+  email?: string;
+  provider: string;
+  lastSyncedAt?: string;
+  totalEmailsScanned: number;
+  messagesScanned?: number;
+  configured: boolean;
+}
+
+export interface GmailSyncResult {
+  success?: boolean;
+  scannedCount?: number;
+  messagesScanned?: number;
+  jobEmailsFound: number;
+  applicationsCreated: number;
+  applicationsUpdated: number;
+  duplicatesSkipped?: number;
+  interviewsFound?: number;
+  interviewsCreated?: number;
+  followUpsFound?: number;
+  followUpsCreated?: number;
+  message: string;
+  syncedAt: string;
+}
+
+export interface GoogleAuthUrlResponse {
+  url: string;
+  state: string;
+}
+
+export interface GoogleConfigResponse {
+  configured: boolean;
+  redirectUri: string;
+  frontendUrl: string;
 }

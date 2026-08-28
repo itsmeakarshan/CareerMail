@@ -3,6 +3,7 @@ package com.careermail.model.entity;
 import com.careermail.model.enums.ApplicationStatus;
 import com.careermail.model.enums.Priority;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "job_applications")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class JobApplication {
 
     @Id

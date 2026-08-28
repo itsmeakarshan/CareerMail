@@ -1,14 +1,10 @@
 package com.careermail.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 
 public class JobApplicationRequest {
 
-    @NotBlank(message = "Company is required")
     private String company;
-
-    @NotBlank(message = "Title is required")
     private String title;
 
     private String location;

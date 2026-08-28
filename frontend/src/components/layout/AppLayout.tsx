@@ -36,15 +36,22 @@ export const AppLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const navItems = [
-    { label: 'Inbox', path: '/inbox', icon: Inbox, badge: 128 },
-    { label: 'Important', path: '/inbox?folder=important', icon: Bookmark, badge: 32 },
+  interface NavItem {
+    label: string;
+    path: string;
+    icon: React.ComponentType<{ className?: string }>;
+    badge?: number;
+  }
+
+  const navItems: NavItem[] = [
+    { label: 'Inbox', path: '/inbox', icon: Inbox },
+    { label: 'Important', path: '/inbox?folder=important', icon: Bookmark },
     { label: 'Starred', path: '/inbox?folder=starred', icon: Star },
     { label: 'Sent', path: '/inbox?folder=sent', icon: Send },
-    { label: 'Drafts', path: '/inbox?folder=drafts', icon: FileText, badge: 8 },
+    { label: 'Drafts', path: '/inbox?folder=drafts', icon: FileText },
     { label: 'Job Tracker', path: '/', icon: Briefcase },
     { label: 'Interviews', path: '/interviews', icon: Calendar },
-    { label: 'Follow-ups', path: '/follow-ups', icon: Bell, badge: 12 },
+    { label: 'Follow-ups', path: '/follow-ups', icon: Bell },
     { label: 'Analytics', path: '/analytics', icon: BarChart3 },
     { label: 'Settings', path: '/settings', icon: Settings },
   ];
@@ -173,10 +180,10 @@ export const AppLayout: React.FC = () => {
               {sidebarOpen && (
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs font-semibold text-white truncate">
-                    {user?.name || 'Arjun Sharma'}
+                    {user?.name || 'My Account'}
                   </span>
                   <span className="text-[10px] text-slate-400 truncate">
-                    {user?.email || 'arjun.sharma@email.com'}
+                    {user?.email || ''}
                   </span>
                 </div>
               )}

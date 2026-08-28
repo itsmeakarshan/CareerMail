@@ -8,18 +8,14 @@ import { ApplicationStatusDonut } from '../components/dashboard/ApplicationStatu
 
 export const AnalyticsPage: React.FC = () => {
   const [data, setData] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        setLoading(true);
         const res = await analyticsApi.getDashboard();
         setData(res);
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -59,15 +55,17 @@ export const AnalyticsPage: React.FC = () => {
               </div>
             </div>
             <span className="text-3xl font-extrabold text-white mt-2 block">
-              {data ? data.responseRate : 68}%
+              {data ? data.responseRate : 0}%
             </span>
             <p className="text-xs text-slate-400 mt-1">
-              Percentage of applications that received recruiter engagement or testing links.
+              {data && data.totalApplications > 0
+                ? `Calculated from ${data.totalApplications} total applications synchronized from your emails.`
+                : 'Connect Gmail and sync your emails to calculate response rate.'}
             </p>
           </div>
           <div className="mt-4 pt-3 border-t border-slate-800 flex items-center text-xs text-emerald-400 font-semibold">
             <TrendingUp className="w-3.5 h-3.5 mr-1" />
-            <span>22% higher than industry average</span>
+            <span>{data && data.totalApplications > 0 ? 'Live database calculation' : 'No data yet'}</span>
           </div>
         </div>
 
@@ -79,14 +77,24 @@ export const AnalyticsPage: React.FC = () => {
                 <ArrowUpRight className="w-4 h-4" />
               </div>
             </div>
-            <span className="text-3xl font-extrabold text-white mt-2 block">17.0%</span>
+            <span className="text-3xl font-extrabold text-white mt-2 block">
+              {data && data.totalApplications > 0
+                ? ((data.interviews / data.totalApplications) * 100).toFixed(1)
+                : '0.0'}%
+            </span>
             <p className="text-xs text-slate-400 mt-1">
-              8 scheduled technical and onsite interviews from 47 submitted applications.
+              {data && data.totalApplications > 0
+                ? `${data.interviews} scheduled technical and screening interviews from ${data.totalApplications} applications.`
+                : 'No interview records found in database.'}
             </p>
           </div>
           <div className="mt-4 pt-3 border-t border-slate-800 flex items-center text-xs text-purple-400 font-semibold">
             <CheckCircle className="w-3.5 h-3.5 mr-1" />
-            <span>3 interviews scheduled this month</span>
+            <span>
+              {data && data.thisMonthInterviews > 0
+                ? `${data.thisMonthInterviews} scheduled this month`
+                : (data?.interviews ? `${data.interviews} total interviews` : '0 interviews')}
+            </span>
           </div>
         </div>
 
@@ -98,14 +106,24 @@ export const AnalyticsPage: React.FC = () => {
                 <Award className="w-4 h-4" />
               </div>
             </div>
-            <span className="text-3xl font-extrabold text-white mt-2 block">4.3%</span>
+            <span className="text-3xl font-extrabold text-white mt-2 block">
+              {data && data.totalApplications > 0
+                ? ((data.offers / data.totalApplications) * 100).toFixed(1)
+                : '0.0'}%
+            </span>
             <p className="text-xs text-slate-400 mt-1">
-              2 formal written offers received (Apple and Oracle).
+              {data && data.totalApplications > 0
+                ? `${data.offers} formal written offer${data.offers === 1 ? '' : 's'} recorded.`
+                : 'No offer records found in database.'}
             </p>
           </div>
           <div className="mt-4 pt-3 border-t border-slate-800 flex items-center text-xs text-emerald-400 font-semibold">
             <Award className="w-3.5 h-3.5 mr-1" />
-            <span>Strong compensation packages</span>
+            <span>
+              {data && data.thisMonthOffers > 0
+                ? `${data.thisMonthOffers} offers received this month`
+                : (data?.offers ? `${data.offers} total offers` : '0 offers')}
+            </span>
           </div>
         </div>
       </div>

@@ -64,12 +64,15 @@ public class EmailController {
     }
 
     @PostMapping("/simulate")
-    public ResponseEntity<Email> simulateIncomingEmail(@RequestBody Map<String, String> payload) {
-        String sender = payload.getOrDefault("sender", "Recruiter");
-        String senderEmail = payload.getOrDefault("senderEmail", "recruiter@example.com");
-        String subject = payload.getOrDefault("subject", "Update on your application");
-        String body = payload.getOrDefault("body", "Thank you for applying.");
-        boolean imp = Boolean.parseBoolean(payload.getOrDefault("important", "false"));
+    public ResponseEntity<Email> simulateIncomingEmail(@RequestBody Map<String, Object> payload) {
+        String sender = payload.get("sender") != null ? String.valueOf(payload.get("sender")) : "Recruiter";
+        String senderEmail = payload.get("senderEmail") != null ? String.valueOf(payload.get("senderEmail")) : "recruiter@example.com";
+        String subject = payload.get("subject") != null ? String.valueOf(payload.get("subject")) : "Update on your application";
+        String body = payload.get("body") != null ? String.valueOf(payload.get("body")) : "Thank you for applying.";
+        boolean imp = false;
+        if (payload.get("important") != null) {
+            imp = Boolean.parseBoolean(String.valueOf(payload.get("important")));
+        }
         return ResponseEntity.ok(emailService.simulateIncomingEmail(sender, senderEmail, subject, body, imp));
     }
 

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/analytics")
+@RequestMapping({"/api/analytics", "/api/dashboard"})
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
@@ -17,7 +17,7 @@ public class AnalyticsController {
         this.analyticsService = analyticsService;
     }
 
-    @GetMapping
+    @GetMapping({"", "/dashboard", "/summary"})
     public ResponseEntity<AnalyticsResponse> getDashboardAnalytics() {
         return ResponseEntity.ok(analyticsService.getDashboardAnalytics());
     }

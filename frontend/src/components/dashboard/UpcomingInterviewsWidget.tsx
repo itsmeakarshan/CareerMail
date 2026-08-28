@@ -51,7 +51,7 @@ export const UpcomingInterviewsWidget: React.FC<WidgetProps> = ({ interviews, on
 
         {displayItems.length === 0 && (
           <div className="py-6 text-center text-xs text-slate-500">
-            No upcoming interviews scheduled
+            No upcoming interviews found.
           </div>
         )}
       </div>
@@ -60,7 +60,7 @@ export const UpcomingInterviewsWidget: React.FC<WidgetProps> = ({ interviews, on
 };
 
 function formatDateTime(dateStr: string): string {
-  if (!dateStr) return 'May 17, 2025 · 10:00 AM';
+  if (!dateStr) return 'Date TBD';
   try {
     const d = new Date(dateStr);
     const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };

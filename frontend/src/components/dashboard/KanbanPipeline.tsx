@@ -30,12 +30,12 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
   const [draggedAppId, setDraggedAppId] = useState<number | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
 
-  // 6 Pipeline columns matching dashboard.png
+  // 6 Pipeline columns matching status flow
   const columns: ColumnConfig[] = [
     {
       id: 'APPLIED',
       title: 'Applied',
-      count: applications.filter((a) => a.status === 'APPLIED').length || 24,
+      count: applications.filter((a) => a.status === 'APPLIED').length,
       badgeBg: 'bg-blue-950/60',
       badgeText: 'text-blue-400',
       borderColor: 'border-blue-500/30',
@@ -44,7 +44,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
     {
       id: 'ASSESSMENT',
       title: 'Assessment',
-      count: applications.filter((a) => a.status === 'ASSESSMENT').length || 6,
+      count: applications.filter((a) => a.status === 'ASSESSMENT').length,
       badgeBg: 'bg-amber-950/60',
       badgeText: 'text-amber-400',
       borderColor: 'border-amber-500/30',
@@ -53,7 +53,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
     {
       id: 'RECRUITER_SCREEN',
       title: 'Recruiter Screen',
-      count: applications.filter((a) => a.status === 'RECRUITER_SCREEN').length || 4,
+      count: applications.filter((a) => a.status === 'RECRUITER_SCREEN').length,
       badgeBg: 'bg-purple-950/60',
       badgeText: 'text-purple-400',
       borderColor: 'border-purple-500/30',
@@ -62,7 +62,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
     {
       id: 'INTERVIEW',
       title: 'Interview',
-      count: applications.filter((a) => a.status === 'INTERVIEW').length || 8,
+      count: applications.filter((a) => a.status === 'INTERVIEW').length,
       badgeBg: 'bg-indigo-950/60',
       badgeText: 'text-indigo-400',
       borderColor: 'border-indigo-500/30',
@@ -71,7 +71,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
     {
       id: 'FINAL_INTERVIEW',
       title: 'Final Interview',
-      count: applications.filter((a) => a.status === 'FINAL_INTERVIEW').length || 3,
+      count: applications.filter((a) => a.status === 'FINAL_INTERVIEW').length,
       badgeBg: 'bg-pink-950/60',
       badgeText: 'text-pink-400',
       borderColor: 'border-pink-500/30',
@@ -80,7 +80,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
     {
       id: 'OFFER',
       title: 'Offer',
-      count: applications.filter((a) => a.status === 'OFFER').length || 2,
+      count: applications.filter((a) => a.status === 'OFFER').length,
       badgeBg: 'bg-emerald-950/60',
       badgeText: 'text-emerald-400',
       borderColor: 'border-emerald-500/30',

@@ -56,7 +56,7 @@ export const FollowUpsDueWidget: React.FC<WidgetProps> = ({ followUps, onSelectF
 
         {displayItems.length === 0 && (
           <div className="py-6 text-center text-xs text-slate-500">
-            No pending follow-ups due
+            No follow-ups due.
           </div>
         )}
       </div>

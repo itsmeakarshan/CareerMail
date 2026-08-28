@@ -10,10 +10,10 @@ public class AnalyticsResponse {
     private long rejections;
     private int responseRate;
 
-    private int thisMonthApplications;
-    private int thisMonthInterviews;
-    private int thisMonthOffers;
-    private int thisMonthRejections;
+    private long thisMonthApplications;
+    private long thisMonthInterviews;
+    private long thisMonthOffers;
+    private long thisMonthRejections;
     private int thisMonthResponseRateDelta;
 
     private List<MonthlyTrend> applicationsOverTime;
@@ -85,17 +85,17 @@ public class AnalyticsResponse {
     public int getResponseRate() { return responseRate; }
     public void setResponseRate(int responseRate) { this.responseRate = responseRate; }
 
-    public int getThisMonthApplications() { return thisMonthApplications; }
-    public void setThisMonthApplications(int thisMonthApplications) { this.thisMonthApplications = thisMonthApplications; }
+    public long getThisMonthApplications() { return thisMonthApplications; }
+    public void setThisMonthApplications(long thisMonthApplications) { this.thisMonthApplications = thisMonthApplications; }
 
-    public int getThisMonthInterviews() { return thisMonthInterviews; }
-    public void setThisMonthInterviews(int thisMonthInterviews) { this.thisMonthInterviews = thisMonthInterviews; }
+    public long getThisMonthInterviews() { return thisMonthInterviews; }
+    public void setThisMonthInterviews(long thisMonthInterviews) { this.thisMonthInterviews = thisMonthInterviews; }
 
-    public int getThisMonthOffers() { return thisMonthOffers; }
-    public void setThisMonthOffers(int thisMonthOffers) { this.thisMonthOffers = thisMonthOffers; }
+    public long getThisMonthOffers() { return thisMonthOffers; }
+    public void setThisMonthOffers(long thisMonthOffers) { this.thisMonthOffers = thisMonthOffers; }
 
-    public int getThisMonthRejections() { return thisMonthRejections; }
-    public void setThisMonthRejections(int thisMonthRejections) { this.thisMonthRejections = thisMonthRejections; }
+    public long getThisMonthRejections() { return thisMonthRejections; }
+    public void setThisMonthRejections(long thisMonthRejections) { this.thisMonthRejections = thisMonthRejections; }
 
     public int getThisMonthResponseRateDelta() { return thisMonthResponseRateDelta; }
     public void setThisMonthResponseRateDelta(int thisMonthResponseRateDelta) { this.thisMonthResponseRateDelta = thisMonthResponseRateDelta; }

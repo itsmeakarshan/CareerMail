@@ -1,12 +1,18 @@
 package com.careermail.model.entity;
 
+import com.careermail.model.enums.EmailClassification;
 import com.careermail.model.enums.EmailFolder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "emails")
+@Table(name = "emails", indexes = {
+        @Index(name = "idx_email_user_id", columnList = "user_id"),
+        @Index(name = "idx_email_gmail_msg_id", columnList = "gmailMessageId")
+})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Email {
 
     @Id
@@ -50,6 +56,7 @@ public class Email {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_application_id")
+    @JsonIgnoreProperties({"interviews", "followUps", "timelineEvents", "hibernateLazyInitializer", "handler"})
     private JobApplication jobApplication;
 
     // Extracted job information metadata
@@ -57,6 +64,13 @@ public class Email {
     private String detectedCompany;
     private String detectedRole;
     private String detectedStatus;
+
+    @Enumerated(EnumType.STRING)
+    private EmailClassification classification;
+
+    private String gmailMessageId;
+    private String gmailThreadId;
+    private LocalDateTime processedAt;
 
     public Email() {}
 
@@ -105,6 +119,10 @@ public class Email {
     public JobApplication getJobApplication() { return jobApplication; }
     public void setJobApplication(JobApplication jobApplication) { this.jobApplication = jobApplication; }
 
+    public Long getJobApplicationId() {
+        return jobApplication != null ? jobApplication.getId() : null;
+    }
+
     public boolean isJobRelated() { return isJobRelated; }
     public void setJobRelated(boolean jobRelated) { isJobRelated = jobRelated; }
 
@@ -116,4 +134,16 @@ public class Email {
 
     public String getDetectedStatus() { return detectedStatus; }
     public void setDetectedStatus(String detectedStatus) { this.detectedStatus = detectedStatus; }
+
+    public EmailClassification getClassification() { return classification; }
+    public void setClassification(EmailClassification classification) { this.classification = classification; }
+
+    public String getGmailMessageId() { return gmailMessageId; }
+    public void setGmailMessageId(String gmailMessageId) { this.gmailMessageId = gmailMessageId; }
+
+    public String getGmailThreadId() { return gmailThreadId; }
+    public void setGmailThreadId(String gmailThreadId) { this.gmailThreadId = gmailThreadId; }
+
+    public LocalDateTime getProcessedAt() { return processedAt; }
+    public void setProcessedAt(LocalDateTime processedAt) { this.processedAt = processedAt; }
 }

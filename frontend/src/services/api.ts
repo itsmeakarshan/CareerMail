@@ -5,7 +5,11 @@ import {
   FollowUp,
   Email,
   AnalyticsData,
-  AssistantResponse
+  AssistantResponse,
+  GmailStatus,
+  GmailSyncResult,
+  GoogleAuthUrlResponse,
+  GoogleConfigResponse
 } from '../types';
 
 const API_BASE = '/api';
@@ -20,16 +24,21 @@ function getAuthHeaders(): HeadersInit {
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...getAuthHeaders(),
-      ...(options.headers || {}),
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        ...getAuthHeaders(),
+        ...(options.headers || {}),
+      },
+    });
+  } catch {
+    throw new Error('Cannot reach backend server. Please ensure Spring Boot is running on port 8080 (cd backend && mvn spring-boot:run).');
+  }
 
   if (response.status === 401) {
-    // If not on login or register, could redirect or trigger logout
+    // If not on login or register, trigger logout
     if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
       localStorage.removeItem('careermail_token');
       localStorage.removeItem('careermail_user');
@@ -66,6 +75,22 @@ export const authApi = {
       body: JSON.stringify(data),
     }),
   getCurrentUser: () => request<User>('/auth/me'),
+};
+
+// Gmail & Google OAuth API
+export const gmailApi = {
+  getStatus: () => request<GmailStatus>('/gmail/status'),
+  getAuthUrl: (state?: string) =>
+    request<GoogleAuthUrlResponse>(`/auth/google/url${state ? `?state=${encodeURIComponent(state)}` : ''}`),
+  getConfig: () => request<GoogleConfigResponse>('/auth/google/config'),
+  sync: (maxResults?: number) =>
+    request<GmailSyncResult>(`/gmail/sync?maxResults=${maxResults || 300}`, {
+      method: 'POST',
+    }),
+  disconnect: () =>
+    request<{ message: string }>('/gmail/disconnect', {
+      method: 'POST',
+    }),
 };
 
 // Job Applications API

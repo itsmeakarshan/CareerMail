@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Building2, Briefcase, MapPin, DollarSign, UserCheck, Mail, Calendar } from 'lucide-react';
+import { X, Building2, Briefcase, MapPin, DollarSign, UserCheck, Mail } from 'lucide-react';
 import { ApplicationStatus, Priority, JobApplication } from '../../types';
 
 interface ModalProps {

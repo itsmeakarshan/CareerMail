@@ -1,6 +1,7 @@
 package com.careermail.service;
 
 import com.careermail.dto.AnalyticsResponse;
+import com.careermail.model.entity.Interview;
 import com.careermail.model.entity.JobApplication;
 import com.careermail.model.entity.User;
 import com.careermail.model.enums.ApplicationStatus;
@@ -8,9 +9,12 @@ import com.careermail.repository.InterviewRepository;
 import com.careermail.repository.JobApplicationRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class AnalyticsService {
@@ -30,54 +34,89 @@ public class AnalyticsService {
     public AnalyticsResponse getDashboardAnalytics() {
         User user = authService.getCurrentUser();
         List<JobApplication> applications = jobApplicationRepository.findByUser(user);
+        List<Interview> userInterviews = interviewRepository.findByUserOrderByInterviewDateAsc(user);
 
         long total = applications.size();
         long appliedCount = applications.stream().filter(a -> a.getStatus() == ApplicationStatus.APPLIED).count();
         long assessmentCount = applications.stream().filter(a -> a.getStatus() == ApplicationStatus.ASSESSMENT).count();
         long screenCount = applications.stream().filter(a -> a.getStatus() == ApplicationStatus.RECRUITER_SCREEN).count();
-        long interviewCount = applications.stream().filter(a -> a.getStatus() == ApplicationStatus.INTERVIEW || a.getStatus() == ApplicationStatus.FINAL_INTERVIEW).count();
+        long interviewCount = applications.stream().filter(a -> a.getStatus() == ApplicationStatus.INTERVIEW).count();
+        long finalInterviewCount = applications.stream().filter(a -> a.getStatus() == ApplicationStatus.FINAL_INTERVIEW).count();
         long offerCount = applications.stream().filter(a -> a.getStatus() == ApplicationStatus.OFFER).count();
         long rejectedCount = applications.stream().filter(a -> a.getStatus() == ApplicationStatus.REJECTED).count();
         long withdrawnCount = applications.stream().filter(a -> a.getStatus() == ApplicationStatus.WITHDRAWN).count();
 
-        // If newly seeded or exact 47 matches, let's ensure numbers match the dashboard
-        long totalInterviews = interviewRepository.countByUser(user);
-        if (totalInterviews == 0) {
-            totalInterviews = 8;
-        }
+        long totalInterviews = userInterviews.size() > 0 ? userInterviews.size() : (interviewCount + finalInterviewCount);
 
         AnalyticsResponse response = new AnalyticsResponse();
-        response.setTotalApplications(total > 0 ? (total == 54 ? 47 : total) : 47);
-        response.setInterviews(totalInterviews > 0 ? totalInterviews : 8);
-        response.setOffers(offerCount > 0 ? offerCount : 2);
-        response.setRejections(rejectedCount > 0 ? rejectedCount : 5);
-        response.setResponseRate(68);
+        response.setTotalApplications(total);
+        response.setInterviews(totalInterviews);
+        response.setOffers(offerCount);
+        response.setRejections(rejectedCount);
 
-        response.setThisMonthApplications(12);
-        response.setThisMonthInterviews(3);
-        response.setThisMonthOffers(1);
-        response.setThisMonthRejections(2);
-        response.setThisMonthResponseRateDelta(8);
+        int responseRate = total > 0 ? (int) Math.round((double) (total - appliedCount) / total * 100) : 0;
+        response.setResponseRate(responseRate);
 
-        // Applications Over Time (Last 6 Months: Dec, Jan, Feb, Mar, Apr, May)
-        List<AnalyticsResponse.MonthlyTrend> trends = Arrays.asList(
-                new AnalyticsResponse.MonthlyTrend("Dec", 15, "Dec 2024: 15 Applications"),
-                new AnalyticsResponse.MonthlyTrend("Jan", 20, "Jan 2025: 20 Applications"),
-                new AnalyticsResponse.MonthlyTrend("Feb", 24, "Feb 2025: 24 Applications"),
-                new AnalyticsResponse.MonthlyTrend("Mar", 31, "Mar 2025: 31 Applications"),
-                new AnalyticsResponse.MonthlyTrend("Apr", 38, "Apr 2025: 38 Applications"),
-                new AnalyticsResponse.MonthlyTrend("May", 47, "May 2025: 47 Applications")
-        );
+        // Real calculations for current month (within current calendar month)
+        LocalDate now = LocalDate.now();
+        YearMonth currentYearMonth = YearMonth.from(now);
+        long thisMonthApps = applications.stream()
+                .filter(a -> a.getDateApplied() != null && YearMonth.from(a.getDateApplied()).equals(currentYearMonth))
+                .count();
+        long thisMonthInts = userInterviews.stream()
+                .filter(i -> i.getInterviewDate() != null && YearMonth.from(i.getInterviewDate().toLocalDate()).equals(currentYearMonth))
+                .count();
+        long thisMonthOffs = applications.stream()
+                .filter(a -> a.getStatus() == ApplicationStatus.OFFER && a.getLastActivityDate() != null && YearMonth.from(a.getLastActivityDate()).equals(currentYearMonth))
+                .count();
+        long thisMonthRejs = applications.stream()
+                .filter(a -> a.getStatus() == ApplicationStatus.REJECTED && a.getLastActivityDate() != null && YearMonth.from(a.getLastActivityDate()).equals(currentYearMonth))
+                .count();
+
+        response.setThisMonthApplications(thisMonthApps);
+        response.setThisMonthInterviews(thisMonthInts);
+        response.setThisMonthOffers(thisMonthOffs);
+        response.setThisMonthRejections(thisMonthRejs);
+        response.setThisMonthResponseRateDelta(0);
+
+        // Dynamic Applications Over Time: Real counts for the last 6 calendar months
+        List<AnalyticsResponse.MonthlyTrend> trends = new ArrayList<>();
+        DateTimeFormatter shortMonthFmt = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH);
+        DateTimeFormatter longMonthFmt = DateTimeFormatter.ofPattern("MMM yyyy", Locale.ENGLISH);
+
+        for (int i = 5; i >= 0; i--) {
+            YearMonth targetMonth = currentYearMonth.minusMonths(i);
+            int countInMonth = (int) applications.stream()
+                    .filter(a -> a.getDateApplied() != null && YearMonth.from(a.getDateApplied()).equals(targetMonth))
+                    .count();
+            String monthShort = targetMonth.format(shortMonthFmt);
+            String monthLong = targetMonth.format(longMonthFmt);
+            trends.add(new AnalyticsResponse.MonthlyTrend(
+                    monthShort,
+                    countInMonth,
+                    String.format("%s: %d Application%s", monthLong, countInMonth, countInMonth == 1 ? "" : "s")
+            ));
+        }
         response.setApplicationsOverTime(trends);
 
-        // Status Distribution (Exact match to dashboard.png donut chart)
+        // Dynamic Status Distribution
+        long donutInterviews = screenCount + interviewCount + finalInterviewCount;
+        long donutSum = appliedCount + donutInterviews + assessmentCount + offerCount + rejectedCount + withdrawnCount;
+
+        int appliedPct = donutSum > 0 ? (int) Math.round((double) appliedCount / donutSum * 100) : 0;
+        int interviewPct = donutSum > 0 ? (int) Math.round((double) donutInterviews / donutSum * 100) : 0;
+        int assessmentPct = donutSum > 0 ? (int) Math.round((double) assessmentCount / donutSum * 100) : 0;
+        int offerPct = donutSum > 0 ? (int) Math.round((double) offerCount / donutSum * 100) : 0;
+        int rejectedPct = donutSum > 0 ? (int) Math.round((double) rejectedCount / donutSum * 100) : 0;
+        int withdrawnPct = donutSum > 0 ? (int) Math.round((double) withdrawnCount / donutSum * 100) : 0;
+
         List<AnalyticsResponse.StatusDistribution> distribution = new ArrayList<>();
-        distribution.add(new AnalyticsResponse.StatusDistribution("Applied", 24, 51, "#3b82f6"));
-        distribution.add(new AnalyticsResponse.StatusDistribution("Interview", 8, 17, "#8b5cf6"));
-        distribution.add(new AnalyticsResponse.StatusDistribution("Assessment", 6, 13, "#f59e0b"));
-        distribution.add(new AnalyticsResponse.StatusDistribution("Offer", 2, 4, "#10b981"));
-        distribution.add(new AnalyticsResponse.StatusDistribution("Rejected", 5, 11, "#ef4444"));
-        distribution.add(new AnalyticsResponse.StatusDistribution("Withdrawn", 2, 4, "#64748b"));
+        distribution.add(new AnalyticsResponse.StatusDistribution("Applied", appliedCount, appliedPct, "#3b82f6"));
+        distribution.add(new AnalyticsResponse.StatusDistribution("Interview", donutInterviews, interviewPct, "#8b5cf6"));
+        distribution.add(new AnalyticsResponse.StatusDistribution("Assessment", assessmentCount, assessmentPct, "#f59e0b"));
+        distribution.add(new AnalyticsResponse.StatusDistribution("Offer", offerCount, offerPct, "#10b981"));
+        distribution.add(new AnalyticsResponse.StatusDistribution("Rejected", rejectedCount, rejectedPct, "#ef4444"));
+        distribution.add(new AnalyticsResponse.StatusDistribution("Withdrawn", withdrawnCount, withdrawnPct, "#64748b"));
 
         response.setApplicationStatus(distribution);
 

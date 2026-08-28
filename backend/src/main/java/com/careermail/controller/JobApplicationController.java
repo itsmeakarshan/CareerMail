@@ -37,7 +37,12 @@ public class JobApplicationController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<JobApplication> updateApplication(@PathVariable Long id, @Valid @RequestBody JobApplicationRequest request) {
+    public ResponseEntity<JobApplication> updateApplication(@PathVariable Long id, @RequestBody JobApplicationRequest request) {
+        return ResponseEntity.ok(jobApplicationService.updateApplication(id, request));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<JobApplication> patchApplication(@PathVariable Long id, @RequestBody JobApplicationRequest request) {
         return ResponseEntity.ok(jobApplicationService.updateApplication(id, request));
     }
 

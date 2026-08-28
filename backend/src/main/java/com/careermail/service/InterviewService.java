@@ -47,20 +47,32 @@ public class InterviewService {
 
     @Transactional
     public Interview createInterview(InterviewRequest request) {
+        if (request.getCompany() == null || request.getCompany().trim().isEmpty()) {
+            throw new IllegalArgumentException("Company is required");
+        }
+        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+            throw new IllegalArgumentException("Title is required");
+        }
+        if (request.getInterviewDate() == null) {
+            throw new IllegalArgumentException("Interview date is required");
+        }
+
         User user = authService.getCurrentUser();
 
         Interview interview = new Interview();
         interview.setUser(user);
-        interview.setCompany(request.getCompany());
-        interview.setTitle(request.getTitle());
+        interview.setCompany(request.getCompany().trim());
+        interview.setTitle(request.getTitle().trim());
         interview.setInterviewDate(request.getInterviewDate());
-        interview.setType(request.getType() != null ? request.getType() : "Technical Interview");
-        interview.setInterviewer(request.getInterviewer());
-        interview.setLocation(request.getLocation() != null ? request.getLocation() : "Google Meet");
-        interview.setMeetingLink(request.getMeetingLink());
-        interview.setPreparationNotes(request.getPreparationNotes());
-        interview.setStatus(request.getStatus() != null ? InterviewStatus.valueOf(request.getStatus().toUpperCase()) : InterviewStatus.SCHEDULED);
-        interview.setCompanyLogo(request.getCompanyLogo() != null ? request.getCompanyLogo() : request.getCompany().toLowerCase().replaceAll("[^a-z0-9]", ""));
+        interview.setType(request.getType() != null && !request.getType().trim().isEmpty() ? request.getType().trim() : "Technical Interview");
+        interview.setInterviewer(request.getInterviewer() != null ? request.getInterviewer().trim() : null);
+        interview.setLocation(request.getLocation() != null && !request.getLocation().trim().isEmpty() ? request.getLocation().trim() : "Google Meet");
+        interview.setMeetingLink(request.getMeetingLink() != null ? request.getMeetingLink().trim() : null);
+        interview.setPreparationNotes(request.getPreparationNotes() != null ? request.getPreparationNotes().trim() : null);
+        interview.setStatus(request.getStatus() != null ? InterviewStatus.fromString(request.getStatus()) : InterviewStatus.SCHEDULED);
+        interview.setCompanyLogo(request.getCompanyLogo() != null && !request.getCompanyLogo().trim().isEmpty()
+                ? request.getCompanyLogo().trim()
+                : request.getCompany().toLowerCase().replaceAll("[^a-z0-9]", ""));
 
         if (request.getJobApplicationId() != null) {
             JobApplication app = jobApplicationRepository.findByIdAndUser(request.getJobApplicationId(), user).orElse(null);
@@ -85,16 +97,40 @@ public class InterviewService {
     public Interview updateInterview(Long id, InterviewRequest request) {
         Interview interview = getInterviewById(id);
 
-        interview.setCompany(request.getCompany());
-        interview.setTitle(request.getTitle());
-        interview.setInterviewDate(request.getInterviewDate());
-        if (request.getType() != null) interview.setType(request.getType());
-        if (request.getInterviewer() != null) interview.setInterviewer(request.getInterviewer());
-        if (request.getLocation() != null) interview.setLocation(request.getLocation());
-        if (request.getMeetingLink() != null) interview.setMeetingLink(request.getMeetingLink());
-        if (request.getPreparationNotes() != null) interview.setPreparationNotes(request.getPreparationNotes());
-        if (request.getStatus() != null) interview.setStatus(InterviewStatus.valueOf(request.getStatus().toUpperCase()));
-        if (request.getCompanyLogo() != null) interview.setCompanyLogo(request.getCompanyLogo());
+        if (request.getCompany() != null && !request.getCompany().trim().isEmpty()) {
+            interview.setCompany(request.getCompany().trim());
+        }
+        if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
+            interview.setTitle(request.getTitle().trim());
+        }
+        if (request.getInterviewDate() != null) {
+            interview.setInterviewDate(request.getInterviewDate());
+        }
+        if (request.getType() != null && !request.getType().trim().isEmpty()) {
+            interview.setType(request.getType().trim());
+        }
+        if (request.getInterviewer() != null) {
+            interview.setInterviewer(request.getInterviewer().trim());
+        }
+        if (request.getLocation() != null) {
+            interview.setLocation(request.getLocation().trim());
+        }
+        if (request.getMeetingLink() != null) {
+            interview.setMeetingLink(request.getMeetingLink().trim());
+        }
+        if (request.getPreparationNotes() != null) {
+            interview.setPreparationNotes(request.getPreparationNotes().trim());
+        }
+        if (request.getStatus() != null && !request.getStatus().trim().isEmpty()) {
+            interview.setStatus(InterviewStatus.fromString(request.getStatus()));
+        }
+        if (request.getCompanyLogo() != null && !request.getCompanyLogo().trim().isEmpty()) {
+            interview.setCompanyLogo(request.getCompanyLogo().trim());
+        }
+        if (request.getJobApplicationId() != null) {
+            JobApplication app = jobApplicationRepository.findByIdAndUser(request.getJobApplicationId(), authService.getCurrentUser()).orElse(null);
+            interview.setJobApplication(app);
+        }
 
         computeDaysAwayBadge(interview);
         return interviewRepository.save(interview);
@@ -103,6 +139,9 @@ public class InterviewService {
     @Transactional
     public void deleteInterview(Long id) {
         Interview interview = getInterviewById(id);
+        if (interview.getJobApplication() != null) {
+            interview.getJobApplication().getInterviews().remove(interview);
+        }
         interviewRepository.delete(interview);
     }
 

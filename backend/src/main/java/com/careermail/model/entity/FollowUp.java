@@ -3,11 +3,13 @@ package com.careermail.model.entity;
 import com.careermail.model.enums.FollowUpStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "follow_ups")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class FollowUp {
 
     @Id
@@ -50,6 +52,10 @@ public class FollowUp {
 
     public JobApplication getJobApplication() { return jobApplication; }
     public void setJobApplication(JobApplication jobApplication) { this.jobApplication = jobApplication; }
+
+    public Long getJobApplicationId() {
+        return jobApplication != null ? jobApplication.getId() : null;
+    }
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }

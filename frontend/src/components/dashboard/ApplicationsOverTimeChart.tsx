@@ -7,16 +7,28 @@ interface ChartProps {
 }
 
 export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data }) => {
-  const points = data?.applicationsOverTime || [
-    { month: 'Dec', count: 15, label: 'Dec 2024: 15 Applications' },
-    { month: 'Jan', count: 20, label: 'Jan 2025: 20 Applications' },
-    { month: 'Feb', count: 24, label: 'Feb 2025: 24 Applications' },
-    { month: 'Mar', count: 31, label: 'Mar 2025: 31 Applications' },
-    { month: 'Apr', count: 38, label: 'Apr 2025: 38 Applications' },
-    { month: 'May', count: 47, label: 'May 2025: 47 Applications' },
-  ];
+  // Generate real default 6 months if data is not loaded yet
+  const getDefaultMonths = () => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const now = new Date();
+    const result = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      result.push({
+        month: months[d.getMonth()],
+        count: 0,
+        label: `${months[d.getMonth()]} ${d.getFullYear()}: 0 Applications`,
+      });
+    }
+    return result;
+  };
 
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(3); // Default Mar hovered like in screenshot
+  const points = data?.applicationsOverTime && data.applicationsOverTime.length > 0
+    ? data.applicationsOverTime
+    : getDefaultMonths();
+
+  const total = points.reduce((acc, p) => acc + p.count, 0);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   // Chart dimensions
   const width = 520;
@@ -28,11 +40,13 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data }) => {
 
   const chartWidth = width - paddingLeft - paddingRight;
   const chartHeight = height - paddingTop - paddingBottom;
-  const maxVal = 50;
+  
+  const peakCount = Math.max(...points.map((p) => p.count), 0);
+  const maxVal = Math.max(10, Math.ceil((peakCount + 2) / 5) * 5);
 
   // Compute SVG coordinates for spline
   const coords = points.map((p, i) => {
-    const x = paddingLeft + (i / (points.length - 1)) * chartWidth;
+    const x = paddingLeft + (i / Math.max(points.length - 1, 1)) * chartWidth;
     const y = paddingTop + chartHeight - (p.count / maxVal) * chartHeight;
     return { x, y, ...p };
   });
@@ -50,7 +64,7 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data }) => {
 
   const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${paddingTop + chartHeight} L ${coords[0].x} ${paddingTop + chartHeight} Z`;
 
-  const yTicks = [0, 10, 20, 30, 40, 50];
+  const yTicks = [0, Math.round(maxVal * 0.25), Math.round(maxVal * 0.5), Math.round(maxVal * 0.75), maxVal];
 
   return (
     <div className="bg-[#101626] border border-[#1e2640] rounded-2xl p-5 flex flex-col justify-between shadow-sm relative overflow-hidden">
@@ -180,6 +194,14 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data }) => {
                 {coords[hoveredIndex].count} Applications
               </span>
               <div className="w-2 h-2 bg-[#182035] border-b border-r border-indigo-500/40 transform rotate-45 -mb-1 mt-0.5"></div>
+            </div>
+          </div>
+        )}
+        {/* Empty state message when total === 0 */}
+        {total === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="px-3 py-1.5 rounded-xl bg-[#0e1424]/90 border border-slate-800 text-xs text-slate-400">
+              No application activity recorded yet. Sync Gmail to populate trends.
             </div>
           </div>
         )}

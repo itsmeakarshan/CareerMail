@@ -2,7 +2,7 @@
 
 CareerMail combines a modern, high-performance email experience with an intelligent job application tracking platform. It solves the friction job seekers face with critical career communications scattered across hundreds of recruiter emails by automatically parsing, detecting, organizing, and visualizing job applications in one unified workspace.
 
-Inspired by the design aesthetics of Linear, Notion, and premium fintech dashboards, CareerMail features a pixel-perfect dark theme, interactive Kanban pipeline, area and donut charts, countdown reminders, and an integrated Q&A Career Assistant.
+Inspired by the design aesthetics of Linear, Notion, and premium fintech dashboards, CareerMail features a pixel-perfect dark theme, interactive Kanban pipeline, area and donut charts, countdown reminders, an integrated Q&A Career Assistant, and a **complete Google OAuth 2.0 Gmail integration**.
 
 ---
 
@@ -10,13 +10,14 @@ Inspired by the design aesthetics of Linear, Notion, and premium fintech dashboa
 
 CareerMail features a pixel-perfect dark workspace matching modern SaaS standards:
 
-* **5 Real-Time KPI Metric Cards**: Total Applications (47), Interviews (8), Offers (2), Rejections (5), Response Rate (68%).
+* **5 Real-Time KPI Metric Cards**: Total Applications, Interviews, Offers, Rejections, Response Rate.
 * **Applications Over Time Chart**: Smooth gradient spline chart with hover metrics.
 * **Application Status Donut Chart**: Breakdown across Applied, Interview, Assessment, Offer, Rejected, and Withdrawn stages.
 * **Upcoming Interviews & Follow-ups Queue**: Real-time countdown badges (`In 2 days`, `Due in 1 day`) with video link launchers.
 * **Kanban Application Pipeline**: Drag-and-drop board across 6 stages with instant database persistence.
 * **Floating Career Assistant**: An intelligent in-app assistant that queries your real career database.
 * **Full-Featured Email Client**: Inbox, Important, Starred, Sent, Drafts with real-time job detection pipeline banners.
+* **Google Gmail OAuth 2.0 & Live Sync**: Authorize with Google, scan recent emails, automatically detect job updates, and link them to your application timeline.
 
 ---
 
@@ -34,8 +35,9 @@ CareerMail features a pixel-perfect dark workspace matching modern SaaS standard
 * **Language & Framework**: Java 21, Spring Boot 3.3
 * **Security & Auth**: Spring Security with stateless JWT (`jjwt` 0.12) & BCrypt password hashing
 * **Persistence**: Spring Data JPA / Hibernate ORM
+* **Google Integration**: Google OAuth 2.0 token exchange, auto-refresh, and Gmail REST API Client
+* **Parsing Engine**: Rule-Based Email Intelligence Pipeline (10 classification categories + entity extraction)
 * **Validation**: Jakarta Bean Validation
-* **Parsing Engine**: Rule-Based Email Intelligence Pipeline (extensible for AI provider handoff)
 
 ### Database & DevOps
 * **Primary Database**: PostgreSQL 16
@@ -44,9 +46,49 @@ CareerMail features a pixel-perfect dark workspace matching modern SaaS standard
 
 ---
 
+## 🔑 Google Cloud Console & Gmail OAuth 2.0 Setup
+
+To enable live Google OAuth and Gmail scanning with your own Google Cloud project:
+
+### 1. Create / Configure Google Cloud Project
+1. Open the [Google Cloud Console](https://console.cloud.google.com/).
+2. Navigate to **APIs & Services > OAuth consent screen**:
+   * **User Type**: External (or Internal for Google Workspace).
+   * **App Name**: `CareerMail`
+   * **Scopes**: Add:
+     * `https://www.googleapis.com/auth/gmail.readonly` (Read-only access to messages)
+     * `https://www.googleapis.com/auth/userinfo.email`
+     * `https://www.googleapis.com/auth/userinfo.profile`
+   * **Test Users**: Add your testing Gmail address.
+
+### 2. Create OAuth 2.0 Client Credentials
+1. Navigate to **APIs & Services > Credentials > Create Credentials > OAuth client ID**:
+   * **Application type**: Web application
+   * **Name**: `CareerMail Web Client`
+   * **Authorized JavaScript origins**:
+     * `http://localhost:5173`
+     * `http://localhost`
+   * **Authorized redirect URIs**:
+     * `http://localhost:8080/api/auth/google/callback`
+2. Copy the **Client ID** and **Client Secret**.
+
+### 3. Configure Environment Variables
+Copy `.env.example` to `.env` and fill in your credentials:
+
+```bash
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:8080/api/auth/google/callback
+FRONTEND_URL=http://localhost:5173
+```
+
+> *Note: If Google credentials are not supplied, CareerMail operates in high-fidelity simulation mode so you can still test full end-to-end scanning, classification, and deduplication without hitting Google APIs.*
+
+---
+
 ## 🚀 Quick Start with Docker
 
-The fastest way to launch the entire stack (PostgreSQL, Spring Boot Backend, and React Frontend) is with Docker Compose:
+Launch the complete stack (PostgreSQL, Spring Boot Backend, and React Frontend) with Docker Compose:
 
 ```bash
 docker compose up --build
@@ -96,43 +138,63 @@ CareerMail automatically seeds realistic data on first launch:
 | **Email** | `arjun.sharma@email.com` |
 | **Password** | `password123` |
 
-> *Tip: On the login page, you can also click the **"One-Click Demo Login"** button to log in instantly!*
+> *Tip: On the login page, you can click **"Continue with Google"** or **"One-Click Demo Login"** to sign in instantly!*
 
 ---
 
-## 🤖 Automatic Email → Job Tracker Pipeline
+## 🤖 Automatic Email → Job Tracker Intelligence Pipeline
 
-CareerMail incorporates a deterministic rule-based analysis pipeline that extracts structured job metadata from email subjects, bodies, and sender domains:
+CareerMail's ingestion engine parses email subjects, headers, and RFC2822 base64 bodies through 10 classification categories:
 
 ```text
-Email (Received or Composed)
-         ↓
-  EmailAnalysisService
-         ↓
-  RuleBasedEmailAnalyzer
-    • Is this job-related?
-    • Extract Company (Known entities & regex patterns)
-    • Extract Job Title (Role dictionaries & regex patterns)
-    • Determine Stage (Applied, Assessment, Interview, Offer, Rejection)
-         ↓
-  Match Existing Application OR Create New Application
-         ↓
-  Append Event to Application Timeline
-         ↓
-  Update Dashboard & Kanban Pipeline
+Incoming Gmail Message / Ingested Email
+                 ↓
+      RuleBasedEmailAnalyzer
+  (10 Classification Categories)
+   • APPLICATION_SUBMITTED
+   • APPLICATION_RECEIVED
+   • RECRUITER_MESSAGE
+   • INTERVIEW_INVITATION
+   • INTERVIEW_SCHEDULED
+   • ASSESSMENT
+   • REJECTION
+   • OFFER
+   • STATUS_UPDATE
+   • OTHER_JOB_RELATED
+                 ↓
+      Entity & Field Extractor
+   • Company (Known entities & regex patterns)
+   • Job Title & Seniority Level
+   • Location & Work Type (Remote / Hybrid / On-site)
+   • Deadlines & Assessment Durations
+   • Interview Dates & Google Meet / Zoom Links
+   • Compensation & Salary Figures
+                 ↓
+      Smart Deduplication & Grouping
+   • Check existing applications by company & title
+   • Update application stage (e.g. APPLIED → INTERVIEW → OFFER)
+   • Append chronological Timeline Event
+   • Auto-create Interview or Follow-up task if needed
+                 ↓
+      Real-Time Dashboard & Board Refresh
 ```
-
-### Live Pipeline Testing
-In the **Inbox** or from the **Compose** button, click the **Simulate Job Email** presets (e.g. *Stripe Application*, *Google Interview*, or *Netflix Offer*) to see emails auto-classified and applications created in real-time.
 
 ---
 
 ## 📡 REST API Documentation
 
-### Authentication (`/api/auth`)
+### Authentication & Google OAuth (`/api/auth`)
 * `POST /api/auth/register` — Register a new account
 * `POST /api/auth/login` — Sign in and obtain a JWT bearer token
 * `GET /api/auth/me` — Retrieve currently authenticated user profile
+* `GET /api/auth/google/url` — Generate Google OAuth 2.0 authorization URL
+* `GET /api/auth/google/callback` — Exchange auth code, store refresh tokens, redirect to frontend
+* `GET /api/auth/google/config` — View OAuth client configuration status
+
+### Gmail Integration (`/api/gmail`)
+* `GET /api/gmail/status` — Get Gmail connection status, email address, sync timestamp
+* `POST /api/gmail/sync?maxResults=30` — Scan Gmail messages, extract applications, prevent duplicates
+* `POST /api/gmail/disconnect` — Disconnect Gmail account and revoke access
 
 ### Job Applications (`/api/applications`)
 * `GET /api/applications` — List all tracked applications
@@ -171,67 +233,21 @@ In the **Inbox** or from the **Compose** button, click the **Simulate Job Email*
 
 ---
 
-## 📁 Project Structure
+## 🧪 Testing
 
-```text
-careermail/
-├── backend/
-│   ├── src/main/java/com/careermail/
-│   │   ├── config/              # Security, CORS, DataInitializer
-│   │   ├── controller/          # REST Controllers
-│   │   ├── dto/                 # Request/Response DTOs
-│   │   ├── model/
-│   │   │   ├── entity/          # User, JobApplication, Email, Interview, etc.
-│   │   │   └── enums/           # ApplicationStatus, Priority, etc.
-│   │   ├── repository/          # Spring Data JPA Repositories
-│   │   ├── security/            # JWT Filter, Token Service, UserDetails
-│   │   └── service/             # Domain Services & Email Analyzer
-│   ├── src/main/resources/      # application.yml, application-local.yml
-│   ├── Dockerfile
-│   └── pom.xml
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── common/          # CompanyLogo, CareerAssistantWidget
-│   │   │   ├── dashboard/       # KpiCards, Charts, KanbanPipeline, Drawers
-│   │   │   ├── email/           # ComposeEmailModal
-│   │   │   └── layout/          # AppLayout, Sidebar, Navbar
-│   │   ├── context/             # AuthContext, ThemeContext
-│   │   ├── pages/               # JobTrackerPage, InboxPage, Interviews, etc.
-│   │   ├── services/            # Typed API client
-│   │   └── types/               # TypeScript models
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   ├── package.json
-│   └── vite.config.ts
-│
-├── docker-compose.yml
-├── .env.example
-├── .gitignore
-└── README.md
+### Backend Unit & Integration Tests
+Run the comprehensive Spring Boot test suite:
+```bash
+cd backend
+mvn clean test
 ```
 
----
-
-## 📩 Future Gmail Integration Architecture
-
-CareerMail's `EmailAnalyzer` interface is designed to seamlessly ingest messages from external providers:
-
-```text
-User clicks "Connect Gmail"
-       ↓
-Google OAuth 2.0 Flow (offline access & restricted gmail.readonly scope)
-       ↓
-Backend stores encrypted Refresh Token in PostgreSQL
-       ↓
-Scheduled Background Sync via Gmail API
-       ↓
-EmailAnalysisService processes new messages
-       ↓
-Live updates pushed to Job Tracker Pipeline
+### Frontend Typecheck & Production Build
+Validate TypeScript types and compile the Vite asset bundle:
+```bash
+cd frontend
+npm run build
 ```
-A placeholder connection module is available directly inside the **Settings** view.
 
 ---
 

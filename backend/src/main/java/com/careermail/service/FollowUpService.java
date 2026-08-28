@@ -48,16 +48,25 @@ public class FollowUpService {
 
     @Transactional
     public FollowUp createFollowUp(FollowUpRequest request) {
+        if (request.getCompany() == null || request.getCompany().trim().isEmpty()) {
+            throw new IllegalArgumentException("Company is required");
+        }
+        if (request.getDueDate() == null) {
+            throw new IllegalArgumentException("Due date is required");
+        }
+
         User user = authService.getCurrentUser();
 
         FollowUp followUp = new FollowUp();
         followUp.setUser(user);
-        followUp.setCompany(request.getCompany());
-        followUp.setRole(request.getRole());
+        followUp.setCompany(request.getCompany().trim());
+        followUp.setRole(request.getRole() != null ? request.getRole().trim() : null);
         followUp.setDueDate(request.getDueDate());
-        followUp.setNotes(request.getNotes());
-        followUp.setStatus(request.getStatus() != null ? FollowUpStatus.valueOf(request.getStatus().toUpperCase()) : FollowUpStatus.PENDING);
-        followUp.setCompanyLogo(request.getCompanyLogo() != null ? request.getCompanyLogo() : request.getCompany().toLowerCase().replaceAll("[^a-z0-9]", ""));
+        followUp.setNotes(request.getNotes() != null ? request.getNotes().trim() : null);
+        followUp.setStatus(request.getStatus() != null ? FollowUpStatus.fromString(request.getStatus()) : FollowUpStatus.PENDING);
+        followUp.setCompanyLogo(request.getCompanyLogo() != null && !request.getCompanyLogo().trim().isEmpty()
+                ? request.getCompanyLogo().trim()
+                : request.getCompany().toLowerCase().replaceAll("[^a-z0-9]", ""));
 
         if (request.getJobApplicationId() != null) {
             JobApplication app = jobApplicationRepository.findByIdAndUser(request.getJobApplicationId(), user).orElse(null);
@@ -83,12 +92,28 @@ public class FollowUpService {
     public FollowUp updateFollowUp(Long id, FollowUpRequest request) {
         FollowUp followUp = getFollowUpById(id);
 
-        followUp.setCompany(request.getCompany());
-        if (request.getRole() != null) followUp.setRole(request.getRole());
-        followUp.setDueDate(request.getDueDate());
-        if (request.getNotes() != null) followUp.setNotes(request.getNotes());
-        if (request.getStatus() != null) followUp.setStatus(FollowUpStatus.valueOf(request.getStatus().toUpperCase()));
-        if (request.getCompanyLogo() != null) followUp.setCompanyLogo(request.getCompanyLogo());
+        if (request.getCompany() != null && !request.getCompany().trim().isEmpty()) {
+            followUp.setCompany(request.getCompany().trim());
+        }
+        if (request.getRole() != null) {
+            followUp.setRole(request.getRole().trim());
+        }
+        if (request.getDueDate() != null) {
+            followUp.setDueDate(request.getDueDate());
+        }
+        if (request.getNotes() != null) {
+            followUp.setNotes(request.getNotes().trim());
+        }
+        if (request.getStatus() != null && !request.getStatus().trim().isEmpty()) {
+            followUp.setStatus(FollowUpStatus.fromString(request.getStatus()));
+        }
+        if (request.getCompanyLogo() != null && !request.getCompanyLogo().trim().isEmpty()) {
+            followUp.setCompanyLogo(request.getCompanyLogo().trim());
+        }
+        if (request.getJobApplicationId() != null) {
+            JobApplication app = jobApplicationRepository.findByIdAndUser(request.getJobApplicationId(), authService.getCurrentUser()).orElse(null);
+            followUp.setJobApplication(app);
+        }
 
         computeBadges(followUp);
         return followUpRepository.save(followUp);
@@ -97,6 +122,9 @@ public class FollowUpService {
     @Transactional
     public void deleteFollowUp(Long id) {
         FollowUp followUp = getFollowUpById(id);
+        if (followUp.getJobApplication() != null) {
+            followUp.getJobApplication().getFollowUps().remove(followUp);
+        }
         followUpRepository.delete(followUp);
     }
 

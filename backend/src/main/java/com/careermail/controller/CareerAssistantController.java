@@ -20,7 +20,7 @@ public class CareerAssistantController {
         this.assistantService = assistantService;
     }
 
-    @PostMapping("/ask")
+    @PostMapping({"/ask", "/query"})
     public ResponseEntity<AssistantQueryResponse> askAssistant(@Valid @RequestBody AssistantQueryRequest request) {
         return ResponseEntity.ok(assistantService.askAssistant(request));
     }

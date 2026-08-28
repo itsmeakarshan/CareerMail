@@ -1,20 +1,12 @@
 package com.careermail.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 public class InterviewRequest {
 
     private Long jobApplicationId;
-
-    @NotBlank(message = "Company is required")
     private String company;
-
-    @NotBlank(message = "Title is required")
     private String title;
-
-    @NotNull(message = "Interview date is required")
     private LocalDateTime interviewDate;
 
     private String type;

@@ -1,11 +1,12 @@
 package com.careermail.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotBlank;
-import java.util.List;
 
 public class AssistantQueryRequest {
 
     @NotBlank(message = "Message is required")
+    @JsonAlias({"question", "message"})
     private String query;
 
     private String currentScreen;

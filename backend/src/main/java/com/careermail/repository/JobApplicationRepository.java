@@ -35,6 +35,7 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
            "LOWER(j.company) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(j.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(j.recruiterName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(j.location) LIKE LOWER(CONCAT('%', :query, '%')))")
+           "LOWER(j.location) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "ORDER BY j.dateApplied DESC")
     List<JobApplication> searchApplications(@Param("user") User user, @Param("query") String query);
 }

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/followups")
+@RequestMapping({"/api/followups", "/api/follow-ups"})
 public class FollowUpController {
 
     private final FollowUpService followUpService;
@@ -36,7 +36,12 @@ public class FollowUpController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<FollowUp> updateFollowUp(@PathVariable Long id, @Valid @RequestBody FollowUpRequest request) {
+    public ResponseEntity<FollowUp> updateFollowUp(@PathVariable Long id, @RequestBody FollowUpRequest request) {
+        return ResponseEntity.ok(followUpService.updateFollowUp(id, request));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<FollowUp> patchFollowUp(@PathVariable Long id, @RequestBody FollowUpRequest request) {
         return ResponseEntity.ok(followUpService.updateFollowUp(id, request));
     }
 

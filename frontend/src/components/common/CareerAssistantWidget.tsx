@@ -18,7 +18,7 @@ export const CareerAssistantWidget: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const firstName = user?.name ? user.name.split(' ')[0] : 'Arjun';
+  const firstName = user?.name ? user.name.split(' ')[0] : 'there';
 
   const quickPrompts = [
     'Show my applications',

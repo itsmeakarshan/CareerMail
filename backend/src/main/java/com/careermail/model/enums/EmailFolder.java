@@ -5,5 +5,14 @@ public enum EmailFolder {
     SENT,
     DRAFTS,
     ARCHIVE,
-    TRASH
+    TRASH;
+
+    public static EmailFolder fromString(String text) {
+        if (text == null) return INBOX;
+        try {
+            return EmailFolder.valueOf(text.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return INBOX;
+        }
+    }
 }

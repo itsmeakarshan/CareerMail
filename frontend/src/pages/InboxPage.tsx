@@ -1,22 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
-  Inbox,
   Star,
   Bookmark,
-  Send,
-  FileText,
   Trash2,
   Archive,
   Mail,
-  MailOpen,
   Sparkles,
   ExternalLink,
   RefreshCw,
-  Search,
   CheckCircle,
 } from 'lucide-react';
-import { emailsApi } from '../services/api';
+import { emailsApi, gmailApi } from '../services/api';
 import { Email } from '../types';
 import { CompanyLogo } from '../components/common/CompanyLogo';
 import { ComposeEmailModal } from '../components/email/ComposeEmailModal';
@@ -29,19 +24,14 @@ export const InboxPage: React.FC = () => {
 
   const [emails, setEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
-  const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [isComposeOpen, setIsComposeOpen] = useState<boolean>(false);
 
   const fetchEmails = async () => {
     try {
       setLoading(true);
-      const [list, countRes] = await Promise.all([
-        searchQ ? emailsApi.search(searchQ) : emailsApi.getFolder(folder),
-        emailsApi.getCounts(),
-      ]);
+      const list = searchQ ? await emailsApi.search(searchQ) : await emailsApi.getFolder(folder);
       setEmails(list);
-      setCounts(countRes);
       if (list.length > 0 && !selectedEmail) {
         setSelectedEmail(list[0]);
       } else if (list.length === 0) {
@@ -116,12 +106,31 @@ export const InboxPage: React.FC = () => {
           </div>
           <div className="flex items-center gap-1.5">
             <button
+              onClick={async () => {
+                try {
+                  setLoading(true);
+                  await gmailApi.sync(300);
+                  await fetchEmails();
+                } catch (e) {
+                  console.error(e);
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
+              className="px-2.5 py-1.5 rounded-xl bg-purple-950/80 text-purple-300 hover:bg-purple-900 border border-purple-800/40 text-xs font-semibold flex items-center gap-1 transition-colors"
+              title="Sync incoming Gmail messages (last 3 months)"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Sync</span>
+            </button>
+            <button
               onClick={() => setIsComposeOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-purple-600/20 text-purple-300 hover:bg-purple-600/30 border border-purple-500/30 text-xs font-semibold flex items-center gap-1 transition-colors"
+              className="px-2.5 py-1.5 rounded-xl bg-purple-600/20 text-purple-300 hover:bg-purple-600/30 border border-purple-500/30 text-xs font-semibold flex items-center gap-1 transition-colors"
               title="Test Email Auto-Extraction"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Simulate / Compose</span>
+              <span>Simulate</span>
             </button>
             <button
               onClick={fetchEmails}
@@ -223,7 +232,9 @@ export const InboxPage: React.FC = () => {
           })}
 
           {emails.length === 0 && !loading && (
-            <div className="p-8 text-center text-xs text-slate-500">No emails in {folder}.</div>
+            <div className="p-8 text-center text-xs text-slate-500">
+              No emails found in {folder}. Connect your Google account and sync to scan your messages.
+            </div>
           )}
         </div>
       </div>
@@ -310,7 +321,7 @@ export const InboxPage: React.FC = () => {
 
                 <div className="flex items-center gap-2">
                   <span className="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-medium">
-                    To: {selectedEmail.recipientEmail || 'arjun.sharma@email.com'}
+                    To: {selectedEmail.recipientEmail || 'Me'}
                   </span>
                 </div>
               </div>
