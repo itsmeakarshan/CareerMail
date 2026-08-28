@@ -18,7 +18,6 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -85,11 +84,8 @@ public class GmailService {
             );
         }
 
-        LocalDate threeMonthsAgo = LocalDate.now().minusMonths(3);
-        String afterDateStr = threeMonthsAgo.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
-
-        log.info("Gmail sync started");
-        log.info("Searching emails from {}", afterDateStr);
+        log.info("========== Gmail Sync Started ==========");
+        log.info("Target user: {} (Google: {})", user.getEmail(), account.getProviderEmail());
 
         int scannedCount = 0;
         int jobEmailsFound = 0;
@@ -98,94 +94,133 @@ public class GmailService {
         int interviewsFound = 0;
         int followUpsFound = 0;
         int duplicatesSkipped = 0;
-        int targetLimit = Math.max(maxResults, 300);
+        int targetLimit = Math.max(maxResults, 250);
 
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(accessToken);
             HttpEntity<Void> request = new HttpEntity<>(headers);
 
-            // Scan last 3 months of emails matching career patterns
-            String query = "after:" + afterDateStr + " (application OR interview OR assessment OR offer OR rejection OR careers OR recruiter OR hackerrank OR codesignal OR workday OR greenhouse OR lever OR ashby OR icims OR taleo OR smartrecruiters OR jobvite OR \"thank you for applying\" OR \"application received\" OR \"coding test\" OR \"phone screen\" OR \"onsite\" OR \"status update\" OR \"invitation\" OR \"talent\" OR \"hiring\" OR \"employment\" OR \"position\" OR \"candidate\")";
-            String pageToken = null;
             ParameterizedTypeReference<Map<String, Object>> mapType = new ParameterizedTypeReference<>() {};
 
-            do {
-                int pageSize = Math.min(targetLimit - scannedCount, 100);
-                if (pageSize <= 0) break;
+            // Tier 1: Search last 3-4 months (newer_than:120d)
+            // Evaluated dynamically on Google servers, unaffected by local system clock
+            List<String> queryTiers = Arrays.asList(
+                    "newer_than:120d", // All messages in last ~4 months
+                    ""                 // Fallback: Latest messages regardless of date if mailbox has older emails
+            );
 
-                String url = GMAIL_MESSAGES_ENDPOINT + "?maxResults=" + pageSize + "&q=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
-                if (pageToken != null && !pageToken.isBlank()) {
-                    url += "&pageToken=" + URLEncoder.encode(pageToken, StandardCharsets.UTF_8);
+            List<Map<String, Object>> allMessageSummaries = new ArrayList<>();
+            Set<String> seenMessageIds = new HashSet<>();
+
+            for (String query : queryTiers) {
+                if (!allMessageSummaries.isEmpty()) {
+                    break; // Already found messages in earlier tier
                 }
 
-                ResponseEntity<Map<String, Object>> listResp = restTemplate.exchange(url, HttpMethod.GET, request, mapType);
-                if (!listResp.getStatusCode().is2xxSuccessful() || listResp.getBody() == null) {
-                    break;
-                }
+                String pageToken = null;
+                int pageNum = 1;
+                log.info("Attempting Gmail API query tier: '{}'", query.isEmpty() ? "(all recent messages)" : query);
 
-                Map<String, Object> body = listResp.getBody();
-                @SuppressWarnings("unchecked")
-                List<Map<String, Object>> messages = (List<Map<String, Object>>) body.get("messages");
-                pageToken = (String) body.get("nextPageToken");
+                do {
+                    int pageSize = Math.min(targetLimit - allMessageSummaries.size(), 100);
+                    if (pageSize <= 0) break;
 
-                if (messages == null || messages.isEmpty()) {
-                    break;
-                }
-
-                for (Map<String, Object> msgSummary : messages) {
-                    String msgId = (String) msgSummary.get("id");
-                    String threadId = (String) msgSummary.get("threadId");
-
-                    // Deduplicate: avoid re-processing existing Gmail message ID in database
-                    if (emailRepository.existsByUserAndGmailMessageId(user, msgId)) {
-                        duplicatesSkipped++;
-                        continue;
+                    String url = GMAIL_MESSAGES_ENDPOINT + "?maxResults=" + pageSize;
+                    if (!query.isBlank()) {
+                        url += "&q=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
+                    }
+                    if (pageToken != null && !pageToken.isBlank()) {
+                        url += "&pageToken=" + URLEncoder.encode(pageToken, StandardCharsets.UTF_8);
                     }
 
-                    // Fetch complete message payload
-                    String detailUrl = GMAIL_MESSAGES_ENDPOINT + "/" + msgId + "?format=full";
-                    try {
-                        ResponseEntity<Map<String, Object>> detailResp = restTemplate.exchange(detailUrl, HttpMethod.GET, request, mapType);
-                        if (detailResp.getStatusCode().is2xxSuccessful() && detailResp.getBody() != null) {
-                            Map<String, Object> msgData = detailResp.getBody();
-                            Email email = parseGmailMessage(msgData, user, msgId, threadId);
-
-                            EmailAnalysisService.ProcessOutcome outcome = emailAnalysisService.processEmail(email, user);
-                            emailRepository.save(email);
-
-                            scannedCount++;
-                            if (outcome.isJobRelated) {
-                                jobEmailsFound++;
-                                if (outcome.applicationCreated) appsCreated++;
-                                if (outcome.applicationUpdated) appsUpdated++;
-                                if (outcome.interviewCreated) interviewsFound++;
-                                if (outcome.followUpCreated) followUpsFound++;
-                            }
-                        }
-                    } catch (Exception e) {
-                        log.error("Failed to parse Gmail message ID {}: {}", msgId, e.getMessage());
-                    }
-
-                    if (scannedCount >= targetLimit) {
+                    log.debug("Calling Gmail endpoint: {}", url);
+                    ResponseEntity<Map<String, Object>> listResp = restTemplate.exchange(url, HttpMethod.GET, request, mapType);
+                    if (!listResp.getStatusCode().is2xxSuccessful() || listResp.getBody() == null) {
+                        log.warn("Gmail API list returned status: {}", listResp.getStatusCode());
                         break;
                     }
+
+                    Map<String, Object> body = listResp.getBody();
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> messages = (List<Map<String, Object>>) body.get("messages");
+                    pageToken = (String) body.get("nextPageToken");
+
+                    int foundOnPage = messages != null ? messages.size() : 0;
+                    log.info("Page {} returned {} message headers. Next page available: {}", pageNum, foundOnPage, pageToken != null);
+
+                    if (messages != null) {
+                        for (Map<String, Object> m : messages) {
+                            String msgId = (String) m.get("id");
+                            if (msgId != null && seenMessageIds.add(msgId)) {
+                                allMessageSummaries.add(m);
+                            }
+                        }
+                    }
+
+                    pageNum++;
+                } while (pageToken != null && allMessageSummaries.size() < targetLimit);
+
+                log.info("Query '{}' retrieved {} total message summaries.", query.isEmpty() ? "(all recent)" : query, allMessageSummaries.size());
+            }
+
+            log.info("Total message headers to process: {}", allMessageSummaries.size());
+
+            // Process each retrieved Gmail message
+            int totalToProcess = allMessageSummaries.size();
+            for (int i = 0; i < totalToProcess; i++) {
+                Map<String, Object> msgSummary = allMessageSummaries.get(i);
+                String msgId = (String) msgSummary.get("id");
+                String threadId = (String) msgSummary.get("threadId");
+
+                // Deduplicate: check if this message ID is already saved in database
+                if (emailRepository.existsByUserAndGmailMessageId(user, msgId)) {
+                    duplicatesSkipped++;
+                    continue;
                 }
 
-            } while (pageToken != null && scannedCount < targetLimit);
+                // Fetch complete message details
+                String detailUrl = GMAIL_MESSAGES_ENDPOINT + "/" + msgId + "?format=full";
+                try {
+                    ResponseEntity<Map<String, Object>> detailResp = restTemplate.exchange(detailUrl, HttpMethod.GET, request, mapType);
+                    if (detailResp.getStatusCode().is2xxSuccessful() && detailResp.getBody() != null) {
+                        Map<String, Object> msgData = detailResp.getBody();
+                        Email email = parseGmailMessage(msgData, user, msgId, threadId);
+
+                        EmailAnalysisService.ProcessOutcome outcome = emailAnalysisService.processEmail(email, user);
+                        emailRepository.save(email);
+
+                        scannedCount++;
+                        if (outcome.isJobRelated) {
+                            jobEmailsFound++;
+                            if (outcome.applicationCreated) appsCreated++;
+                            if (outcome.applicationUpdated) appsUpdated++;
+                            if (outcome.interviewCreated) interviewsFound++;
+                            if (outcome.followUpCreated) followUpsFound++;
+                            log.info("Processed [{}/{}]: '{}' from {} -> Job-Related [Created: {}, Updated: {}]",
+                                    i + 1, totalToProcess, email.getSubject(), email.getSender(), outcome.applicationCreated, outcome.applicationUpdated);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to parse Gmail message ID {}: {}", msgId, e.getMessage());
+                }
+            }
 
             account.setLastSyncedAt(LocalDateTime.now());
             account.setTotalEmailsScanned(account.getTotalEmailsScanned() + scannedCount);
             connectedAccountRepository.save(account);
 
-            log.info("Total Gmail messages scanned: {}", scannedCount);
-            log.info("Relevant job emails found: {}", jobEmailsFound);
+            log.info("========== Gmail Sync Summary ==========");
+            log.info("Total messages scanned: {}", scannedCount);
+            log.info("Job-related emails identified: {}", jobEmailsFound);
             log.info("Applications created: {}", appsCreated);
             log.info("Applications updated: {}", appsUpdated);
+            log.info("Interviews recorded: {}", interviewsFound);
+            log.info("Follow-ups scheduled: {}", followUpsFound);
             log.info("Duplicates skipped: {}", duplicatesSkipped);
-            log.info("Gmail sync completed");
+            log.info("=========================================");
 
-            String summaryMessage = String.format("Successfully scanned %d messages from your Gmail (last 3 months). Found %d job-related updates (%d created, %d updated).",
+            String summaryMessage = String.format("Scanned %d emails from your Gmail. Found %d job-related updates (%d created, %d updated).",
                     scannedCount, jobEmailsFound, appsCreated, appsUpdated);
 
             return new GmailSyncResponse(
@@ -202,7 +237,7 @@ public class GmailService {
             );
 
         } catch (Exception e) {
-            log.error("Error executing real Gmail sync for user {}: {}", user.getEmail(), e.getMessage(), e);
+            log.error("Error executing Gmail sync for user {}: {}", user.getEmail(), e.getMessage(), e);
             return new GmailSyncResponse(
                     false,
                     scannedCount,
@@ -265,7 +300,7 @@ public class GmailService {
         email.setRecipientEmail(to);
         email.setSubject(subject);
 
-        // Body extraction
+        // Body extraction supporting deeply nested MIME trees
         String body = extractBodyFromPayload(payload);
         if (body == null || body.isBlank()) {
             body = (String) msgData.get("snippet");
@@ -273,7 +308,7 @@ public class GmailService {
         if (body == null) body = "";
 
         email.setBody(body);
-        email.setPreview(body.length() > 100 ? body.substring(0, 100) + "..." : body);
+        email.setPreview(body.length() > 120 ? body.substring(0, 120) + "..." : body);
 
         // Timestamp parsing
         LocalDateTime timestamp = parseTimestamp(dateStr, msgData.get("internalDate"));
@@ -285,45 +320,49 @@ public class GmailService {
     private String extractBodyFromPayload(Map<String, Object> payload) {
         if (payload == null) return "";
 
-        // 1. Direct body data
-        @SuppressWarnings("unchecked")
-        Map<String, Object> bodyObj = (Map<String, Object>) payload.get("body");
-        if (bodyObj != null && bodyObj.get("data") != null) {
-            return decodeBase64Url((String) bodyObj.get("data"));
-        }
+        StringBuilder plainSb = new StringBuilder();
+        StringBuilder htmlSb = new StringBuilder();
 
-        // 2. Multipart parts
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> parts = (List<Map<String, Object>>) payload.get("parts");
-        if (parts != null) {
-            // First check for text/plain
-            for (Map<String, Object> part : parts) {
-                String mimeType = (String) part.get("mimeType");
-                if ("text/plain".equalsIgnoreCase(mimeType)) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> pBody = (Map<String, Object>) part.get("body");
-                    if (pBody != null && pBody.get("data") != null) {
-                        return decodeBase64Url((String) pBody.get("data"));
-                    }
-                }
-            }
-            // Fallback to text/html
-            for (Map<String, Object> part : parts) {
-                String mimeType = (String) part.get("mimeType");
-                if ("text/html".equalsIgnoreCase(mimeType)) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> pBody = (Map<String, Object>) part.get("body");
-                    if (pBody != null && pBody.get("data") != null) {
-                        String html = decodeBase64Url((String) pBody.get("data"));
-                        return html.replaceAll("<[^>]+>", " ").replaceAll("\\s+", " ").trim();
-                    }
-                }
-            }
+        extractTextRecursively(payload, plainSb, htmlSb);
+
+        if (plainSb.length() > 0) {
+            return plainSb.toString().trim();
+        }
+        if (htmlSb.length() > 0) {
+            return htmlSb.toString().replaceAll("<[^>]+>", " ").replaceAll("\\s+", " ").trim();
         }
         return "";
     }
 
+    private void extractTextRecursively(Map<String, Object> part, StringBuilder plainSb, StringBuilder htmlSb) {
+        if (part == null) return;
+
+        String mimeType = (String) part.get("mimeType");
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) part.get("body");
+        if (body != null && body.get("data") != null) {
+            String decoded = decodeBase64Url((String) body.get("data"));
+            if ("text/plain".equalsIgnoreCase(mimeType)) {
+                if (plainSb.length() > 0) plainSb.append("\n\n");
+                plainSb.append(decoded);
+            } else if ("text/html".equalsIgnoreCase(mimeType)) {
+                if (htmlSb.length() > 0) htmlSb.append("\n\n");
+                htmlSb.append(decoded);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> subParts = (List<Map<String, Object>>) part.get("parts");
+        if (subParts != null) {
+            for (Map<String, Object> subPart : subParts) {
+                extractTextRecursively(subPart, plainSb, htmlSb);
+            }
+        }
+    }
+
     private String decodeBase64Url(String base64Url) {
+        if (base64Url == null || base64Url.isBlank()) return "";
         try {
             byte[] decoded = Base64.getUrlDecoder().decode(base64Url);
             return new String(decoded, StandardCharsets.UTF_8);
