@@ -9,7 +9,6 @@ interface WidgetProps {
 }
 
 export const UpcomingInterviewsWidget: React.FC<WidgetProps> = ({ interviews, onSelectInterview }) => {
-  // Show up to 3 upcoming interviews matching screenshot
   const displayItems = interviews.slice(0, 3);
 
   return (
@@ -24,7 +23,7 @@ export const UpcomingInterviewsWidget: React.FC<WidgetProps> = ({ interviews, on
         </Link>
       </div>
 
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-2">
         {displayItems.map((item) => (
           <div
             key={item.id}
@@ -43,15 +42,15 @@ export const UpcomingInterviewsWidget: React.FC<WidgetProps> = ({ interviews, on
                 </span>
               </div>
             </div>
-            <div className="px-2.5 py-1 rounded-full bg-purple-950/60 border border-purple-800/40 text-purple-300 text-[11px] font-semibold whitespace-nowrap">
-              {item.daysAwayBadge || 'Soon'}
+            <div className="px-2.5 py-0.5 rounded-full bg-purple-950/60 border border-purple-800/40 text-purple-300 text-[11px] font-semibold whitespace-nowrap">
+              {item.daysAwayBadge || 'In 2 days'}
             </div>
           </div>
         ))}
 
         {displayItems.length === 0 && (
-          <div className="py-6 text-center text-xs text-slate-500">
-            No upcoming interviews found.
+          <div className="py-5 text-center text-xs text-slate-500">
+            No upcoming interviews scheduled.
           </div>
         )}
       </div>

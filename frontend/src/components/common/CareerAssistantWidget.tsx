@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Minus, Maximize2, Send, Bot, User as UserIcon } from 'lucide-react';
+import { Sparkles, Minus, Maximize2, Send, Bot, Eye, Clock, Calendar, FileText, User as UserIcon } from 'lucide-react';
 import { assistantApi } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -18,13 +18,13 @@ export const CareerAssistantWidget: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const firstName = user?.name ? user.name.split(' ')[0] : 'there';
+  const firstName = user?.name ? user.name.split(' ')[0] : 'Arjun';
 
   const quickPrompts = [
-    'Show my applications',
-    'Which applications need follow-up?',
-    'When is my next interview?',
-    'Show rejected applications',
+    { text: 'Show my applications', icon: Eye },
+    { text: 'Which applications need follow-up?', icon: Clock },
+    { text: 'When is my next interview?', icon: Calendar },
+    { text: 'Show rejected applications', icon: FileText },
   ];
 
   useEffect(() => {
@@ -72,9 +72,9 @@ export const CareerAssistantWidget: React.FC = () => {
           setIsOpen(true);
           setIsMinimized(false);
         }}
-        className="fixed bottom-6 right-6 z-40 p-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl shadow-glow-purple flex items-center gap-2 transition-all hover:scale-105"
+        className="fixed bottom-6 right-6 z-40 px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl shadow-glow-purple flex items-center gap-2 transition-all hover:scale-105"
       >
-        <Sparkles className="w-5 h-5" />
+        <Sparkles className="w-4 h-4" />
         <span className="text-sm font-semibold tracking-tight">Career Assistant</span>
       </button>
     );
@@ -82,12 +82,12 @@ export const CareerAssistantWidget: React.FC = () => {
 
   return (
     <div
-      className={`fixed bottom-5 right-5 z-40 w-96 bg-[#12182b] border border-indigo-500/30 rounded-2xl shadow-2xl overflow-hidden transition-all duration-200 flex flex-col ${
-        isMinimized ? 'h-14' : 'h-[460px]'
+      className={`fixed bottom-5 right-5 z-40 w-96 bg-[#101626] border border-[#1e2640] rounded-2xl shadow-2xl overflow-hidden transition-all duration-200 flex flex-col ${
+        isMinimized ? 'h-14' : 'h-[470px]'
       }`}
     >
       {/* Header */}
-      <div className="px-4 py-3 bg-[#151c32] border-b border-indigo-900/40 flex items-center justify-between select-none">
+      <div className="px-4 py-3 bg-[#131b2e] border-b border-[#1e2640] flex items-center justify-between select-none">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-purple-400" />
           <span className="text-sm font-semibold text-white tracking-tight">Career Assistant</span>
@@ -118,22 +118,23 @@ export const CareerAssistantWidget: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex flex-col">
                   <h4 className="text-base font-bold text-white">Hi {firstName}! 👋</h4>
-                  <p className="text-xs text-slate-400">How can I help you today?</p>
+                  <p className="text-xs text-slate-400 mt-0.5">How can I help you today?</p>
                 </div>
 
                 <div className="flex flex-col gap-2 pt-2">
-                  {quickPrompts.map((prompt, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSend(prompt)}
-                      className="w-full text-left px-3.5 py-2.5 rounded-xl bg-[#17203a] hover:bg-[#1f2c52] border border-indigo-900/50 text-xs font-medium text-slate-200 hover:text-white transition-all flex items-center gap-2 group"
-                    >
-                      <span className="text-purple-400 group-hover:scale-110 transition-transform">
-                        {idx === 0 ? '⏱️' : idx === 1 ? '📋' : idx === 2 ? '👥' : '📝'}
-                      </span>
-                      <span>{prompt}</span>
-                    </button>
-                  ))}
+                  {quickPrompts.map((prompt, idx) => {
+                    const Icon = prompt.icon;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handleSend(prompt.text)}
+                        className="w-full text-left px-3.5 py-2.5 rounded-xl bg-[#141b2d] hover:bg-[#18223c] border border-slate-800/80 hover:border-purple-500/40 text-xs font-medium text-slate-300 hover:text-white transition-all flex items-center gap-2.5 group"
+                      >
+                        <Icon className="w-3.5 h-3.5 text-purple-400 group-hover:scale-110 transition-transform" />
+                        <span>{prompt.text}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -151,7 +152,7 @@ export const CareerAssistantWidget: React.FC = () => {
                     className={`p-3 rounded-xl text-xs max-w-[82%] leading-relaxed ${
                       m.sender === 'user'
                         ? 'bg-purple-600 text-white rounded-br-none'
-                        : 'bg-[#18223d] text-slate-200 border border-indigo-900/50 rounded-bl-none whitespace-pre-line'
+                        : 'bg-[#141b2d] text-slate-200 border border-slate-800 rounded-bl-none whitespace-pre-line'
                     }`}
                   >
                     {m.text}
@@ -174,13 +175,13 @@ export const CareerAssistantWidget: React.FC = () => {
           </div>
 
           {/* Input Footer */}
-          <div className="p-3 bg-[#151c32] border-t border-indigo-900/40">
+          <div className="p-3 bg-[#131b2e] border-t border-[#1e2640]">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSend();
               }}
-              className="flex items-center gap-2 bg-[#0e1322] border border-indigo-900/60 rounded-xl px-3 py-1.5 focus-within:border-purple-500 transition-colors"
+              className="flex items-center gap-2 bg-[#0c101d] border border-slate-800 rounded-xl px-3 py-1.5 focus-within:border-purple-500 transition-colors"
             >
               <input
                 type="text"

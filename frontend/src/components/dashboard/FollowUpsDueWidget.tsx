@@ -23,7 +23,7 @@ export const FollowUpsDueWidget: React.FC<WidgetProps> = ({ followUps, onSelectF
         </Link>
       </div>
 
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-2">
         {displayItems.map((item) => {
           const isUrgent = item.daysDueBadge?.includes('1 day') || item.daysDueBadge?.includes('Overdue') || item.daysDueBadge?.includes('today');
           const badgeColor = isUrgent
@@ -48,14 +48,14 @@ export const FollowUpsDueWidget: React.FC<WidgetProps> = ({ followUps, onSelectF
                 </div>
               </div>
               <div className={`text-xs ${badgeColor} whitespace-nowrap`}>
-                {item.daysDueBadge || 'Due soon'}
+                {item.daysDueBadge || 'Due in 2 days'}
               </div>
             </div>
           );
         })}
 
         {displayItems.length === 0 && (
-          <div className="py-6 text-center text-xs text-slate-500">
+          <div className="py-5 text-center text-xs text-slate-500">
             No follow-ups due.
           </div>
         )}

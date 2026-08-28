@@ -30,13 +30,13 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
   const [draggedAppId, setDraggedAppId] = useState<number | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
 
-  // 6 Pipeline columns matching status flow
+  // 6 Pipeline columns matching status flow in dashboard.png
   const columns: ColumnConfig[] = [
     {
       id: 'APPLIED',
       title: 'Applied',
       count: applications.filter((a) => a.status === 'APPLIED').length,
-      badgeBg: 'bg-blue-950/60',
+      badgeBg: 'bg-blue-950/70',
       badgeText: 'text-blue-400',
       borderColor: 'border-blue-500/30',
       accentColor: '#3b82f6',
@@ -45,7 +45,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
       id: 'ASSESSMENT',
       title: 'Assessment',
       count: applications.filter((a) => a.status === 'ASSESSMENT').length,
-      badgeBg: 'bg-amber-950/60',
+      badgeBg: 'bg-amber-950/70',
       badgeText: 'text-amber-400',
       borderColor: 'border-amber-500/30',
       accentColor: '#f59e0b',
@@ -54,7 +54,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
       id: 'RECRUITER_SCREEN',
       title: 'Recruiter Screen',
       count: applications.filter((a) => a.status === 'RECRUITER_SCREEN').length,
-      badgeBg: 'bg-purple-950/60',
+      badgeBg: 'bg-purple-950/70',
       badgeText: 'text-purple-400',
       borderColor: 'border-purple-500/30',
       accentColor: '#a855f7',
@@ -63,7 +63,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
       id: 'INTERVIEW',
       title: 'Interview',
       count: applications.filter((a) => a.status === 'INTERVIEW').length,
-      badgeBg: 'bg-indigo-950/60',
+      badgeBg: 'bg-indigo-950/70',
       badgeText: 'text-indigo-400',
       borderColor: 'border-indigo-500/30',
       accentColor: '#6366f1',
@@ -72,7 +72,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
       id: 'FINAL_INTERVIEW',
       title: 'Final Interview',
       count: applications.filter((a) => a.status === 'FINAL_INTERVIEW').length,
-      badgeBg: 'bg-pink-950/60',
+      badgeBg: 'bg-pink-950/70',
       badgeText: 'text-pink-400',
       borderColor: 'border-pink-500/30',
       accentColor: '#ec4899',
@@ -81,7 +81,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
       id: 'OFFER',
       title: 'Offer',
       count: applications.filter((a) => a.status === 'OFFER').length,
-      badgeBg: 'bg-emerald-950/60',
+      badgeBg: 'bg-emerald-950/70',
       badgeText: 'text-emerald-400',
       borderColor: 'border-emerald-500/30',
       accentColor: '#10b981',
@@ -130,7 +130,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
     <div className="flex flex-col gap-3 mt-4">
       <h3 className="text-base font-semibold text-white tracking-tight">Application Pipeline</h3>
 
-      {/* 6 Kanban Columns Grid */}
+      {/* 6 Kanban Columns Grid matching dashboard.png */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5 items-start">
         {columns.map((col) => {
           const colApps = applications.filter((a) => a.status === col.id);
@@ -144,7 +144,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
               onDrop={(e) => handleDrop(e, col.id)}
               className={`bg-[#101626] border ${
                 isOver ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-[#1e2640]'
-              } rounded-2xl p-3 flex flex-col gap-3 min-h-[360px] transition-all`}
+              } rounded-2xl p-3 flex flex-col gap-3 min-h-[380px] transition-all`}
             >
               {/* Column Header */}
               <div className="flex items-center justify-between px-1">
@@ -161,7 +161,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
                 {colApps.map((app) => {
                   const isDragging = draggedAppId === app.id;
                   const isOffer = app.status === 'OFFER';
-                  const isAssessmentProgress = app.activitySubtitle?.includes('progress');
+                  const isAssessmentProgress = app.activitySubtitle?.includes('progress') || app.activitySubtitle?.includes('invited');
 
                   return (
                     <div
@@ -179,19 +179,26 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
                           <span className="text-sm font-semibold text-white truncate group-hover:text-purple-300 transition-colors">
                             {app.company}
                           </span>
-                          <span className="text-xs text-slate-400 font-medium truncate">
+                          <span className="text-xs text-slate-400 font-medium truncate mt-0.5">
                             {app.title}
                           </span>
                           <span
-                            className={`text-[11px] mt-1 font-medium ${
+                            className={`text-[11px] mt-1 font-medium truncate ${
                               isOffer
-                                ? 'text-emerald-400 font-semibold'
+                                ? 'text-emerald-400 font-semibold flex items-center gap-1'
                                 : isAssessmentProgress
                                 ? 'text-amber-400 font-semibold'
                                 : 'text-slate-400'
                             }`}
                           >
-                            {app.activitySubtitle || 'Applied recently'}
+                            {isOffer ? (
+                              <>
+                                <span>Offer Received</span>
+                                <span>▶</span>
+                              </>
+                            ) : (
+                              app.activitySubtitle || 'Applied recently'
+                            )}
                           </span>
                         </div>
                       </div>
@@ -200,7 +207,7 @@ export const KanbanPipeline: React.FC<PipelineProps> = ({
                 })}
 
                 {colApps.length === 0 && (
-                  <div className="flex-1 flex items-center justify-center border-2 border-dashed border-slate-800/60 rounded-xl p-4 text-[11px] text-slate-500 text-center">
+                  <div className="flex-1 flex items-center justify-center border-2 border-dashed border-slate-800/60 rounded-xl p-4 text-[11px] text-slate-500 text-center select-none">
                     Drag card here
                   </div>
                 )}

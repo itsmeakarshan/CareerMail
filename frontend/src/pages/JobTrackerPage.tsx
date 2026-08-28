@@ -127,11 +127,11 @@ export const JobTrackerPage: React.FC = () => {
             <span>👋</span>
           </h1>
           <p className="text-xs md:text-sm text-slate-400 mt-0.5 font-medium">
-            Intelligently track, manage and ace your dream career
+            Track, manage and ace your dream career
           </p>
         </div>
 
-        <div className="flex items-center gap-3 relative">
+        <div className="flex items-center gap-2.5 relative">
           {/* Sync Gmail Button */}
           <button
             onClick={handleSyncGmail}
@@ -257,53 +257,20 @@ export const JobTrackerPage: React.FC = () => {
       {/* KPI Counters (5 columns matching dashboard.png) */}
       <KpiCards data={analytics} />
 
-      {/* Empty State Banner when no applications exist yet */}
-      {applications.length === 0 && (
-        <div className="p-6 rounded-2xl bg-gradient-to-r from-violet-950/40 via-purple-950/30 to-[#101626] border border-purple-900/40 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md animate-fadeIn">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-purple-600/20 text-purple-400 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-white">No Gmail job application data yet</h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Connect your Google account in Settings and press <strong className="text-purple-300">Sync Gmail</strong> to scan the last 3 months of career emails.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2.5 flex-shrink-0">
-            <button
-              onClick={handleSyncGmail}
-              disabled={syncing}
-              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-xl text-xs font-semibold shadow-glow-purple flex items-center gap-1.5 transition-all"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
-              <span>{syncing ? 'Syncing...' : 'Sync Gmail'}</span>
-            </button>
-            <button
-              onClick={() => {
-                setEditingApp(null);
-                setInitialModalStatus('APPLIED');
-                setIsAddModalOpen(true);
-              }}
-              className="px-3.5 py-2 bg-[#141b2d] hover:bg-[#1a233a] border border-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-colors"
-            >
-              Add Manually
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Middle Row: Charts on Left, Upcoming & Follow-ups on Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-        {/* Left Side: 2 Charts */}
-        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Middle Row: 3-column layout matching dashboard.png */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
+        {/* Left Column: Applications Over Time */}
+        <div className="lg:col-span-5 h-full">
           <ApplicationsOverTimeChart data={analytics} />
+        </div>
+
+        {/* Center Column: Application Status Donut */}
+        <div className="lg:col-span-3 xl:col-span-3 h-full">
           <ApplicationStatusDonut data={analytics} />
         </div>
 
-        {/* Right Side: Upcoming Interviews & Follow-ups Due */}
-        <div className="lg:col-span-4 flex flex-col gap-4">
+        {/* Right Column: Upcoming Interviews & Follow-ups Due */}
+        <div className="lg:col-span-4 xl:col-span-4 flex flex-col gap-3.5">
           <UpcomingInterviewsWidget
             interviews={interviews}
             onSelectInterview={(item) => {
