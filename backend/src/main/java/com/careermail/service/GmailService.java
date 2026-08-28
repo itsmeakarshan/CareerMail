@@ -115,13 +115,18 @@ public class GmailService {
                 int pageSize = Math.min(targetLimit - allMessageSummaries.size(), 100);
                 if (pageSize <= 0) break;
 
-                String url = GMAIL_MESSAGES_ENDPOINT + "?maxResults=" + pageSize + "&q=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
+                org.springframework.web.util.UriComponentsBuilder uriBuilder =
+                        org.springframework.web.util.UriComponentsBuilder.fromHttpUrl(GMAIL_MESSAGES_ENDPOINT)
+                                .queryParam("maxResults", pageSize)
+                                .queryParam("q", query);
+
                 if (pageToken != null && !pageToken.isBlank()) {
-                    url += "&pageToken=" + URLEncoder.encode(pageToken, StandardCharsets.UTF_8);
+                    uriBuilder.queryParam("pageToken", pageToken);
                 }
 
-                log.debug("Calling Gmail endpoint: {}", url);
-                ResponseEntity<Map<String, Object>> listResp = restTemplate.exchange(url, HttpMethod.GET, request, mapType);
+                java.net.URI uri = uriBuilder.build().toUri();
+                log.debug("Calling Gmail endpoint: {}", uri);
+                ResponseEntity<Map<String, Object>> listResp = restTemplate.exchange(uri, HttpMethod.GET, request, mapType);
                 if (!listResp.getStatusCode().is2xxSuccessful() || listResp.getBody() == null) {
                     log.warn("Gmail API list returned status: {}", listResp.getStatusCode());
                     break;
@@ -162,10 +167,12 @@ public class GmailService {
                     continue;
                 }
 
-                // Fetch complete message details
-                String detailUrl = GMAIL_MESSAGES_ENDPOINT + "/" + msgId + "?format=full";
+                // Fetch complete message details using URI to avoid double encoding
+                java.net.URI detailUri = org.springframework.web.util.UriComponentsBuilder.fromHttpUrl(GMAIL_MESSAGES_ENDPOINT + "/" + msgId)
+                        .queryParam("format", "full")
+                        .build().toUri();
                 try {
-                    ResponseEntity<Map<String, Object>> detailResp = restTemplate.exchange(detailUrl, HttpMethod.GET, request, mapType);
+                    ResponseEntity<Map<String, Object>> detailResp = restTemplate.exchange(detailUri, HttpMethod.GET, request, mapType);
                     if (detailResp.getStatusCode().is2xxSuccessful() && detailResp.getBody() != null) {
                         Map<String, Object> msgData = detailResp.getBody();
                         Email email = parseGmailMessage(msgData, user, msgId, threadId);
