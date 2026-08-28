@@ -243,10 +243,12 @@ public class GmailService {
             log.info("=========================================");
 
             String summaryMessage;
-            if (scannedCount == 0) {
+            if (totalToProcess == 0) {
                 summaryMessage = "No emails found in your Gmail within the last 120 days.";
+            } else if (scannedCount == 0 && duplicatesSkipped > 0) {
+                summaryMessage = String.format("Inbox up to date: All %d retrieved emails from the last 120 days are already synchronized.", duplicatesSkipped);
             } else {
-                summaryMessage = String.format("Scanned %d emails from your Gmail (last 120 days). Found %d job-related updates (%d created, %d updated).",
+                summaryMessage = String.format("Scanned %d new emails from your Gmail (last 120 days). Found %d job-related updates (%d created, %d updated).",
                         scannedCount, jobEmailsFound, appsCreated, appsUpdated);
             }
 
