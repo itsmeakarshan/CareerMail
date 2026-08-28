@@ -179,16 +179,12 @@ public class GoogleOAuthService {
     }
 
     @Transactional
-    public String getValidAccessToken(ConnectedAccount account) {
-        if (account.getTokenExpiry() != null && account.getTokenExpiry().isAfter(LocalDateTime.now())) {
-            return account.getAccessToken();
-        }
-
+    public String forceRefreshToken(ConnectedAccount account) {
         if (account.getRefreshToken() == null || account.getRefreshToken().isBlank()) {
+            log.warn("Cannot refresh token: refresh token is null/blank for account {}", account.getProviderEmail());
             return account.getAccessToken();
         }
 
-        // Refresh token
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -213,13 +209,23 @@ public class GoogleOAuthService {
                     account.setTokenExpiry(LocalDateTime.now().plusSeconds(expiresIn.longValue() - 60));
                 }
                 connectedAccountRepository.save(account);
+                log.info("Successfully refreshed Google OAuth access token for {}", account.getProviderEmail());
                 return newAccessToken;
             }
         } catch (Exception e) {
-            log.error("Failed to refresh Google OAuth access token", e);
+            log.error("Failed to force refresh Google OAuth access token for {}: {}", account.getProviderEmail(), e.getMessage());
         }
 
         return account.getAccessToken();
+    }
+
+    @Transactional
+    public String getValidAccessToken(ConnectedAccount account) {
+        if (account.getTokenExpiry() != null && account.getTokenExpiry().isAfter(LocalDateTime.now())) {
+            return account.getAccessToken();
+        }
+
+        return forceRefreshToken(account);
     }
 
     public static class OAuthCallbackResult {

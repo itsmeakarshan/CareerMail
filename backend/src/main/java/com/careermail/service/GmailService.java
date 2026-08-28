@@ -103,13 +103,40 @@ public class GmailService {
 
             ParameterizedTypeReference<Map<String, Object>> mapType = new ParameterizedTypeReference<>() {};
 
+            // 1. Verify User Profile & OAuth Token Validity via /users/me/profile
+            String profileUrl = "https://gmail.googleapis.com/gmail/v1/users/me/profile";
+            try {
+                ResponseEntity<Map<String, Object>> profileResp = restTemplate.exchange(profileUrl, HttpMethod.GET, request, mapType);
+                if (profileResp.getStatusCode().is2xxSuccessful() && profileResp.getBody() != null) {
+                    Map<String, Object> profile = profileResp.getBody();
+                    log.info("[Gmail Profile Verification] Token authenticated for Gmail address: '{}' | Total Messages in Account: {} | Total Threads: {} | History ID: {}",
+                            profile.get("emailAddress"), profile.get("messagesTotal"), profile.get("threadsTotal"), profile.get("historyId"));
+                }
+            } catch (org.springframework.web.client.HttpClientErrorException.Unauthorized ue) {
+                log.warn("Access token expired or unauthorized. Forcing token refresh with Google OAuth endpoint...");
+                accessToken = googleOAuthService.forceRefreshToken(account);
+                headers.setBearerAuth(accessToken);
+                request = new HttpEntity<>(headers);
+
+                ResponseEntity<Map<String, Object>> profileResp = restTemplate.exchange(profileUrl, HttpMethod.GET, request, mapType);
+                if (profileResp.getStatusCode().is2xxSuccessful() && profileResp.getBody() != null) {
+                    Map<String, Object> profile = profileResp.getBody();
+                    log.info("[Gmail Profile Verification (After Refresh)] Token authenticated for Gmail address: '{}' | Total Messages: {}",
+                            profile.get("emailAddress"), profile.get("messagesTotal"));
+                }
+            }
+
+            // 2. Query Gmail Messages with 'newer_than:120d'
             String query = "newer_than:120d";
             List<Map<String, Object>> allMessageSummaries = new ArrayList<>();
             Set<String> seenMessageIds = new HashSet<>();
             String pageToken = null;
             int pageNum = 1;
 
-            log.info("Executing Gmail API query: '{}' (Last 120 Days / 3-4 Months)", query);
+            log.info("========== Gmail Messages Query ==========");
+            log.info("[Gmail Request Info] Query parameter 'q': '{}'", query);
+            log.info("[Gmail Request Info] Base Endpoint: {}", GMAIL_MESSAGES_ENDPOINT);
+            log.info("[Gmail Request Info] Bearer Token Length: {} (Active: {})", accessToken.length(), account.getProviderEmail());
 
             do {
                 int pageSize = Math.min(targetLimit - allMessageSummaries.size(), 100);
@@ -125,20 +152,25 @@ public class GmailService {
                 }
 
                 java.net.URI uri = uriBuilder.build().toUri();
-                log.debug("Calling Gmail endpoint: {}", uri);
+                log.info("[Gmail API Request #{}] GET {}", pageNum, uri.toASCIIString());
+
                 ResponseEntity<Map<String, Object>> listResp = restTemplate.exchange(uri, HttpMethod.GET, request, mapType);
+                log.info("[Gmail API Response #{}] HTTP Status: {}", pageNum, listResp.getStatusCode());
+
                 if (!listResp.getStatusCode().is2xxSuccessful() || listResp.getBody() == null) {
-                    log.warn("Gmail API list returned status: {}", listResp.getStatusCode());
+                    log.warn("Gmail API list returned non-successful response: {}", listResp.getStatusCode());
                     break;
                 }
 
                 Map<String, Object> body = listResp.getBody();
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> messages = (List<Map<String, Object>>) body.get("messages");
+                Object resultSizeEstimate = body.get("resultSizeEstimate");
                 pageToken = (String) body.get("nextPageToken");
 
                 int foundOnPage = messages != null ? messages.size() : 0;
-                log.info("Page {} returned {} message headers. Next page available: {}", pageNum, foundOnPage, pageToken != null);
+                log.info("[Gmail API Response Body #{}] resultSizeEstimate: {}, messages array count: {}, nextPageToken: {}",
+                        pageNum, resultSizeEstimate, foundOnPage, pageToken != null ? "PRESENT" : "NULL");
 
                 if (messages != null) {
                     for (Map<String, Object> m : messages) {
