@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Background Gradients -->
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1E1B4B" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#0F172A" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#030712" stop-opacity="1"/>
+    </radialGradient>
+    <linearGradient id="pinkGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EC4899" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.1"/>
+    </linearGradient>
+    <linearGradient id="blueGlow" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="cardBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F43F5E" stop-opacity="0.6"/>
+      <stop offset="50%" stop-color="#8B5CF6" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#3B82F6" stop-opacity="0.6"/>
+    </linearGradient>
+    <linearGradient id="youtubeBtn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF0000"/>
+      <stop offset="100%" stop-color="#CC0000"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.7"/>
+    </filter>
+    <filter id="glowShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="24" flood-color="#FF0000" flood-opacity="0.6"/>
+    </filter>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#F43F5E" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="1200" height="630" fill="#030712"/>
+  <rect width="1200" height="630" fill="url(#bgGlow)"/>
+
+  <!-- Ambient Light Orbs -->
+  <circle cx="200" cy="150" r="280" fill="url(#pinkGlow)" filter="blur(40px)"/>
+  <circle cx="1000" cy="480" r="300" fill="url(#blueGlow)" filter="blur(50px)"/>
+
+  <!-- Subtle Grid Pattern -->
+  <g opacity="0.07" stroke="#94A3B8" stroke-width="1">
+    <line x1="0" y1="105" x2="1200" y2="105"/>
+    <line x1="0" y1="210" x2="1200" y2="210"/>
+    <line x1="0" y1="315" x2="1200" y2="315"/>
+    <line x1="0" y1="420" x2="1200" y2="420"/>
+    <line x1="0" y1="525" x2="1200" y2="525"/>
+    <line x1="200" y1="0" x2="200" y2="630"/>
+    <line x1="400" y1="0" x2="400" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="800" y1="0" x2="800" y2="630"/>
+    <line x1="1000" y1="0" x2="1000" y2="630"/>
+  </g>
+
+  <!-- Main Player Window Card -->
+  <rect x="75" y="45" width="1050" height="540" rx="28" fill="#0B1120" fill-opacity="0.85" stroke="url(#cardBorder)" stroke-width="2" filter="url(#dropShadow)"/>
+
+  <!-- Window Header Bar -->
+  <rect x="75" y="45" width="1050" height="56" rx="28" fill="#111827" fill-opacity="0.95"/>
+  <circle cx="115" cy="73" r="6.5" fill="#EF4444"/>
+  <circle cx="138" cy="73" r="6.5" fill="#F59E0B"/>
+  <circle cx="161" cy="73" r="6.5" fill="#10B981"/>
+
+  <!-- Header Center Title -->
+  <text x="600" y="79" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" text-anchor="middle" letter-spacing="1">
+    CAREERMAIL — SYSTEM DEMO &amp; LIVE WALKTHROUGH
+  </text>
+
+  <!-- App Brand in Window -->
+  <g transform="translate(110, 135)">
+    <!-- App Logo Badge -->
+    <rect x="0" y="0" width="52" height="52" rx="14" fill="#F43F5E" fill-opacity="0.2" stroke="#F43F5E" stroke-width="1.5"/>
+    <text x="26" y="36" font-size="26" text-anchor="middle">📬</text>
+    
+    <!-- Title and Subtitle -->
+    <text x="68" y="32" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="30" font-weight="800" letter-spacing="-0.5">
+      CareerMail
+    </text>
+    <text x="68" y="52" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="500">
+      Intelligent Email &amp; Job Application Tracker
+    </text>
+  </g>
+
+  <!-- Status / Pill Badges on Top Right -->
+  <g transform="translate(860, 140)">
+    <rect x="0" y="0" width="190" height="36" rx="18" fill="#10B981" fill-opacity="0.15" stroke="#10B981" stroke-width="1.5"/>
+    <circle cx="18" cy="18" r="4.5" fill="#10B981"/>
+    <text x="32" y="23" fill="#34D399" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0.5">
+      LIVE GMAIL SYNC
+    </text>
+  </g>
+
+  <!-- Dashboard Mini Preview Cards In Background -->
+  <g opacity="0.45">
+    <!-- Card 1 -->
+    <rect x="110" y="215" width="220" height="85" rx="16" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+    <text x="130" y="245" fill="#94A3B8" font-family="sans-serif" font-size="12" font-weight="600">APPLICATIONS</text>
+    <text x="130" y="280" fill="#F8FAFC" font-family="sans-serif" font-size="28" font-weight="800">42</text>
+    <text x="180" y="280" fill="#10B981" font-family="sans-serif" font-size="12" font-weight="700">+12%</text>
+
+    <!-- Card 2 -->
+    <rect x="350" y="215" width="220" height="85" rx="16" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+    <text x="370" y="245" fill="#94A3B8" font-family="sans-serif" font-size="12" font-weight="600">INTERVIEWS</text>
+    <text x="370" y="280" fill="#F8FAFC" font-family="sans-serif" font-size="28" font-weight="800">8 Active</text>
+
+    <!-- Card 3 -->
+    <rect x="590" y="215" width="220" height="85" rx="16" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+    <text x="610" y="245" fill="#94A3B8" font-family="sans-serif" font-size="12" font-weight="600">RESPONSE RATE</text>
+    <text x="610" y="280" fill="#F8FAFC" font-family="sans-serif" font-size="28" font-weight="800">38.5%</text>
+
+    <!-- Card 4 -->
+    <rect x="830" y="215" width="220" height="85" rx="16" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+    <text x="850" y="245" fill="#94A3B8" font-family="sans-serif" font-size="12" font-weight="600">AI ASSISTANT</text>
+    <text x="850" y="280" fill="#EC4899" font-family="sans-serif" font-size="24" font-weight="800">✨ Grounded</text>
+  </g>
+
+  <!-- Big Central YouTube Play Button Overlay -->
+  <g transform="translate(600, 370)" filter="url(#glowShadow)">
+    <!-- Outer Glow Ring -->
+    <rect x="-85" y="-55" width="170" height="110" rx="32" fill="url(#youtubeBtn)"/>
+    
+    <!-- Inner White Triangle (Play Icon) -->
+    <polygon points="-12,-22 24,0 -12,22" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Click Call-To-Action Banner -->
+  <g transform="translate(600, 485)">
+    <!-- Pill background -->
+    <rect x="-240" y="-22" width="480" height="44" rx="22" fill="#1E1B4B" fill-opacity="0.9" stroke="#EC4899" stroke-width="1.5" filter="url(#softGlow)"/>
+    
+    <text x="0" y="6" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="0.5">
+      ▶ Click Here to Watch Full Walkthrough on YouTube
+    </text>
+  </g>
+
+  <!-- Bottom Details Bar -->
+  <g transform="translate(600, 548)">
+    <text x="0" y="0" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="500" text-anchor="middle">
+      Live Gmail OAuth 2.0 • AI Career Assistant • Real-Time Kanban • Recruiter Intelligence
+    </text>
+  </g>
+</svg>

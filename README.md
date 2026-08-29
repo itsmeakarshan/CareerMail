@@ -3,7 +3,7 @@
 # 📬 CareerMail
 ### Next-Gen Intelligent Email & Job Application Tracking Platform
 
-[![Watch CareerMail Video Walkthrough](https://img.youtube.com/vi/xVjkWtoF9zU/maxresdefault.jpg)](https://youtu.be/xVjkWtoF9zU)
+[![Watch CareerMail Video Walkthrough](assets/video_preview.svg)](https://youtu.be/xVjkWtoF9zU)
 
 <br/>
 
