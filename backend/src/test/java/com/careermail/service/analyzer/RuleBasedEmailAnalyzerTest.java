@@ -81,4 +81,49 @@ class RuleBasedEmailAnalyzerTest {
 
         assertFalse(result.isJobRelated());
     }
+
+    @Test
+    void testExtractsHumanRecruiterDirectOutreach() {
+        String subject = "Interview with Hana Taylor for Graduate Software Developer";
+        String body = "Hi Akarshan,\n\nI would love to invite you to an interview for the role.\n\nBest regards,\nHana Taylor\nTalent Acquisition Partner\nPhone: +44 7123 456789";
+        String sender = "Hana Taylor";
+        String senderEmail = "hana.taylor@learningcurvegroup.co.uk";
+
+        AnalysisResult result = analyzer.analyze(subject, body, sender, senderEmail);
+
+        assertTrue(result.isJobRelated());
+        assertEquals("Hana Taylor", result.getRecruiterName());
+        assertEquals("hana.taylor@learningcurvegroup.co.uk", result.getRecruiterEmail());
+        assertEquals(com.careermail.model.enums.RecruiterType.HUMAN_RECRUITER, result.getRecruiterType());
+        assertTrue(result.getContactConfidence() >= 90);
+    }
+
+    @Test
+    void testExtractsSignatureRecruiterFromAutomatedEmail() {
+        String subject = "Thank you for your interest in Latent AI";
+        String body = "Hi Akarshan,\n\nThank you for applying to Latent AI for the Data Scientist role.\n\nBest,\nNoam Shemesh\nLatent AI";
+        String sender = "Noam Shemesh";
+        String senderEmail = "notifications@app.bamboohr.com";
+
+        AnalysisResult result = analyzer.analyze(subject, body, sender, senderEmail);
+
+        assertTrue(result.isJobRelated());
+        assertEquals("Noam Shemesh", result.getRecruiterName());
+        assertEquals(com.careermail.model.enums.RecruiterType.POSSIBLE_RECRUITER, result.getRecruiterType());
+        assertTrue(result.getContactConfidence() >= 80);
+    }
+
+    @Test
+    void testIdentifiesAutomatedSystemSender() {
+        String subject = "Thank you for your application at Corpay";
+        String body = "Your application has been received. Our team will review your application.";
+        String sender = "Corpay Workday Notification (Do Not Reply)";
+        String senderEmail = "corpay@myworkday.com";
+
+        AnalysisResult result = analyzer.analyze(subject, body, sender, senderEmail);
+
+        assertTrue(result.isJobRelated());
+        assertEquals(com.careermail.model.enums.RecruiterType.AUTOMATED_SYSTEM, result.getRecruiterType());
+        assertTrue(result.getContactConfidence() >= 90);
+    }
 }

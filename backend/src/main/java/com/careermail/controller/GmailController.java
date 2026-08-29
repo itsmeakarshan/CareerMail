@@ -36,13 +36,16 @@ public class GmailController {
 
         if (accountOpt.isPresent()) {
             ConnectedAccount acc = accountOpt.get();
+            boolean hasSend = acc.getScope() != null && (acc.getScope().contains("gmail.send") || acc.getScope().contains("mail.google.com"));
             return ResponseEntity.ok(new GmailStatusResponse(
                     true,
                     acc.getProviderEmail() != null ? acc.getProviderEmail() : user.getEmail(),
                     acc.getProvider(),
                     acc.getLastSyncedAt(),
                     acc.getTotalEmailsScanned(),
-                    configured
+                    configured,
+                    acc.getScope(),
+                    hasSend
             ));
         }
 
@@ -52,7 +55,9 @@ public class GmailController {
                 "google",
                 null,
                 0,
-                configured
+                configured,
+                null,
+                false
         ));
     }
 
@@ -62,6 +67,12 @@ public class GmailController {
     ) {
         User user = authService.getCurrentUser();
         return ResponseEntity.ok(gmailService.scanAndProcess(user, maxResults));
+    }
+
+    @PostMapping("/reprocess")
+    public ResponseEntity<GmailSyncResponse> reprocessStoredEmails() {
+        User user = authService.getCurrentUser();
+        return ResponseEntity.ok(gmailService.reprocessStoredEmails(user));
     }
 
     @PostMapping("/disconnect")

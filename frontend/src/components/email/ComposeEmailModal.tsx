@@ -1,203 +1,277 @@
-import React, { useState } from 'react';
-import { X, Send, Sparkles, Wand2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Send, Sparkles, Wand2, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { emailsApi } from '../../services/api';
 
-interface ComposeModalProps {
+interface ComposeProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  initialTo?: string;
+  initialSubject?: string;
+  initialBody?: string;
+  recruiterName?: string;
+  roleTitle?: string;
+  companyName?: string;
 }
 
-export const ComposeEmailModal: React.FC<ComposeModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [to, setTo] = useState('');
-  const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
+export const ComposeEmailModal: React.FC<ComposeProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  initialTo = '',
+  initialSubject = '',
+  initialBody,
+  recruiterName,
+  roleTitle,
+  companyName,
+}) => {
+  const [to, setTo] = useState(initialTo);
+  const [subject, setSubject] = useState(initialSubject);
+  const [body, setBody] = useState(initialBody || '');
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Compute clean recruiter first name or fallback
+  const getRecruiterDisplayName = () => {
+    if (!recruiterName || recruiterName.trim().length === 0) return '';
+    const clean = recruiterName.trim();
+    // If it has corporate words like "Recruiting" or "Team", use the full clean string or fallback
+    if (clean.toLowerCase().includes('team') || clean.toLowerCase().includes('recruiting') || clean.toLowerCase().includes('careers')) {
+      return clean;
+    }
+    return clean.split(/\s+/)[0];
+  };
+
+  const recruiterFirstName = getRecruiterDisplayName();
+
+  const generateFollowUpMessage = () => {
+    const greeting = recruiterFirstName ? `Hey ${recruiterFirstName},` : 'Hey,';
+    const roleStr = roleTitle ? `the ${roleTitle}` : 'this';
+    const compStr = companyName ? ` at ${companyName}` : '';
+    return `${greeting}\n\nI had applied for ${roleStr} role${compStr} and I am eager to know the further process.\n\nCould you please let me know if there are any updates regarding my application?\n\nBest regards,\nArjun`;
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      setTo(initialTo || '');
+      setSubject(
+        initialSubject ||
+          `Regarding application for ${roleTitle || 'Role'}${companyName ? ` at ${companyName}` : ''}`
+      );
+      if (initialBody) {
+        setBody(initialBody);
+      } else {
+        setBody(generateFollowUpMessage());
+      }
+      setErrorMessage(null);
+      setSuccessMessage(null);
+    }
+  }, [isOpen, initialTo, initialSubject, initialBody, recruiterName, roleTitle, companyName]);
 
   if (!isOpen) return null;
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject.trim() || !body.trim()) return;
+    if (!to.trim()) {
+      setErrorMessage('Please enter a recipient email address.');
+      return;
+    }
+    if (!subject.trim()) {
+      setErrorMessage('Please enter an email subject.');
+      return;
+    }
+    if (!body.trim()) {
+      setErrorMessage('Please write your email message body.');
+      return;
+    }
 
     setLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
     try {
-      await emailsApi.compose({ to, subject, body });
-      setSuccessMessage('Email sent successfully!');
+      await emailsApi.send({
+        to: to.trim(),
+        subject: subject.trim(),
+        body: body.trim(),
+      });
+
+      setSuccessMessage('Email successfully sent through your connected Gmail account!');
       setTimeout(() => {
-        setSuccessMessage('');
-        onClose();
+        setSuccessMessage(null);
+        setTo('');
+        setSubject('');
+        setBody('');
         if (onSuccess) onSuccess();
-      }, 1000);
+        onClose();
+      }, 1600);
     } catch (err: any) {
-      alert(`Error sending email: ${err.message}`);
+      setErrorMessage(err.message || 'Failed to send email through Gmail. Please ensure Gmail is connected.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSimulatePreset = async (type: 'applied' | 'interview' | 'offer' | 'rejection') => {
-    setLoading(true);
-    let sample = {
-      sender: 'Google Careers',
-      senderEmail: 'recruiting@google.com',
-      subject: 'Invitation to Interview: Software Engineer at Google',
-      body: 'Hi Arjun,\n\nWe were impressed by your profile and would like to invite you to a technical interview for the Software Engineer role.\n\nPlease select your preferred slot.\n\nBest,\nGoogle Recruiting Team',
-      important: true,
-    };
-
-    if (type === 'applied') {
-      sample = {
-        sender: 'Stripe Talent',
-        senderEmail: 'recruiting@stripe.com',
-        subject: 'Thank you for applying for the Full Stack Engineer position at Stripe',
-        body: 'Hi Arjun,\n\nThank you for applying for the Full Stack Engineer role at Stripe. We have received your application and will review it shortly.\n\nBest,\nStripe Recruiting Team',
-        important: false,
-      };
-    } else if (type === 'offer') {
-      sample = {
-        sender: 'Netflix Talent Acquisition',
-        senderEmail: 'offers@netflix.com',
-        subject: 'Offer of Employment: Senior Platform Engineer at Netflix',
-        body: 'Dear Arjun,\n\nWe are pleased to offer you the position of Senior Platform Engineer at Netflix!\n\nPlease find your formal offer letter attached.\n\nWarm regards,\nNetflix Executive Hiring',
-        important: true,
-      };
-    } else if (type === 'rejection') {
-      sample = {
-        sender: 'Uber Recruiting',
-        senderEmail: 'careers@uber.com',
-        subject: 'Update on your Software Engineer application at Uber',
-        body: 'Dear Arjun,\n\nAfter careful consideration, we have decided not to proceed with your candidacy for the Software Engineer position.\n\nWe wish you all the best in your search.\n\nUber Talent Acquisition',
-        important: false,
-      };
-    }
-
-    try {
-      await emailsApi.simulate(sample);
-      setSuccessMessage(`Simulated job email received! Auto-pipeline detected ${sample.sender}.`);
-      setTimeout(() => {
-        setSuccessMessage('');
-        onClose();
-        if (onSuccess) onSuccess();
-      }, 1200);
-    } catch (err: any) {
-      alert(`Error simulating email: ${err.message}`);
-    } finally {
-      setLoading(false);
+  const handleApplyFollowUpTemplate = () => {
+    setBody(generateFollowUpMessage());
+    if (!subject || subject.trim() === '') {
+      setSubject(`Regarding application for ${roleTitle || 'Role'}${companyName ? ` at ${companyName}` : ''}`);
     }
   };
+
+  const buttonLabel = recruiterFirstName
+    ? `Hey ${recruiterFirstName}, I had applied for this role and I am eager to know the further process`
+    : `Hey, I had applied for this role and I am eager to know the further process`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#12182b] border border-slate-800 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-[#16181f] border border-[#e0e2e7] dark:border-[#282a2d] rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 bg-[#161e36] border-b border-slate-800 flex items-center justify-between">
+        <div className="px-6 py-4 bg-[#f6f8fc] dark:bg-[#111318] border-b border-[#e0e2e7] dark:border-[#282a2d] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Send className="w-4 h-4 text-purple-400" />
-            <h3 className="text-base font-bold text-white tracking-tight">New Message</h3>
+            <Send className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+            <h3 className="text-base font-bold text-[#1f1f1f] dark:text-white tracking-tight">New Gmail Message</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-lg text-slate-400 hover:text-black dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#282a2d] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Live Simulation Presets Banner */}
-        <div className="bg-[#18213a] border-b border-indigo-900/40 p-3 flex flex-col gap-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-300">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Test Real-Time Auto-Job Detection:</span>
+        {/* Smart Follow-Up Action Bar */}
+        <div className="p-4 bg-[#f0f4f9] dark:bg-[#111318] border-b border-[#e0e2e7] dark:border-[#282a2d] space-y-2">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-pink-700 dark:text-pink-300">
+            <Sparkles className="w-3.5 h-3.5 text-pink-600 dark:text-pink-400" />
+            <span>Quick Recruiter Follow-up</span>
           </div>
-          <div className="flex flex-wrap gap-2 pt-1">
+          <div>
             <button
               type="button"
-              onClick={() => handleSimulatePreset('applied')}
-              className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-blue-950/80 border border-blue-800/50 text-blue-300 hover:bg-blue-900 transition-colors flex items-center gap-1"
+              onClick={handleApplyFollowUpTemplate}
+              className="w-full text-left px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/40 dark:to-rose-950/40 border border-pink-200/90 dark:border-pink-800/50 text-pink-800 dark:text-pink-200 text-xs font-semibold hover:border-pink-400 dark:hover:border-pink-600 transition-all flex items-center justify-between gap-2 shadow-sm group"
             >
-              <Wand2 className="w-3 h-3" /> Simulate Stripe Application
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSimulatePreset('interview')}
-              className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-purple-950/80 border border-purple-800/50 text-purple-300 hover:bg-purple-900 transition-colors flex items-center gap-1"
-            >
-              <Wand2 className="w-3 h-3" /> Simulate Google Interview
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSimulatePreset('offer')}
-              className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-800/50 text-emerald-300 hover:bg-emerald-900 transition-colors flex items-center gap-1"
-            >
-              <Wand2 className="w-3 h-3" /> Simulate Netflix Offer
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-pink-500 flex-shrink-0 animate-pulse" />
+                <span className="truncate">
+                  &ldquo;{buttonLabel}&rdquo;
+                </span>
+              </div>
+              <span className="text-[10px] text-pink-600 dark:text-pink-400 font-bold bg-white dark:bg-[#16181f] px-2 py-0.5 rounded-md border border-pink-200 dark:border-pink-800/60 flex-shrink-0 group-hover:bg-pink-600 group-hover:text-white transition-colors">
+                Apply Template
+              </span>
             </button>
           </div>
         </div>
 
+        {/* Success Alert */}
         {successMessage && (
-          <div className="m-4 p-3 bg-emerald-950/80 border border-emerald-700/60 rounded-xl text-xs font-semibold text-emerald-300 text-center animate-fadeIn">
-            {successMessage}
+          <div className="p-3 bg-emerald-100 dark:bg-emerald-950/90 border-b border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-center gap-2 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+            <span>{successMessage}</span>
+          </div>
+        )}
+
+        {/* Error Alert */}
+        {errorMessage && (
+          <div className="p-3 bg-rose-100 dark:bg-rose-950/90 border-b border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-semibold flex items-center justify-between gap-2 animate-fadeIn">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setErrorMessage(null)}
+              className="text-rose-500 hover:text-rose-700 dark:hover:text-rose-200"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
 
         {/* Form Body */}
         <form onSubmit={handleSend} className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1">To</label>
+            <label className="block text-xs font-bold text-[#5f6368] dark:text-slate-300 mb-1">
+              Recipient Email (To) *
+            </label>
             <input
               type="email"
+              required
               placeholder="recruiter@company.com"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="w-full px-3.5 py-2 bg-[#0c101d] border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 bg-[#f6f8fc] dark:bg-[#1e1f20] border border-[#dadce0] dark:border-[#282a2d] rounded-xl text-sm text-[#1f1f1f] dark:text-white placeholder-slate-400 focus:outline-none focus:border-pink-400 transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1">Subject</label>
+            <label className="block text-xs font-bold text-[#5f6368] dark:text-slate-300 mb-1">
+              Subject *
+            </label>
             <input
               type="text"
               required
-              placeholder="e.g. Following up on Software Engineer application"
+              placeholder="e.g. Following up on Full Stack Engineer Application"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="w-full px-3.5 py-2 bg-[#0c101d] border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+              className="w-full px-3 py-2 bg-[#f6f8fc] dark:bg-[#1e1f20] border border-[#dadce0] dark:border-[#282a2d] rounded-xl text-sm text-[#1f1f1f] dark:text-white placeholder-slate-400 focus:outline-none focus:border-pink-400 transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1">Body</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-bold text-[#5f6368] dark:text-slate-300">
+                Message Body *
+              </label>
+              <button
+                type="button"
+                onClick={handleApplyFollowUpTemplate}
+                className="text-[11px] text-pink-600 dark:text-pink-400 hover:underline flex items-center gap-1 font-semibold"
+              >
+                <Wand2 className="w-3 h-3" />
+                <span>Reset to Recruiter Follow-up</span>
+              </button>
+            </div>
             <textarea
               required
               rows={6}
               placeholder="Write your email here..."
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              className="w-full px-3.5 py-2 bg-[#0c101d] border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 resize-none leading-relaxed"
+              className="w-full px-3 py-2 bg-[#f6f8fc] dark:bg-[#1e1f20] border border-[#dadce0] dark:border-[#282a2d] rounded-xl text-sm text-[#1f1f1f] dark:text-white placeholder-slate-400 focus:outline-none focus:border-pink-400 resize-none font-sans leading-relaxed transition-colors"
             />
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-slate-800">
-            <span className="text-xs text-slate-500">CareerMail Email Engine</span>
-            <div className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-sm font-semibold shadow-glow-purple disabled:opacity-50 flex items-center gap-2 transition-all"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>{loading ? 'Sending...' : 'Send Email'}</span>
-              </button>
-            </div>
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#e0e2e7] dark:border-[#282a2d]">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="px-4 py-2 rounded-xl text-sm font-medium text-[#5f6368] dark:text-slate-400 hover:text-black dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#282a2d] transition-colors disabled:opacity-50"
+            >
+              Discard
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white text-sm font-bold shadow-md shadow-pink-500/25 disabled:opacity-50 flex items-center gap-2 transition-all hover:scale-105"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Delivering via Gmail API...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  <span>Send via Gmail</span>
+                </>
+              )}
+            </button>
           </div>
         </form>
       </div>

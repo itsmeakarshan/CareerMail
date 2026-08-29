@@ -38,6 +38,11 @@ public class EmailController {
         return ResponseEntity.ok(emailService.getEmailById(id));
     }
 
+    @GetMapping("/application/{applicationId}")
+    public ResponseEntity<List<Email>> getEmailsByApplication(@PathVariable Long applicationId) {
+        return ResponseEntity.ok(emailService.getEmailsByJobApplication(applicationId));
+    }
+
     @PatchMapping("/{id}/read")
     public ResponseEntity<Email> markRead(@PathVariable Long id, @RequestParam(name = "read", defaultValue = "true") boolean read) {
         return ResponseEntity.ok(emailService.markRead(id, read));
@@ -60,6 +65,11 @@ public class EmailController {
 
     @PostMapping("/compose")
     public ResponseEntity<Email> composeEmail(@Valid @RequestBody EmailComposeRequest request) {
+        return ResponseEntity.ok(emailService.composeEmail(request));
+    }
+
+    @PostMapping("/send")
+    public ResponseEntity<Email> sendEmail(@Valid @RequestBody EmailComposeRequest request) {
         return ResponseEntity.ok(emailService.composeEmail(request));
     }
 

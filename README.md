@@ -46,43 +46,188 @@ CareerMail features a pixel-perfect dark workspace matching modern SaaS standard
 
 ---
 
-## 🔑 Google Cloud Console & Gmail OAuth 2.0 Setup
+## 🧪 Test CareerMail with Your Own Gmail
 
-To enable live Google OAuth and Gmail scanning with your own Google Cloud project:
+> [!NOTE]
+> **Zero-Secrets Policy**: To adhere to industry security standards and Google API Terms of Service, this public repository does **not** include production Google OAuth client secrets. Any developer, evaluator, or recruiter can connect their own personal or test Gmail account in **under 5 minutes** by creating a free Google Cloud OAuth client.
 
-### 1. Create / Configure Google Cloud Project
-1. Open the [Google Cloud Console](https://console.cloud.google.com/).
-2. Navigate to **APIs & Services > OAuth consent screen**:
-   * **User Type**: External (or Internal for Google Workspace).
-   * **App Name**: `CareerMail`
-   * **Scopes**: Add:
-     * `https://www.googleapis.com/auth/gmail.readonly` (Read-only access to messages)
-     * `https://www.googleapis.com/auth/userinfo.email`
-     * `https://www.googleapis.com/auth/userinfo.profile`
-   * **Test Users**: Add your testing Gmail address.
+---
 
-### 2. Create OAuth 2.0 Client Credentials
-1. Navigate to **APIs & Services > Credentials > Create Credentials > OAuth client ID**:
-   * **Application type**: Web application
-   * **Name**: `CareerMail Web Client`
-   * **Authorized JavaScript origins**:
-     * `http://localhost:5173`
-     * `http://localhost`
-   * **Authorized redirect URIs**:
-     * `http://localhost:8080/api/auth/google/callback`
-2. Copy the **Client ID** and **Client Secret**.
+### 🗺️ Visual Setup Flow
 
-### 3. Configure Environment Variables
-Copy `.env.example` to `.env` and fill in your credentials:
+```mermaid
+flowchart LR
+    A["📦 1. Clone Repo"] --> B["☁️ 2. Google Cloud Project"]
+    B --> C["🔐 3. Configure OAuth Screen"]
+    C --> D["👤 4. Add Test User"]
+    D --> E["🔑 5. Create Web Client ID"]
+    E --> F["⚙️ 6. Configure .env"]
+    F --> G["🚀 7. Run CareerMail"]
+    G --> H["📥 8. Connect Gmail"]
+    H --> I["✨ 9. Sync & Send Real Emails"]
+```
+
+---
+
+### 📋 Prerequisites
+
+* A personal or workspace **Google / Gmail account**
+* [Google Cloud Console](https://console.cloud.google.com/) access (100% free, no billing setup required)
+* **Git**, **Docker** (or **Java 21** + **Node.js 18+**)
+
+---
+
+### 🚀 Step-by-Step Guide
+
+#### 1️⃣ Step 1: Clone the Repository
 
 ```bash
+git clone https://github.com/your-username/CareerMail.git
+cd CareerMail
+```
+
+---
+
+#### 2️⃣ Step 2: Create a Free Google Cloud Project
+
+1. Open the **[Google Cloud Console](https://console.cloud.google.com/)**.
+2. Click the project dropdown in the top navigation bar and click **"New Project"**.
+3. Set **Project name** to `CareerMail-Dev` (or any name you prefer) and click **Create**.
+4. Ensure your newly created project is selected in the top bar.
+
+---
+
+#### 3️⃣ Step 3: Enable the Gmail API
+
+1. In the Google Cloud Console, navigate to **APIs & Services > Library** (or search for `Gmail API`).
+2. Select **Gmail API** and click **Enable**.
+
+---
+
+#### 4️⃣ Step 4: Configure OAuth Consent Screen & Scopes
+
+1. Go to **APIs & Services > OAuth consent screen**.
+2. Select **External** user type and click **Create**.
+3. Fill in the basic application info:
+   * **App name**: `CareerMail`
+   * **User support email**: *Select your Gmail address*
+   * **Developer contact email**: *Enter your Gmail address*
+   * Click **Save and Continue**.
+4. In the **Scopes** step, click **"Add or Remove Scopes"** and add the following 4 scopes:
+
+| Scope | Permission Type | Purpose in CareerMail |
+|---|---|---|
+| `.../auth/gmail.readonly` | Sensitive | Read incoming recruitment emails & parse job status updates |
+| `.../auth/gmail.send` | Sensitive | Send real follow-up and inquiry emails directly via Gmail |
+| `.../auth/userinfo.email` | Non-sensitive | Retrieve your authenticated Google email address |
+| `.../auth/userinfo.profile` | Non-sensitive | Display your Google account name and avatar |
+
+5. Click **Update** and then **Save and Continue**.
+6. In the **Test Users** step, click **"+ ADD USERS"**:
+   * Enter the exact **Gmail address** you intend to log in and test with.
+   * Click **Add** and then **Save and Continue**.
+
+> [!IMPORTANT]
+> **Why Add a Test User?**
+> While your Google Cloud app is in *"Testing"* publishing status, Google's security sandbox only allows accounts explicitly listed in the **Test Users** list to authorize.
+
+---
+
+#### 5️⃣ Step 5: Create OAuth 2.0 Web Application Credentials
+
+1. Go to **APIs & Services > Credentials**.
+2. Click **+ CREATE CREDENTIALS** at the top and select **OAuth client ID**.
+3. Configure the credential settings:
+   * **Application type**: `Web application`
+   * **Name**: `CareerMail Web Client`
+4. Add the **Authorized JavaScript origins**:
+   * `http://localhost:5173`
+   * `http://localhost`
+5. Add the **Authorized redirect URIs**:
+   * `http://localhost:8080/api/auth/google/callback`
+6. Click **Create**.
+7. A dialog will pop up displaying your **Client ID** and **Client Secret**. Copy both values.
+
+---
+
+#### 6️⃣ Step 6: Configure Your Local `.env` File
+
+Copy the provided `.env.example` file to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` in your editor and paste your credentials:
+
+```ini
+# ==============================================================================
+# Google Cloud Platform & Gmail OAuth 2.0 Configuration
+# ==============================================================================
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_REDIRECT_URI=http://localhost:8080/api/auth/google/callback
+
+# Frontend Origin
 FRONTEND_URL=http://localhost:5173
 ```
 
-> *Note: If Google credentials are not supplied, CareerMail operates in high-fidelity simulation mode so you can still test full end-to-end scanning, classification, and deduplication without hitting Google APIs.*
+> [!CAUTION]
+> **Security Reminder**: Never commit your `.env` file or API secrets to version control. The repository's `.gitignore` automatically excludes `.env` to protect your credentials.
+
+---
+
+#### 7️⃣ Step 7: Start CareerMail
+
+You can start the entire application stack using either Docker or local development mode:
+
+##### Option A: Docker Compose (Recommended)
+```bash
+docker compose up --build
+```
+
+##### Option B: Local Development
+```bash
+# Terminal 1: Start Backend (Port 8080)
+cd backend
+mvn spring-boot:run
+
+# Terminal 2: Start Frontend (Port 5173)
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+#### 8️⃣ Step 8: Connect Your Gmail & Test the Pipeline
+
+1. Open your browser and navigate to **[http://localhost:5173](http://localhost:5173)**.
+2. Sign in with the default credentials (`arjun.sharma@email.com` / `password123`) or click **"Continue with Google"**.
+3. In the sidebar, navigate to **Settings** (`/settings`).
+4. In the **Gmail Integration** card, click **"Connect Gmail"**.
+5. Google will open the OAuth consent prompt:
+   * Select your test Gmail account.
+   * If Google displays a *"Google hasn’t verified this app"* warning screen, click **Advanced > Go to CareerMail (unsafe)** (this is standard for personal development projects in Testing mode).
+   * Grant permissions for **Read** and **Send** access and click **Continue**.
+6. You will be redirected back to CareerMail with a green **CONNECTED** status badge.
+7. Click **"Scan Recent Emails"** or trigger **Full 3-Month Auto-Scan**:
+   * CareerMail connects to Gmail API `users/me/messages`.
+   * Automatically scans your real inbox from the last 90+ days.
+   * Extracts real applications, recruiter contacts, interview invitations, and status changes into PostgreSQL.
+   * Populates your KPI counters, Kanban pipeline, timeline, and charts!
+8. Click **"Compose"** (or use the **Quick Recruiter Follow-up** action on any application card) to test sending a real RFC 822 MIME email directly via Google's `users/me/messages/send` API!
+
+---
+
+### 🛠️ Common Troubleshooting & FAQs
+
+| Symptom / Error | Cause | Quick Solution |
+|---|---|---|
+| **`Access blocked: CareerMail has not completed the Google verification process`** | Your Gmail address is not listed under Test Users in Google Cloud. | Go to **OAuth consent screen > Test users**, add your Gmail address, and click Save. |
+| **`Error 400: redirect_uri_mismatch`** | The redirect URI in `.env` does not match the Google Cloud Console credentials. | Ensure `http://localhost:8080/api/auth/google/callback` is added under **Authorized redirect URIs** in Google Cloud Console. |
+| **`403 FORBIDDEN: Request had insufficient authentication scopes`** | The account was authorized before `gmail.send` scope was added. | Go to **Settings**, click **Disconnect**, and then **Connect Gmail** to accept the updated sending permissions. |
+| **Backend fails with DB connection error** | PostgreSQL service is not running locally. | Run via `docker compose up` or run backend with `-Dspring-boot.run.profiles=local` for embedded H2. |
 
 ---
 

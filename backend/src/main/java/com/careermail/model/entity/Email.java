@@ -65,6 +65,15 @@ public class Email {
     private String detectedRole;
     private String detectedStatus;
 
+    private String detectedRecruiterName;
+    private String detectedRecruiterEmail;
+    private String detectedRecruiterTitle;
+
+    @Enumerated(EnumType.STRING)
+    private com.careermail.model.enums.RecruiterType detectedRecruiterType;
+
+    private Integer detectedRecruiterConfidence;
+
     @Enumerated(EnumType.STRING)
     private EmailClassification classification;
 
@@ -134,6 +143,21 @@ public class Email {
 
     public String getDetectedStatus() { return detectedStatus; }
     public void setDetectedStatus(String detectedStatus) { this.detectedStatus = detectedStatus; }
+
+    public String getDetectedRecruiterName() { return detectedRecruiterName; }
+    public void setDetectedRecruiterName(String detectedRecruiterName) { this.detectedRecruiterName = detectedRecruiterName; }
+
+    public String getDetectedRecruiterEmail() { return detectedRecruiterEmail; }
+    public void setDetectedRecruiterEmail(String detectedRecruiterEmail) { this.detectedRecruiterEmail = detectedRecruiterEmail; }
+
+    public String getDetectedRecruiterTitle() { return detectedRecruiterTitle; }
+    public void setDetectedRecruiterTitle(String detectedRecruiterTitle) { this.detectedRecruiterTitle = detectedRecruiterTitle; }
+
+    public com.careermail.model.enums.RecruiterType getDetectedRecruiterType() { return detectedRecruiterType; }
+    public void setDetectedRecruiterType(com.careermail.model.enums.RecruiterType detectedRecruiterType) { this.detectedRecruiterType = detectedRecruiterType; }
+
+    public Integer getDetectedRecruiterConfidence() { return detectedRecruiterConfidence; }
+    public void setDetectedRecruiterConfidence(Integer detectedRecruiterConfidence) { this.detectedRecruiterConfidence = detectedRecruiterConfidence; }
 
     public EmailClassification getClassification() { return classification; }
     public void setClassification(EmailClassification classification) { this.classification = classification; }

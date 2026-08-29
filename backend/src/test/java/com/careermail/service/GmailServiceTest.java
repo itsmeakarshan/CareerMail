@@ -83,4 +83,42 @@ class GmailServiceTest {
         assertEquals("careers@stripe.com", email.getSenderEmail());
         assertEquals("Application Confirmation: Software Engineer at Stripe", email.getSubject());
     }
+
+    @Test
+    void testSendEmailWithoutConnectedAccount_ThrowsIllegalStateException() {
+        com.careermail.dto.EmailComposeRequest request = new com.careermail.dto.EmailComposeRequest();
+        request.setTo("recruiter@google.com");
+        request.setSubject("Follow up on application");
+        request.setBody("Hello, checking on the status of my application.");
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
+            gmailService.sendEmail(testUser, request);
+        });
+
+        assertTrue(ex.getMessage().contains("No Google account connected") || ex.getMessage().contains("Please connect"));
+    }
+
+    @Test
+    void testSendEmailValidation_ThrowsIllegalArgumentExceptionOnBlankFields() {
+        com.careermail.dto.EmailComposeRequest emptyTo = new com.careermail.dto.EmailComposeRequest();
+        emptyTo.setTo("   ");
+        emptyTo.setSubject("Subject");
+        emptyTo.setBody("Body");
+
+        assertThrows(IllegalArgumentException.class, () -> gmailService.sendEmail(testUser, emptyTo));
+
+        com.careermail.dto.EmailComposeRequest emptySubject = new com.careermail.dto.EmailComposeRequest();
+        emptySubject.setTo("recruiter@google.com");
+        emptySubject.setSubject("   ");
+        emptySubject.setBody("Body");
+
+        assertThrows(IllegalArgumentException.class, () -> gmailService.sendEmail(testUser, emptySubject));
+
+        com.careermail.dto.EmailComposeRequest emptyBody = new com.careermail.dto.EmailComposeRequest();
+        emptyBody.setTo("recruiter@google.com");
+        emptyBody.setSubject("Subject");
+        emptyBody.setBody("   ");
+
+        assertThrows(IllegalArgumentException.class, () -> gmailService.sendEmail(testUser, emptyBody));
+    }
 }

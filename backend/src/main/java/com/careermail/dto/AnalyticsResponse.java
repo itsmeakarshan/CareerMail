@@ -21,6 +21,9 @@ public class AnalyticsResponse {
     private List<MonthlyTrend> last3MonthsTrends;
     private List<MonthlyTrend> last6MonthsTrends;
     private List<MonthlyTrend> last12MonthsTrends;
+    private List<MonthlyTrend> dailyTrendsLast7Days;
+    private List<MonthlyTrend> dailyTrendsLast14Days;
+    private List<MonthlyTrend> dailyTrendsThisMonth;
     private List<StatusDistribution> applicationStatus;
 
     public AnalyticsResponse() {}
@@ -118,6 +121,15 @@ public class AnalyticsResponse {
 
     public List<MonthlyTrend> getLast12MonthsTrends() { return last12MonthsTrends; }
     public void setLast12MonthsTrends(List<MonthlyTrend> last12MonthsTrends) { this.last12MonthsTrends = last12MonthsTrends; }
+
+    public List<MonthlyTrend> getDailyTrendsLast7Days() { return dailyTrendsLast7Days; }
+    public void setDailyTrendsLast7Days(List<MonthlyTrend> dailyTrendsLast7Days) { this.dailyTrendsLast7Days = dailyTrendsLast7Days; }
+
+    public List<MonthlyTrend> getDailyTrendsLast14Days() { return dailyTrendsLast14Days; }
+    public void setDailyTrendsLast14Days(List<MonthlyTrend> dailyTrendsLast14Days) { this.dailyTrendsLast14Days = dailyTrendsLast14Days; }
+
+    public List<MonthlyTrend> getDailyTrendsThisMonth() { return dailyTrendsThisMonth; }
+    public void setDailyTrendsThisMonth(List<MonthlyTrend> dailyTrendsThisMonth) { this.dailyTrendsThisMonth = dailyTrendsThisMonth; }
 
     public List<StatusDistribution> getApplicationStatus() { return applicationStatus; }
     public void setApplicationStatus(List<StatusDistribution> applicationStatus) { this.applicationStatus = applicationStatus; }

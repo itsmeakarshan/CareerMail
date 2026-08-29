@@ -17,19 +17,41 @@ import java.util.Map;
 public class EmailService {
 
     private final EmailRepository emailRepository;
+    private final com.careermail.repository.JobApplicationRepository jobApplicationRepository;
     private final AuthService authService;
     private final EmailAnalysisService emailAnalysisService;
+    private final GmailService gmailService;
 
-    public EmailService(EmailRepository emailRepository, AuthService authService, EmailAnalysisService emailAnalysisService) {
+    public EmailService(EmailRepository emailRepository,
+                        com.careermail.repository.JobApplicationRepository jobApplicationRepository,
+                        AuthService authService,
+                        EmailAnalysisService emailAnalysisService,
+                        GmailService gmailService) {
         this.emailRepository = emailRepository;
+        this.jobApplicationRepository = jobApplicationRepository;
         this.authService = authService;
         this.emailAnalysisService = emailAnalysisService;
+        this.gmailService = gmailService;
+    }
+
+    public List<Email> getEmailsByJobApplication(Long applicationId) {
+        User user = authService.getCurrentUser();
+        com.careermail.model.entity.JobApplication app = jobApplicationRepository.findByIdAndUser(applicationId, user)
+                .orElseThrow(() -> new IllegalArgumentException("Application not found with ID: " + applicationId));
+        return emailRepository.findByJobApplicationOrderByTimestampDesc(app);
     }
 
     public List<Email> getEmailsByFolder(String folderName) {
         User user = authService.getCurrentUser();
-        EmailFolder folder = EmailFolder.valueOf(folderName.toUpperCase());
-        return emailRepository.findByUserAndFolderOrderByTimestampDesc(user, folder);
+        if (folderName == null || folderName.isBlank() || "all".equalsIgnoreCase(folderName)) {
+            return emailRepository.findByUserOrderByTimestampDesc(user);
+        }
+        try {
+            EmailFolder folder = EmailFolder.valueOf(folderName.toUpperCase());
+            return emailRepository.findByUserAndFolderOrderByTimestampDesc(user, folder);
+        } catch (IllegalArgumentException e) {
+            return emailRepository.findByUserAndFolderOrderByTimestampDesc(user, EmailFolder.INBOX);
+        }
     }
 
     public List<Email> getStarredEmails() {
@@ -72,29 +94,18 @@ public class EmailService {
     @Transactional
     public Email moveToFolder(Long id, String folderName) {
         Email email = getEmailById(id);
-        email.setFolder(EmailFolder.valueOf(folderName.toUpperCase()));
+        try {
+            email.setFolder(EmailFolder.valueOf(folderName.toUpperCase()));
+        } catch (Exception e) {
+            email.setFolder(EmailFolder.INBOX);
+        }
         return emailRepository.save(email);
     }
 
     @Transactional
     public Email composeEmail(EmailComposeRequest request) {
         User user = authService.getCurrentUser();
-
-        Email email = new Email();
-        email.setUser(user);
-        email.setSender(user.getName());
-        email.setSenderEmail(user.getEmail());
-        email.setRecipientEmail(request.getTo() != null ? request.getTo() : "recruiter@company.com");
-        email.setSubject(request.getSubject());
-        email.setBody(request.getBody());
-        email.setPreview(request.getBody().length() > 80 ? request.getBody().substring(0, 80) + "..." : request.getBody());
-        email.setTimestamp(LocalDateTime.now());
-        email.setRead(true);
-        email.setFolder(EmailFolder.SENT);
-
-        emailAnalysisService.processEmail(email, user);
-
-        return emailRepository.save(email);
+        return gmailService.sendEmail(user, request);
     }
 
     @Transactional

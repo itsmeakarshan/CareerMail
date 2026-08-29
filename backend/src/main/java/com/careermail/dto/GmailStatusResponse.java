@@ -9,16 +9,24 @@ public class GmailStatusResponse {
     private LocalDateTime lastSyncedAt;
     private Integer totalEmailsScanned;
     private boolean configured;
+    private String scope;
+    private boolean hasSendScope;
 
     public GmailStatusResponse() {}
 
     public GmailStatusResponse(boolean connected, String email, String provider, LocalDateTime lastSyncedAt, Integer totalEmailsScanned, boolean configured) {
+        this(connected, email, provider, lastSyncedAt, totalEmailsScanned, configured, null, false);
+    }
+
+    public GmailStatusResponse(boolean connected, String email, String provider, LocalDateTime lastSyncedAt, Integer totalEmailsScanned, boolean configured, String scope, boolean hasSendScope) {
         this.connected = connected;
         this.email = email;
         this.provider = provider;
         this.lastSyncedAt = lastSyncedAt;
         this.totalEmailsScanned = totalEmailsScanned;
         this.configured = configured;
+        this.scope = scope;
+        this.hasSendScope = hasSendScope;
     }
 
     public boolean isConnected() { return connected; }
@@ -40,4 +48,10 @@ public class GmailStatusResponse {
 
     public boolean isConfigured() { return configured; }
     public void setConfigured(boolean configured) { this.configured = configured; }
+
+    public String getScope() { return scope; }
+    public void setScope(String scope) { this.scope = scope; }
+
+    public boolean isHasSendScope() { return hasSendScope; }
+    public void setHasSendScope(boolean hasSendScope) { this.hasSendScope = hasSendScope; }
 }

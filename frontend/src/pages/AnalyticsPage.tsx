@@ -26,11 +26,11 @@ export const AnalyticsPage: React.FC = () => {
     <div className="max-w-6xl mx-auto space-y-6 pb-12">
       {/* Header */}
       <div>
-        <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-purple-400" />
+        <h1 className="text-xl md:text-2xl font-bold text-[#1f1f1f] dark:text-white tracking-tight flex items-center gap-2">
+          <BarChart3 className="w-6 h-6 text-pink-600 dark:text-pink-400" />
           <span>Job Search Analytics & Insights</span>
         </h1>
-        <p className="text-xs md:text-sm text-slate-400 mt-0.5 font-medium">
+        <p className="text-xs md:text-sm text-[#5f6368] dark:text-slate-400 mt-0.5 font-medium">
           Comprehensive conversion funnels, response velocities, and outcome metrics
         </p>
       </div>
@@ -46,49 +46,49 @@ export const AnalyticsPage: React.FC = () => {
 
       {/* Funnel Metrics & Conversion Rates */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-5 rounded-2xl bg-[#101626] border border-[#1e2640] shadow-sm flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#16181f] border border-[#e0e2e7] dark:border-[#282a2d] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400">Response Rate</span>
-              <div className="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center">
+              <span className="text-xs font-semibold text-[#5f6368] dark:text-slate-400">Response Rate</span>
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
                 <Percent className="w-4 h-4" />
               </div>
             </div>
-            <span className="text-3xl font-extrabold text-white mt-2 block">
+            <span className="text-3xl font-extrabold text-[#1f1f1f] dark:text-white mt-2 block">
               {data ? data.responseRate : 0}%
             </span>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-[#5f6368] dark:text-slate-400 mt-1">
               {data && data.totalApplications > 0
                 ? `Calculated from ${data.totalApplications} total applications synchronized from your emails.`
                 : 'Connect Gmail and sync your emails to calculate response rate.'}
             </p>
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-800 flex items-center text-xs text-emerald-400 font-semibold">
+          <div className="mt-4 pt-3 border-t border-[#e0e2e7] dark:border-[#282a2d] flex items-center text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
             <TrendingUp className="w-3.5 h-3.5 mr-1" />
             <span>{data && data.totalApplications > 0 ? 'Live database calculation' : 'No data yet'}</span>
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#101626] border border-[#1e2640] shadow-sm flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#16181f] border border-[#e0e2e7] dark:border-[#282a2d] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400">Interview Conversion</span>
-              <div className="w-8 h-8 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center">
+              <span className="text-xs font-semibold text-[#5f6368] dark:text-slate-400">Interview Conversion</span>
+              <div className="w-8 h-8 rounded-xl bg-pink-500/10 text-pink-500 flex items-center justify-center">
                 <ArrowUpRight className="w-4 h-4" />
               </div>
             </div>
-            <span className="text-3xl font-extrabold text-white mt-2 block">
+            <span className="text-3xl font-extrabold text-[#1f1f1f] dark:text-white mt-2 block">
               {data && data.totalApplications > 0
                 ? ((data.interviews / data.totalApplications) * 100).toFixed(1)
                 : '0.0'}%
             </span>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-[#5f6368] dark:text-slate-400 mt-1">
               {data && data.totalApplications > 0
                 ? `${data.interviews} scheduled technical and screening interviews from ${data.totalApplications} applications.`
                 : 'No interview records found in database.'}
             </p>
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-800 flex items-center text-xs text-purple-400 font-semibold">
+          <div className="mt-4 pt-3 border-t border-[#e0e2e7] dark:border-[#282a2d] flex items-center text-xs text-pink-600 dark:text-pink-400 font-semibold">
             <CheckCircle className="w-3.5 h-3.5 mr-1" />
             <span>
               {data && data.thisMonthInterviews > 0
@@ -98,26 +98,26 @@ export const AnalyticsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#101626] border border-[#1e2640] shadow-sm flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#16181f] border border-[#e0e2e7] dark:border-[#282a2d] shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400">Offer Conversion</span>
-              <div className="w-8 h-8 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center">
+              <span className="text-xs font-semibold text-[#5f6368] dark:text-slate-400">Offer Conversion</span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                 <Award className="w-4 h-4" />
               </div>
             </div>
-            <span className="text-3xl font-extrabold text-white mt-2 block">
+            <span className="text-3xl font-extrabold text-[#1f1f1f] dark:text-white mt-2 block">
               {data && data.totalApplications > 0
                 ? ((data.offers / data.totalApplications) * 100).toFixed(1)
                 : '0.0'}%
             </span>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-[#5f6368] dark:text-slate-400 mt-1">
               {data && data.totalApplications > 0
                 ? `${data.offers} formal written offer${data.offers === 1 ? '' : 's'} recorded.`
                 : 'No offer records found in database.'}
             </p>
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-800 flex items-center text-xs text-emerald-400 font-semibold">
+          <div className="mt-4 pt-3 border-t border-[#e0e2e7] dark:border-[#282a2d] flex items-center text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
             <Award className="w-3.5 h-3.5 mr-1" />
             <span>
               {data && data.thisMonthOffers > 0

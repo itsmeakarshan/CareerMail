@@ -10,6 +10,7 @@ public enum EmailClassification {
     REJECTION("Rejection"),
     OFFER("Job Offer"),
     STATUS_UPDATE("Status Update"),
+    NEW_OPPORTUNITY("New Opportunity"),
     OTHER_JOB_RELATED("Other Job Related");
 
     private final String displayName;

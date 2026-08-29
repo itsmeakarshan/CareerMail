@@ -54,6 +54,12 @@ export interface FollowUp {
   notes?: string;
 }
 
+export type RecruiterType =
+  | 'HUMAN_RECRUITER'
+  | 'POSSIBLE_RECRUITER'
+  | 'AUTOMATED_SYSTEM'
+  | 'NO_RECRUITER_IDENTIFIED';
+
 export interface JobApplication {
   id: number;
   company: string;
@@ -66,7 +72,14 @@ export interface JobApplication {
   priority: Priority;
   recruiterName?: string;
   recruiterEmail?: string;
+  recruiterTitle?: string;
+  recruiterPhone?: string;
+  recruiterLinkedin?: string;
+  recruiterType?: RecruiterType;
+  contactConfidence?: number;
+  contactExtractionSource?: string;
   source?: string;
+  jobUrl?: string;
   notes?: string;
   lastActivityDate?: string;
   nextFollowUpDate?: string;
@@ -76,6 +89,9 @@ export interface JobApplication {
   interviews?: Interview[];
   followUps?: FollowUp[];
 }
+
+export type SyncResult = GmailSyncResult;
+
 
 export interface Email {
   id: number;
@@ -95,6 +111,11 @@ export interface Email {
   detectedCompany?: string;
   detectedRole?: string;
   detectedStatus?: string;
+  detectedRecruiterName?: string;
+  detectedRecruiterEmail?: string;
+  detectedRecruiterTitle?: string;
+  detectedRecruiterType?: RecruiterType;
+  detectedRecruiterConfidence?: number;
   classification?: string;
   gmailMessageId?: string;
   gmailThreadId?: string;
@@ -130,13 +151,53 @@ export interface AnalyticsData {
   last3MonthsTrends?: MonthlyTrend[];
   last6MonthsTrends?: MonthlyTrend[];
   last12MonthsTrends?: MonthlyTrend[];
+  dailyTrendsLast7Days?: MonthlyTrend[];
+  dailyTrendsLast14Days?: MonthlyTrend[];
+  dailyTrendsThisMonth?: MonthlyTrend[];
   applicationStatus: StatusDistribution[];
+}
+
+export interface AssistantCard {
+  cardType: string;
+  id?: number;
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  badgeColor?: string;
+  priority?: string;
+  actionUrl?: string;
+  company?: string;
+  role?: string;
+  status?: string;
+  date?: string;
+  recruiterName?: string;
+  recruiterEmail?: string;
+}
+
+export interface AssistantEmailDraft {
+  to?: string;
+  subject: string;
+  body: string;
+  recruiterName?: string;
+  company?: string;
+  role?: string;
+  draftType?: string;
 }
 
 export interface AssistantResponse {
   reply: string;
-  suggestions: string[];
+  suggestions?: string[];
+  cards?: AssistantCard[];
+  emailDraft?: AssistantEmailDraft;
   data?: any;
+}
+
+export interface AssistantRequest {
+  query: string;
+  currentScreen?: string;
+  selectedApplicationId?: number;
+  selectedEmailId?: number;
+  action?: string;
 }
 
 export interface GmailStatus {
@@ -147,6 +208,8 @@ export interface GmailStatus {
   totalEmailsScanned: number;
   messagesScanned?: number;
   configured: boolean;
+  scope?: string;
+  hasSendScope?: boolean;
 }
 
 export interface GmailSyncResult {
@@ -174,4 +237,31 @@ export interface GoogleConfigResponse {
   configured: boolean;
   redirectUri: string;
   frontendUrl: string;
+}
+
+export interface Opportunity {
+  id: number;
+  company: string;
+  role: string;
+  recruiterName?: string;
+  recruiterEmail?: string;
+  subject: string;
+  snippet?: string;
+  fullBody?: string;
+  receivedAt: string;
+  location?: string;
+  salary?: string;
+  opportunityType?: string;
+  isConverted: boolean;
+  applicationId?: number;
+  tags?: string[];
+  isDismissed?: boolean;
+}
+
+export interface OpportunityScanResult {
+  success: boolean;
+  scannedCount: number;
+  opportunitiesCount: number;
+  message: string;
+  opportunities?: Opportunity[];
 }

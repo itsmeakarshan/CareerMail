@@ -17,6 +17,13 @@ public class AnalysisResult {
     private String salary;
     private String recruiterName;
     private String recruiterEmail;
+    private String recruiterTitle;
+    private String recruiterPhone;
+    private String recruiterLinkedin;
+    private com.careermail.model.enums.RecruiterType recruiterType = com.careermail.model.enums.RecruiterType.NO_RECRUITER_IDENTIFIED;
+    private Integer contactConfidence;
+    private String contactExtractionSource;
+
     private LocalDate deadline;
     private LocalDateTime interviewDateTime;
     private String interviewType;
@@ -86,6 +93,24 @@ public class AnalysisResult {
 
     public String getRecruiterEmail() { return recruiterEmail; }
     public void setRecruiterEmail(String recruiterEmail) { this.recruiterEmail = recruiterEmail; }
+
+    public String getRecruiterTitle() { return recruiterTitle; }
+    public void setRecruiterTitle(String recruiterTitle) { this.recruiterTitle = recruiterTitle; }
+
+    public String getRecruiterPhone() { return recruiterPhone; }
+    public void setRecruiterPhone(String recruiterPhone) { this.recruiterPhone = recruiterPhone; }
+
+    public String getRecruiterLinkedin() { return recruiterLinkedin; }
+    public void setRecruiterLinkedin(String recruiterLinkedin) { this.recruiterLinkedin = recruiterLinkedin; }
+
+    public com.careermail.model.enums.RecruiterType getRecruiterType() { return recruiterType; }
+    public void setRecruiterType(com.careermail.model.enums.RecruiterType recruiterType) { this.recruiterType = recruiterType; }
+
+    public Integer getContactConfidence() { return contactConfidence; }
+    public void setContactConfidence(Integer contactConfidence) { this.contactConfidence = contactConfidence; }
+
+    public String getContactExtractionSource() { return contactExtractionSource; }
+    public void setContactExtractionSource(String contactExtractionSource) { this.contactExtractionSource = contactExtractionSource; }
 
     public LocalDate getDeadline() { return deadline; }
     public void setDeadline(LocalDate deadline) { this.deadline = deadline; }

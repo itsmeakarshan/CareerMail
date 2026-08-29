@@ -64,6 +64,14 @@ public class JobApplicationService {
         app.setPriority(request.getPriority() != null ? Priority.fromString(request.getPriority()) : Priority.MEDIUM);
         app.setRecruiterName(request.getRecruiterName() != null ? request.getRecruiterName().trim() : null);
         app.setRecruiterEmail(request.getRecruiterEmail() != null ? request.getRecruiterEmail().trim() : null);
+        app.setRecruiterTitle(request.getRecruiterTitle() != null ? request.getRecruiterTitle().trim() : null);
+        app.setRecruiterPhone(request.getRecruiterPhone() != null ? request.getRecruiterPhone().trim() : null);
+        app.setRecruiterLinkedin(request.getRecruiterLinkedin() != null ? request.getRecruiterLinkedin().trim() : null);
+        if (request.getRecruiterType() != null) {
+            try { app.setRecruiterType(com.careermail.model.enums.RecruiterType.valueOf(request.getRecruiterType())); } catch (Exception ignored) {}
+        }
+        app.setContactConfidence(request.getContactConfidence());
+        app.setContactExtractionSource(request.getContactExtractionSource());
         app.setSource(request.getSource() != null ? request.getSource().trim() : "Direct Application");
         app.setNotes(request.getNotes() != null ? request.getNotes().trim() : null);
         app.setNextFollowUpDate(request.getNextFollowUpDate());
@@ -121,6 +129,14 @@ public class JobApplicationService {
         if (request.getPriority() != null) app.setPriority(Priority.fromString(request.getPriority()));
         if (request.getRecruiterName() != null) app.setRecruiterName(request.getRecruiterName());
         if (request.getRecruiterEmail() != null) app.setRecruiterEmail(request.getRecruiterEmail());
+        if (request.getRecruiterTitle() != null) app.setRecruiterTitle(request.getRecruiterTitle());
+        if (request.getRecruiterPhone() != null) app.setRecruiterPhone(request.getRecruiterPhone());
+        if (request.getRecruiterLinkedin() != null) app.setRecruiterLinkedin(request.getRecruiterLinkedin());
+        if (request.getRecruiterType() != null) {
+            try { app.setRecruiterType(com.careermail.model.enums.RecruiterType.valueOf(request.getRecruiterType())); } catch (Exception ignored) {}
+        }
+        if (request.getContactConfidence() != null) app.setContactConfidence(request.getContactConfidence());
+        if (request.getContactExtractionSource() != null) app.setContactExtractionSource(request.getContactExtractionSource());
         if (request.getSource() != null) app.setSource(request.getSource());
         if (request.getNotes() != null) app.setNotes(request.getNotes());
         if (request.getNextFollowUpDate() != null) app.setNextFollowUpDate(request.getNextFollowUpDate());

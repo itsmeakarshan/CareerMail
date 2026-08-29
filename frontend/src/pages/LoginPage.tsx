@@ -61,13 +61,31 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-screen bg-[#070913] text-slate-100 flex flex-col justify-between p-6 md:p-12 relative overflow-hidden font-sans selection:bg-purple-500 selection:text-white">
-      {/* Ambient background glows */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-[400px] h-[300px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none" />
+    <div className="min-h-screen w-screen bg-gradient-to-br from-[#fff0f5] via-[#fdf2f8] to-[#fce7f3] text-slate-800 flex flex-col justify-between p-6 md:p-12 relative overflow-hidden font-sans selection:bg-pink-500 selection:text-white">
+      {/* Ambient soft background glows */}
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-pink-300/30 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-10 right-1/4 w-[450px] h-[350px] bg-rose-200/40 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Subtle bottom wave curves matching Login.png */}
-      <div className="absolute bottom-0 left-0 w-full h-48 pointer-events-none overflow-hidden opacity-35">
+      {/* Top Corner: Made by Akarshan Rasyal with LinkedIn Link */}
+      <a
+        href="https://www.linkedin.com/in/akarshanrasyal/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute top-5 right-5 sm:top-6 sm:right-8 z-30 px-3.5 py-1.5 rounded-full bg-white/90 hover:bg-white border border-pink-200 hover:border-pink-300 shadow-sm hover:shadow-md transition-all hover:scale-105 flex items-center gap-2 group backdrop-blur-md"
+        title="Connect with Akarshan Rasyal on LinkedIn"
+      >
+        <span className="text-[11px] font-medium text-slate-600 group-hover:text-slate-900">
+          Made by <strong className="text-pink-600 font-bold group-hover:text-pink-700">Akarshan Rasyal</strong>
+        </span>
+        <div className="w-5 h-5 rounded-full bg-[#0A66C2] text-white flex items-center justify-center shadow-xs flex-shrink-0 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current">
+            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+          </svg>
+        </div>
+      </a>
+
+      {/* Subtle bottom wave curves */}
+      <div className="absolute bottom-0 left-0 w-full h-48 pointer-events-none overflow-hidden opacity-40">
         <svg viewBox="0 0 1440 280" fill="none" className="w-full h-full object-cover">
           <path
             d="M-100 240 C 300 120, 500 290, 900 180 C 1200 100, 1400 220, 1600 160"
@@ -83,14 +101,14 @@ export const LoginPage: React.FC = () => {
           />
           <defs>
             <linearGradient id="waveGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.8" />
-              <stop offset="50%" stopColor="#9333ea" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.2" />
+              <stop offset="0%" stopColor="#f472b6" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="#fb7185" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#fda4af" stopOpacity="0.2" />
             </linearGradient>
             <linearGradient id="waveGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.5" />
-              <stop offset="60%" stopColor="#6366f1" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
+              <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.5" />
+              <stop offset="60%" stopColor="#f472b6" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#fbcfe8" stopOpacity="0" />
             </linearGradient>
           </defs>
         </svg>
@@ -99,87 +117,87 @@ export const LoginPage: React.FC = () => {
       {/* Main Container */}
       <div className="max-w-6xl w-full mx-auto my-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center relative z-10 py-6">
         
-        {/* Left Column: Brand, Pitch & 4 Feature Badges matching Login.png */}
+        {/* Left Column: Brand, Pitch & 4 Feature Badges */}
         <div className="lg:col-span-6 flex flex-col justify-center space-y-7">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-fuchsia-500 p-[1.5px] flex items-center justify-center shadow-glow-purple">
-              <div className="w-full h-full bg-[#0b0f1e] rounded-[10px] flex items-center justify-center">
-                <svg viewBox="0 0 24 24" className="w-5 h-5 text-purple-400" fill="currentColor">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-pink-400 p-[1.5px] flex items-center justify-center shadow-lg shadow-pink-500/25">
+              <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
+                <svg viewBox="0 0 24 24" className="w-5 h-5 text-pink-500" fill="currentColor">
                   <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
                 </svg>
               </div>
             </div>
-            <span className="text-2xl font-extrabold text-white tracking-tight">CareerMail</span>
+            <span className="text-2xl font-extrabold text-slate-900 tracking-tight">CareerMail</span>
           </div>
 
           {/* Heading */}
           <div className="space-y-1">
-            <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-[1.15]">
+            <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
               Track applications.
             </h1>
-            <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-[1.15]">
+            <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
               Stay organized.
             </h1>
-            <h1 className="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent tracking-tight leading-[1.15]">
+            <h1 className="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-pink-600 via-rose-500 to-pink-500 bg-clip-text text-transparent tracking-tight leading-[1.15]">
               Land your dream job.
             </h1>
           </div>
 
           {/* Subtext */}
-          <p className="text-sm md:text-base text-slate-400 leading-relaxed max-w-md">
+          <p className="text-sm md:text-base text-slate-600 leading-relaxed max-w-md">
             CareerMail automatically scans your emails, tracks your applications, schedules interviews, and never lets you miss a follow-up.
           </p>
 
-          {/* 4 Feature Items matching Login.png */}
-          <div className="space-y-4 pt-2">
+          {/* 4 Feature Items */}
+          <div className="space-y-3.5 pt-2">
             {/* Feature 1 */}
-            <div className="flex items-start gap-4 group">
-              <div className="w-11 h-11 rounded-2xl bg-[#141530] border border-violet-900/50 flex items-center justify-center flex-shrink-0 text-violet-400 shadow-sm transition-transform group-hover:scale-105">
+            <div className="flex items-start gap-4 p-3 rounded-2xl bg-white/80 border border-pink-100 shadow-sm transition-all hover:shadow-md hover:border-pink-200">
+              <div className="w-10 h-10 rounded-xl bg-pink-50 border border-pink-200 flex items-center justify-center flex-shrink-0 text-pink-600">
                 <Inbox className="w-5 h-5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-white">Sync your Gmail</span>
-                <span className="text-xs text-slate-400 leading-relaxed">
+                <span className="text-sm font-bold text-slate-900">Sync your Gmail</span>
+                <span className="text-xs text-slate-500 leading-relaxed">
                   Connect your Gmail to auto-detect job applications and important updates.
                 </span>
               </div>
             </div>
 
             {/* Feature 2 */}
-            <div className="flex items-start gap-4 group">
-              <div className="w-11 h-11 rounded-2xl bg-[#181535] border border-purple-900/50 flex items-center justify-center flex-shrink-0 text-purple-400 shadow-sm transition-transform group-hover:scale-105">
+            <div className="flex items-start gap-4 p-3 rounded-2xl bg-white/80 border border-pink-100 shadow-sm transition-all hover:shadow-md hover:border-pink-200">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center flex-shrink-0 text-rose-600">
                 <BarChart2 className="w-5 h-5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-white">Track your progress</span>
-                <span className="text-xs text-slate-400 leading-relaxed">
+                <span className="text-sm font-bold text-slate-900">Track your progress</span>
+                <span className="text-xs text-slate-500 leading-relaxed">
                   Get real-time insights into your application pipeline and response rates.
                 </span>
               </div>
             </div>
 
             {/* Feature 3 */}
-            <div className="flex items-start gap-4 group">
-              <div className="w-11 h-11 rounded-2xl bg-[#1a1438] border border-fuchsia-900/50 flex items-center justify-center flex-shrink-0 text-fuchsia-400 shadow-sm transition-transform group-hover:scale-105">
+            <div className="flex items-start gap-4 p-3 rounded-2xl bg-white/80 border border-pink-100 shadow-sm transition-all hover:shadow-md hover:border-pink-200">
+              <div className="w-10 h-10 rounded-xl bg-pink-50 border border-pink-200 flex items-center justify-center flex-shrink-0 text-pink-600">
                 <Calendar className="w-5 h-5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-white">Never miss an interview</span>
-                <span className="text-xs text-slate-400 leading-relaxed">
+                <span className="text-sm font-bold text-slate-900">Never miss an interview</span>
+                <span className="text-xs text-slate-500 leading-relaxed">
                   Automatically detect interviews and get reminders for what matters.
                 </span>
               </div>
             </div>
 
             {/* Feature 4 */}
-            <div className="flex items-start gap-4 group">
-              <div className="w-11 h-11 rounded-2xl bg-[#131536] border border-indigo-900/50 flex items-center justify-center flex-shrink-0 text-indigo-400 shadow-sm transition-transform group-hover:scale-105">
+            <div className="flex items-start gap-4 p-3 rounded-2xl bg-white/80 border border-pink-100 shadow-sm transition-all hover:shadow-md hover:border-pink-200">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center flex-shrink-0 text-rose-600">
                 <Bell className="w-5 h-5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-white">Smart follow-ups</span>
-                <span className="text-xs text-slate-400 leading-relaxed">
+                <span className="text-sm font-bold text-slate-900">Smart follow-ups</span>
+                <span className="text-xs text-slate-500 leading-relaxed">
                   Get AI-powered follow-up suggestions so you never fall off the radar.
                 </span>
               </div>
@@ -187,23 +205,23 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Sign In Card matching Login.png */}
+        {/* Right Column: Sign In Card */}
         <div className="lg:col-span-6 flex justify-center lg:justify-end">
-          <div className="w-full max-w-[440px] bg-[#0c1020]/90 backdrop-blur-xl border border-[#1e2744] rounded-[28px] p-8 md:p-10 shadow-2xl space-y-6">
+          <div className="w-full max-w-[440px] bg-white/95 backdrop-blur-xl border border-pink-200/80 rounded-[28px] p-8 md:p-10 shadow-2xl shadow-pink-500/10 space-y-6">
             
             {/* Form Header */}
             <div className="text-center space-y-1.5">
-              <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
                 Welcome back
               </h2>
-              <p className="text-xs md:text-sm text-slate-400">
+              <p className="text-xs md:text-sm text-slate-500">
                 Sign in to continue to CareerMail
               </p>
             </div>
 
             {/* Error Notification */}
             {error && (
-              <div className="p-3 bg-rose-950/80 border border-rose-800/60 rounded-xl text-xs font-medium text-rose-300 text-center animate-fadeIn leading-relaxed">
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-semibold text-rose-700 text-center animate-fadeIn leading-relaxed">
                 {error}
               </div>
             )}
@@ -212,41 +230,41 @@ export const LoginPage: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-300">
-                  Email
+                <label className="block text-xs font-bold text-slate-700">
+                  Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                   <input
                     type="email"
                     required
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-[#080d19] border border-slate-800 focus:border-purple-500 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none transition-colors"
+                    className="w-full pl-10 pr-4 py-3 bg-pink-50/40 border border-pink-200/80 focus:border-pink-500 focus:bg-white rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-200/60 transition-colors"
                   />
                 </div>
               </div>
 
               {/* Password */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-300">
+                <label className="block text-xs font-bold text-slate-700">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-10 py-3 bg-[#080d19] border border-slate-800 focus:border-purple-500 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none transition-colors"
+                    className="w-full pl-10 pr-10 py-3 bg-pink-50/40 border border-pink-200/80 focus:border-pink-500 focus:bg-white rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-200/60 transition-colors"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3.5 text-slate-500 hover:text-slate-300 transition-colors"
+                    className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -255,7 +273,7 @@ export const LoginPage: React.FC = () => {
 
               {/* Forgot password */}
               <div className="flex justify-end">
-                <a href="#" className="text-xs text-purple-400 hover:text-purple-300 transition-colors font-medium">
+                <a href="#" className="text-xs text-pink-600 hover:text-pink-700 transition-colors font-semibold">
                   Forgot password?
                 </a>
               </div>
@@ -264,7 +282,7 @@ export const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-xl text-sm font-bold shadow-glow-purple flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+                className="w-full py-3.5 px-4 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-pink-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
               >
                 <span>{loading ? 'Signing in...' : 'Sign In'}</span>
                 {!loading && <ArrowRight className="w-4 h-4" />}
@@ -273,20 +291,20 @@ export const LoginPage: React.FC = () => {
 
             {/* OR Divider */}
             <div className="flex items-center gap-3 py-1">
-              <div className="h-px bg-slate-800 flex-1" />
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <div className="h-px bg-pink-100 flex-1" />
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 OR
               </span>
-              <div className="h-px bg-slate-800 flex-1" />
+              <div className="h-px bg-pink-100 flex-1" />
             </div>
 
-            {/* Continue with Google Button matching Login.png */}
+            {/* Continue with Google Button */}
             <div className="space-y-3">
               <button
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={googleLoading || loading}
-                className="w-full py-3 px-4 bg-white hover:bg-slate-100 text-slate-900 rounded-xl text-sm font-bold shadow-md flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full py-3 px-4 bg-white hover:bg-pink-50/50 border border-pink-200 text-slate-800 rounded-xl text-sm font-bold shadow-sm flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.99]"
               >
                 <svg viewBox="0 0 24 24" className="w-4 h-4 flex-shrink-0">
                   <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.7 1 4 3.5 2.2 7.1l3.7 2.8C6.7 7.3 9.1 5 12 5z"/>
@@ -302,18 +320,18 @@ export const LoginPage: React.FC = () => {
                 type="button"
                 onClick={handleDemoFill}
                 disabled={loading || googleLoading}
-                className="w-full py-2 px-3 bg-[#11182c] hover:bg-[#18223d] border border-slate-800 hover:border-purple-800/60 rounded-xl text-xs font-semibold text-purple-300 flex items-center justify-center gap-1.5 transition-all"
+                className="w-full py-2.5 px-3 bg-pink-50 hover:bg-pink-100/80 border border-pink-200 text-pink-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
               >
-                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                <Sparkles className="w-3.5 h-3.5 text-pink-500" />
                 <span>Fill Demo Credentials (Arjun Sharma)</span>
               </button>
             </div>
 
             {/* Bottom Sign up link */}
             <div className="text-center pt-1">
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-500">
                 Don't have an account?{' '}
-                <Link to="/register" className="text-purple-400 hover:text-purple-300 font-semibold hover:underline">
+                <Link to="/register" className="text-pink-600 hover:text-pink-700 font-bold hover:underline">
                   Sign up
                 </Link>
               </span>
@@ -323,9 +341,19 @@ export const LoginPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Footer matching Login.png */}
-      <footer className="text-center text-xs text-slate-500 relative z-10 pt-4">
-        © 2026 CareerMail. All rights reserved.
+      {/* Footer */}
+      <footer className="text-center text-xs text-slate-500 relative z-10 pt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+        <span>© 2026 CareerMail. All rights reserved.</span>
+        <span className="hidden sm:inline text-slate-300">•</span>
+        <a
+          href="https://www.linkedin.com/in/akarshanrasyal/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-slate-600 hover:text-pink-600 font-semibold transition-colors group"
+        >
+          <span>Made by Akarshan Rasyal</span>
+          <span className="w-4 h-4 rounded bg-[#0A66C2] text-white flex items-center justify-center text-[9px] font-bold">in</span>
+        </a>
       </footer>
     </div>
   );

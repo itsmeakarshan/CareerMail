@@ -15,12 +15,16 @@ import { emailsApi, gmailApi } from '../services/api';
 import { Email } from '../types';
 import { CompanyLogo } from '../components/common/CompanyLogo';
 import { ComposeEmailModal } from '../components/email/ComposeEmailModal';
+import { EmailContentViewer } from '../components/email/EmailContentViewer';
+import { useTheme } from '../context/ThemeContext';
 
 export const InboxPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const folder = searchParams.get('folder') || 'inbox';
   const searchQ = searchParams.get('q') || '';
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const [emails, setEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
@@ -93,14 +97,36 @@ export const InboxPage: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-6.5rem)] flex flex-col md:flex-row bg-[#101626] border border-[#1e2640] rounded-2xl overflow-hidden shadow-2xl">
+    <div
+      className={`h-[calc(100vh-6.5rem)] flex flex-col md:flex-row border rounded-2xl overflow-hidden shadow-2xl transition-colors duration-200 ${
+        isDark ? 'bg-[#16181f] border-[#282a2d]' : 'bg-white border-[#e0e2e7]'
+      }`}
+    >
       {/* Email List Sidebar */}
-      <div className="w-full md:w-96 lg:w-[420px] flex flex-col border-r border-[#1e2640] bg-[#0c111e] flex-shrink-0">
+      <div
+        className={`w-full md:w-96 lg:w-[420px] flex flex-col border-r flex-shrink-0 ${
+          isDark ? 'bg-[#16181f] border-[#282a2d]' : 'bg-[#f0f4f9] border-[#e0e2e7]'
+        }`}
+      >
         {/* List Header */}
-        <div className="p-4 border-b border-[#1e2640] flex items-center justify-between">
+        <div
+          className={`p-4 border-b flex items-center justify-between ${
+            isDark ? 'border-[#282a2d]' : 'border-[#e0e2e7]'
+          }`}
+        >
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-bold text-white capitalize">{folder}</h2>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-semibold">
+            <h2
+              className={`text-base font-bold capitalize ${
+                isDark ? 'text-white' : 'text-[#1f1f1f]'
+              }`}
+            >
+              {folder}
+            </h2>
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                isDark ? 'bg-[#282a2d] text-slate-300' : 'bg-[#e0e2e7] text-slate-700'
+              }`}
+            >
               {emails.length}
             </span>
           </div>
@@ -118,7 +144,11 @@ export const InboxPage: React.FC = () => {
                 }
               }}
               disabled={loading}
-              className="px-2.5 py-1.5 rounded-xl bg-purple-950/80 text-purple-300 hover:bg-purple-900 border border-purple-800/40 text-xs font-semibold flex items-center gap-1 transition-colors"
+              className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors ${
+                isDark
+                  ? 'bg-pink-950/80 text-pink-300 hover:bg-pink-900 border-pink-800/40'
+                  : 'bg-pink-100 text-pink-800 hover:bg-pink-200 border-pink-200'
+              }`}
               title="Sync incoming Gmail messages (last 3 months)"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -126,7 +156,11 @@ export const InboxPage: React.FC = () => {
             </button>
             <button
               onClick={() => setIsComposeOpen(true)}
-              className="px-2.5 py-1.5 rounded-xl bg-purple-600/20 text-purple-300 hover:bg-purple-600/30 border border-purple-500/30 text-xs font-semibold flex items-center gap-1 transition-colors"
+              className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors ${
+                isDark
+                  ? 'bg-pink-600/20 text-pink-300 hover:bg-pink-600/30 border-pink-500/30'
+                  : 'bg-pink-50 text-pink-700 hover:bg-pink-100 border-pink-200'
+              }`}
               title="Test Email Auto-Extraction"
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -134,7 +168,9 @@ export const InboxPage: React.FC = () => {
             </button>
             <button
               onClick={fetchEmails}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className={`p-1.5 rounded-lg transition-colors ${
+                isDark ? 'text-slate-400 hover:text-white hover:bg-[#282a2d]' : 'text-slate-600 hover:text-black hover:bg-[#e0e2e7]'
+              }`}
               title="Refresh"
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -143,40 +179,68 @@ export const InboxPage: React.FC = () => {
         </div>
 
         {/* Email Items List */}
-        <div className="flex-1 overflow-y-auto divide-y divide-[#1e2640]/50">
+        <div
+          className={`flex-1 overflow-y-auto divide-y ${
+            isDark ? 'divide-[#282a2d]' : 'divide-[#e0e2e7]'
+          }`}
+        >
           {emails.map((email) => {
             const isSelected = selectedEmail?.id === email.id;
+
+            let itemBg = '';
+            if (isDark) {
+              if (isSelected) {
+                itemBg = 'bg-[#282a2d] border-l-4 border-pink-400';
+              } else if (!email.read) {
+                itemBg = 'bg-[#1e1f20] hover:bg-[#282a2d]/70';
+              } else {
+                itemBg = 'bg-transparent hover:bg-[#202227]';
+              }
+            } else {
+              if (isSelected) {
+                itemBg = 'bg-[#fce7f3]/80 border-l-4 border-pink-500';
+              } else if (!email.read) {
+                itemBg = 'bg-white hover:bg-[#fdf2f8] font-semibold';
+              } else {
+                itemBg = 'bg-[#f0f4f9] hover:bg-[#e4e8ee]';
+              }
+            }
+
             return (
               <div
                 key={email.id}
                 onClick={() => handleSelectEmail(email)}
-                className={`p-3.5 cursor-pointer transition-all flex flex-col gap-1.5 relative ${
-                  isSelected
-                    ? 'bg-[#182138] border-l-4 border-purple-500'
-                    : email.read
-                    ? 'bg-transparent hover:bg-[#131b2e]'
-                    : 'bg-[#12192c] hover:bg-[#162038]'
-                }`}
+                className={`p-3.5 cursor-pointer transition-all flex flex-col gap-1.5 relative ${itemBg}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     {email.detectedCompany ? (
                       <CompanyLogo company={email.detectedCompany} size="sm" />
                     ) : (
-                      <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-300 flex-shrink-0">
+                      <div
+                        className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
+                          isDark ? 'bg-[#282a2d] text-slate-300' : 'bg-[#e0e2e7] text-slate-700'
+                        }`}
+                      >
                         {email.sender.charAt(0).toUpperCase()}
                       </div>
                     )}
                     <span
                       className={`text-xs truncate ${
-                        !email.read ? 'font-bold text-white' : 'font-medium text-slate-300'
+                        !email.read
+                          ? isDark ? 'font-bold text-white' : 'font-bold text-[#1f1f1f]'
+                          : isDark ? 'font-medium text-slate-300' : 'font-medium text-[#444746]'
                       }`}
                     >
                       {email.sender}
                     </span>
                   </div>
 
-                  <span className="text-[10px] text-slate-500 flex-shrink-0">
+                  <span
+                    className={`text-[10px] flex-shrink-0 ${
+                      isDark ? 'text-[#8e918f]' : 'text-[#5f6368]'
+                    }`}
+                  >
                     {formatEmailTime(email.timestamp)}
                   </span>
                 </div>
@@ -184,25 +248,45 @@ export const InboxPage: React.FC = () => {
                 <div className="flex items-center justify-between gap-2">
                   <span
                     className={`text-xs truncate ${
-                      !email.read ? 'font-bold text-slate-100' : 'font-normal text-slate-400'
+                      !email.read
+                        ? isDark ? 'font-bold text-slate-100' : 'font-bold text-[#1f1f1f]'
+                        : isDark ? 'font-normal text-slate-400' : 'font-normal text-[#5f6368]'
                     }`}
                   >
                     {email.subject}
                   </span>
                 </div>
 
-                <p className="text-[11px] text-slate-500 line-clamp-1">{email.preview}</p>
+                <p
+                  className={`text-[11px] line-clamp-1 ${
+                    isDark ? 'text-[#8e918f]' : 'text-[#5f6368]'
+                  }`}
+                >
+                  {email.preview}
+                </p>
 
                 {/* Tags & Action Icons */}
                 <div className="flex items-center justify-between mt-1 pt-1">
                   <div className="flex items-center gap-1.5">
                     {email.jobRelated && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800/40">
+                      <span
+                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                          isDark
+                            ? 'bg-pink-950/80 text-pink-300 border-pink-800/40'
+                            : 'bg-pink-100 text-pink-800 border-pink-200'
+                        }`}
+                      >
                         Job Auto-Detected
                       </span>
                     )}
                     {email.detectedStatus && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800/40">
+                      <span
+                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                          isDark
+                            ? 'bg-slate-800 text-slate-300 border-slate-700'
+                            : 'bg-slate-200 text-slate-800 border-slate-300'
+                        }`}
+                      >
                         {email.detectedStatus}
                       </span>
                     )}
@@ -211,16 +295,20 @@ export const InboxPage: React.FC = () => {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={(e) => handleToggleStar(e, email.id)}
-                      className={`p-1 rounded hover:bg-slate-800 transition-colors ${
-                        email.starred ? 'text-amber-400' : 'text-slate-600 hover:text-slate-400'
+                      className={`p-1 rounded transition-colors ${
+                        email.starred
+                          ? 'text-amber-400'
+                          : isDark ? 'text-slate-600 hover:text-slate-400' : 'text-slate-400 hover:text-slate-600'
                       }`}
                     >
                       <Star className="w-3.5 h-3.5 fill-current" />
                     </button>
                     <button
                       onClick={(e) => handleToggleImportant(e, email.id)}
-                      className={`p-1 rounded hover:bg-slate-800 transition-colors ${
-                        email.important ? 'text-purple-400' : 'text-slate-600 hover:text-slate-400'
+                      className={`p-1 rounded transition-colors ${
+                        email.important
+                          ? 'text-pink-400'
+                          : isDark ? 'text-slate-600 hover:text-slate-400' : 'text-slate-400 hover:text-slate-600'
                       }`}
                     >
                       <Bookmark className="w-3.5 h-3.5 fill-current" />
@@ -240,46 +328,76 @@ export const InboxPage: React.FC = () => {
       </div>
 
       {/* Email Detail View */}
-      <div className="flex-1 flex flex-col bg-[#101626] overflow-y-auto">
+      <div
+        className={`flex-1 flex flex-col overflow-y-auto ${
+          isDark ? 'bg-[#111318]' : 'bg-white'
+        }`}
+      >
         {selectedEmail ? (
           <div className="flex-1 flex flex-col p-6 space-y-5">
             {/* Action Bar */}
-            <div className="flex items-center justify-between pb-4 border-b border-[#1e2640]">
+            <div
+              className={`flex items-center justify-between pb-4 border-b ${
+                isDark ? 'border-[#282a2d]' : 'border-[#e0e2e7]'
+              }`}
+            >
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleDelete(selectedEmail.id)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 transition-colors"
+                  className={`p-2 rounded-xl transition-colors ${
+                    isDark ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-950/30' : 'text-slate-500 hover:text-rose-600 hover:bg-rose-50'
+                  }`}
                   title="Delete"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => {}}
-                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  className={`p-2 rounded-xl transition-colors ${
+                    isDark ? 'text-slate-400 hover:text-white hover:bg-[#282a2d]' : 'text-slate-500 hover:text-black hover:bg-[#e0e2e7]'
+                  }`}
                   title="Archive"
                 >
                   <Archive className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-slate-400">
+              <div
+                className={`flex items-center gap-2 text-xs ${
+                  isDark ? 'text-[#8e918f]' : 'text-[#5f6368]'
+                }`}
+              >
                 <span>{selectedEmail.timestamp.replace('T', ' ').substring(0, 16)}</span>
               </div>
             </div>
 
-            {/* Smart Pipeline Banner (The core value proposition!) */}
+            {/* Smart Pipeline Banner */}
             {selectedEmail.jobRelated && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-violet-950/60 to-indigo-950/60 border border-violet-700/40 flex items-center justify-between shadow-lg">
+              <div
+                className={`p-4 rounded-2xl border flex items-center justify-between shadow-md ${
+                  isDark
+                    ? 'bg-gradient-to-r from-pink-950/60 to-rose-950/60 border-pink-800/40 text-pink-200'
+                    : 'bg-gradient-to-r from-pink-50 to-rose-50 border-pink-200 text-pink-900'
+                }`}
+              >
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-violet-600/30 text-violet-300 border border-violet-500/40">
+                  <div
+                    className={`p-2 rounded-xl border ${
+                      isDark ? 'bg-pink-600/30 text-pink-300 border-pink-500/40' : 'bg-pink-200 text-pink-800 border-pink-300'
+                    }`}
+                  >
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span
+                      className={`text-xs font-bold flex items-center gap-1.5 ${
+                        isDark ? 'text-white' : 'text-[#1f1f1f]'
+                      }`}
+                    >
                       CareerMail Intelligence Pipeline
-                      <CheckCircle className="w-3.5 h-3.5 text-emerald-400 inline" />
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500 inline" />
                     </span>
-                    <span className="text-xs text-violet-200 mt-0.5">
+                    <span className="text-xs mt-0.5">
                       Organized into tracker as{' '}
                       <strong>{selectedEmail.detectedRole || 'Software Engineer'}</strong> at{' '}
                       <strong>{selectedEmail.detectedCompany || 'Company'}</strong> ({selectedEmail.detectedStatus})
@@ -288,7 +406,7 @@ export const InboxPage: React.FC = () => {
                 </div>
                 <button
                   onClick={() => navigate('/')}
-                  className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-glow-purple flex-shrink-0"
+                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-400 hover:to-rose-300 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm flex-shrink-0"
                 >
                   <span>View in Job Board</span>
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -298,45 +416,81 @@ export const InboxPage: React.FC = () => {
 
             {/* Email Subject & Sender */}
             <div>
-              <h1 className="text-xl font-bold text-white tracking-tight leading-snug">
+              <h1
+                className={`text-xl font-bold tracking-tight leading-snug ${
+                  isDark ? 'text-white' : 'text-[#1f1f1f]'
+                }`}
+              >
                 {selectedEmail.subject}
               </h1>
 
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#1e2640]/60">
+              <div
+                className={`flex items-center justify-between mt-3 pt-3 border-t ${
+                  isDark ? 'border-[#282a2d]' : 'border-[#e0e2e7]'
+                }`}
+              >
                 <div className="flex items-center gap-3">
                   {selectedEmail.detectedCompany ? (
                     <CompanyLogo company={selectedEmail.detectedCompany} size="md" />
                   ) : (
-                    <div className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-white">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold ${
+                        isDark ? 'bg-[#282a2d] text-white' : 'bg-[#e0e2e7] text-slate-800'
+                      }`}
+                    >
                       {selectedEmail.sender.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-white">
+                    <span
+                      className={`text-sm font-semibold ${
+                        isDark ? 'text-white' : 'text-[#1f1f1f]'
+                      }`}
+                    >
                       {selectedEmail.sender}
                     </span>
-                    <span className="text-xs text-slate-400">{selectedEmail.senderEmail}</span>
+                    <span
+                      className={`text-xs ${
+                        isDark ? 'text-[#8e918f]' : 'text-[#5f6368]'
+                      }`}
+                    >
+                      {selectedEmail.senderEmail}
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-medium">
+                  <span
+                    className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
+                      isDark ? 'bg-[#1e1f20] text-slate-300 border-[#282a2d]' : 'bg-[#f0f4f9] text-slate-700 border-[#e0e2e7]'
+                    }`}
+                  >
                     To: {selectedEmail.recipientEmail || 'Me'}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Email Body */}
-            <div className="pt-4 text-sm text-slate-200 leading-relaxed whitespace-pre-wrap font-sans">
-              {selectedEmail.body}
+            {/* Rich Email Body with Exact Gmail Styling & Working Links */}
+            <div className="pt-2">
+              <EmailContentViewer body={selectedEmail.body} subject={selectedEmail.subject} />
             </div>
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-            <Mail className="w-12 h-12 text-slate-600 mb-3" />
-            <h4 className="text-sm font-semibold text-slate-300">No conversation selected</h4>
-            <p className="text-xs text-slate-500 mt-1 max-w-xs">
+            <Mail className={`w-12 h-12 mb-3 ${isDark ? 'text-slate-600' : 'text-slate-400'}`} />
+            <h4
+              className={`text-sm font-semibold ${
+                isDark ? 'text-slate-300' : 'text-slate-700'
+              }`}
+            >
+              No conversation selected
+            </h4>
+            <p
+              className={`text-xs mt-1 max-w-xs ${
+                isDark ? 'text-slate-500' : 'text-slate-500'
+              }`}
+            >
               Select an email from the list to view its contents and automatically extracted career
               data.
             </p>

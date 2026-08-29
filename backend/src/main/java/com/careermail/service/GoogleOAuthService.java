@@ -71,7 +71,7 @@ public class GoogleOAuthService {
 
     public String generateAuthorizationUrl(String stateParam) {
         String state = (stateParam != null && !stateParam.isBlank()) ? stateParam : UUID.randomUUID().toString();
-        String scopes = "https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile";
+        String scopes = "https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile";
 
         return GOOGLE_AUTH_ENDPOINT + "?" +
                 "client_id=" + URLEncoder.encode(clientId != null ? clientId : "", StandardCharsets.UTF_8) +

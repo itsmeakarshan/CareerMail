@@ -69,18 +69,18 @@ export const FollowUpsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            <Bell className="w-6 h-6 text-amber-400" />
+          <h1 className="text-xl md:text-2xl font-bold text-[#1f1f1f] dark:text-white tracking-tight flex items-center gap-2">
+            <Bell className="w-6 h-6 text-amber-500" />
             <span>Follow-Up Reminders</span>
           </h1>
-          <p className="text-xs md:text-sm text-slate-400 mt-0.5">
+          <p className="text-xs md:text-sm text-[#5f6368] dark:text-slate-400 mt-0.5">
             Never let an application slip through the cracks with automated nudges
           </p>
         </div>
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-glow-purple transition-all"
+          className="px-4 py-2 bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-400 hover:to-rose-300 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition-all"
         >
           <Plus className="w-4 h-4" />
           <span>Add Follow-Up</span>
@@ -96,52 +96,48 @@ export const FollowUpsPage: React.FC = () => {
           return (
             <div
               key={item.id}
-              className="p-4 rounded-2xl bg-[#101626] border border-[#1e2640] hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm"
+              className="p-4 rounded-2xl bg-white dark:bg-[#16181f] border border-[#e0e2e7] dark:border-[#282a2d] hover:border-pink-400 dark:hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm"
             >
-              <div className="flex items-center gap-3.5">
+              <div className="flex items-center gap-4 min-w-0">
                 <CompanyLogo company={item.company} size="md" />
-                <div className="flex flex-col">
+                <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold text-white">{item.company}</h4>
+                    <h4 className="text-sm font-bold text-[#1f1f1f] dark:text-white truncate">{item.company}</h4>
                     <span
-                      className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                         isOverdue
-                          ? 'bg-rose-950/80 text-rose-300 border border-rose-800/40'
+                          ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
                           : isToday
-                          ? 'bg-amber-950/80 text-amber-300 border border-amber-800/40'
-                          : 'bg-slate-800 text-slate-300'
+                          ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                          : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
                       }`}
                     >
-                      {item.daysDueBadge || 'Pending'}
+                      {item.daysDueBadge || `Due: ${item.dueDate}`}
                     </span>
                   </div>
-                  <span className="text-xs text-slate-400 font-medium">
-                    {item.role || 'Job Application'} · {item.appliedSubtitle || 'Applied recently'}
-                  </span>
-                  {item.notes && (
-                    <p className="text-[11px] text-slate-500 mt-1 max-w-lg">{item.notes}</p>
-                  )}
+                  <span className="text-xs text-[#5f6368] dark:text-slate-400 mt-0.5">{item.role}</span>
+                  {item.notes && <p className="text-xs text-[#444746] dark:text-slate-300 mt-1">{item.notes}</p>}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 self-end md:self-center">
                 <button
                   onClick={() => setIsComposeOpen(true)}
-                  className="px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-1.5 rounded-xl bg-pink-100 dark:bg-pink-950/70 border border-pink-200 dark:border-pink-800/40 text-pink-700 dark:text-pink-300 hover:text-pink-900 dark:hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>Send Follow-Up</span>
                 </button>
                 <button
                   onClick={() => handleComplete(item.id)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/20 transition-colors"
+                  className="p-2 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
                   title="Mark Completed"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDelete(item.id)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-950/20 transition-colors"
+                  className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
                   title="Delete"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -152,93 +148,86 @@ export const FollowUpsPage: React.FC = () => {
         })}
 
         {followUps.length === 0 && !loading && (
-          <div className="p-12 text-center rounded-2xl bg-[#101626] border border-[#1e2640] space-y-3 animate-fadeIn">
-            <Bell className="w-10 h-10 text-purple-400 mx-auto opacity-60" />
-            <h3 className="text-sm font-bold text-white">No follow-ups due</h3>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              Connect your Gmail account and sync emails to automatically detect follow-up deadlines, or create one manually.
+          <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#16181f] border border-[#e0e2e7] dark:border-[#282a2d] space-y-3 shadow-sm">
+            <Bell className="w-10 h-10 text-amber-500 mx-auto opacity-60" />
+            <h3 className="text-sm font-bold text-[#1f1f1f] dark:text-white">All caught up!</h3>
+            <p className="text-xs text-[#5f6368] dark:text-slate-400 max-w-sm mx-auto">
+              You don&apos;t have any pending follow-up emails due right now.
             </p>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="mt-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-xs font-semibold shadow-glow-purple inline-flex items-center gap-1.5"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Follow-Up</span>
-            </button>
           </div>
         )}
       </div>
 
-      {/* Modal */}
+      {/* Add Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#12182b] border border-slate-800 rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-base font-bold text-white">Add Follow-Up</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white">
+          <div className="bg-white dark:bg-[#16181f] border border-[#e0e2e7] dark:border-[#282a2d] rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#e0e2e7] dark:border-[#282a2d]">
+              <h3 className="text-base font-bold text-[#1f1f1f] dark:text-white">Add Follow-Up Reminder</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-black dark:hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Company *</label>
-                <input
-                  type="text"
-                  required
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  placeholder="e.g. Capital One"
-                  className="w-full px-3 py-2 bg-[#0c101d] border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#5f6368] dark:text-slate-400 mb-1">Company *</label>
+                  <input
+                    type="text"
+                    required
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder="e.g. Stripe"
+                    className="w-full px-3 py-2 bg-[#f6f8fc] dark:bg-[#1e1f20] border border-[#dadce0] dark:border-[#282a2d] rounded-xl text-sm text-[#1f1f1f] dark:text-white focus:outline-none focus:border-pink-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#5f6368] dark:text-slate-400 mb-1">Role</label>
+                  <input
+                    type="text"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#f6f8fc] dark:bg-[#1e1f20] border border-[#dadce0] dark:border-[#282a2d] rounded-xl text-sm text-[#1f1f1f] dark:text-white focus:outline-none focus:border-pink-400"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Role</label>
-                <input
-                  type="text"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  placeholder="e.g. Software Engineer"
-                  className="w-full px-3 py-2 bg-[#0c101d] border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Due Date *</label>
+                <label className="block text-xs font-semibold text-[#5f6368] dark:text-slate-400 mb-1">Follow-Up Due Date *</label>
                 <input
                   type="date"
                   required
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#0c101d] border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2 bg-[#f6f8fc] dark:bg-[#1e1f20] border border-[#dadce0] dark:border-[#282a2d] rounded-xl text-sm text-[#1f1f1f] dark:text-white focus:outline-none focus:border-pink-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Notes</label>
+                <label className="block text-xs font-semibold text-[#5f6368] dark:text-slate-400 mb-1">Notes / Context</label>
                 <textarea
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Ask for feedback or check on recruiter timeline..."
-                  className="w-full px-3 py-2 bg-[#0c101d] border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500 resize-none"
+                  placeholder="e.g. Check in with recruiter regarding technical assessment submission"
+                  className="w-full px-3 py-2 bg-[#f6f8fc] dark:bg-[#1e1f20] border border-[#dadce0] dark:border-[#282a2d] rounded-xl text-sm text-[#1f1f1f] dark:text-white focus:outline-none focus:border-pink-400 resize-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e0e2e7] dark:border-[#282a2d]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm text-slate-400 hover:text-white"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-[#5f6368] dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-semibold shadow-glow-purple"
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-400 hover:to-rose-300 text-white transition-all shadow-sm"
                 >
-                  Save Follow-Up
+                  Save Reminder
                 </button>
               </div>
             </form>

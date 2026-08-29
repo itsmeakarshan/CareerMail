@@ -10,6 +10,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateProfile: (data: { name?: string; avatarUrl?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -80,6 +81,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.location.href = '/login';
   };
 
+  const updateProfile = async (data: { name?: string; avatarUrl?: string }) => {
+    try {
+      const updated = await authApi.updateProfile(data);
+      setUser(updated);
+      localStorage.setItem('careermail_user', JSON.stringify(updated));
+    } catch {
+      // Fallback local update
+      if (user) {
+        const updated: User = {
+          ...user,
+          name: data.name !== undefined ? data.name : user.name,
+          avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : user.avatarUrl,
+        };
+        setUser(updated);
+        localStorage.setItem('careermail_user', JSON.stringify(updated));
+      }
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -90,6 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         register,
         logout,
+        updateProfile,
       }}
     >
       {children}

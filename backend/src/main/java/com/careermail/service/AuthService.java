@@ -74,4 +74,16 @@ public class AuthService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("Current user not found: " + email));
     }
+
+    public com.careermail.dto.UserDto updateProfile(com.careermail.dto.UserDto request) {
+        User user = getCurrentUser();
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName().trim());
+        }
+        if (request.getAvatarUrl() != null && !request.getAvatarUrl().isBlank()) {
+            user.setAvatarUrl(request.getAvatarUrl().trim());
+        }
+        user = userRepository.save(user);
+        return new com.careermail.dto.UserDto(user.getId(), user.getName(), user.getEmail(), user.getAvatarUrl());
+    }
 }

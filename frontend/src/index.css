@@ -2,10 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-primary: #f6f8fc;
+  --bg-secondary: #f0f4f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f3f4;
+  --bg-input: #eaf1fb;
+  --border-color: #e0e2e7;
+  --text-primary: #1f1f1f;
+  --text-secondary: #444746;
+  --text-muted: #5f6368;
+}
+
+.dark {
+  --bg-primary: #111318;
+  --bg-secondary: #16181f;
+  --bg-card: #1e1f20;
+  --bg-card-hover: #282a2d;
+  --bg-input: #1e1f20;
+  --border-color: #282a2d;
+  --text-primary: #e3e3e3;
+  --text-secondary: #c4c7c5;
+  --text-muted: #8e918f;
+}
+
 @layer base {
   body {
-    @apply bg-[#0a0e1a] text-slate-100 antialiased;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Custom subtle scrollbars */
@@ -17,11 +44,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1e2640;
+    background: var(--border-color);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #334155;
+    background: var(--text-muted);
   }
 }
 
@@ -35,10 +62,58 @@
   to { transform: translateX(0); }
 }
 
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.93) translateY(12px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 15px rgba(244, 114, 182, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(244, 114, 182, 0.45); }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-slideLeft {
   animation: slideLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-popIn {
+  animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulseGlow {
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+.animate-float {
+  animation: floatSlow 4s infinite ease-in-out;
+}
+
+/* Global hover enhancements */
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+.dark .hover-lift:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
 }

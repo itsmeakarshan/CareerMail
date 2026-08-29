@@ -15,7 +15,7 @@ export const CompanyLogo: React.FC<CompanyLogoProps> = ({ company, className = '
     lg: 'w-11 h-11 text-base',
   }[size];
 
-  // Render high-fidelity SVG logos matching dashboard.png
+  // Specific high-fidelity logos
   if (norm.includes('google')) {
     return (
       <div className={`${sizeClasses} bg-white rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
@@ -25,6 +25,158 @@ export const CompanyLogo: React.FC<CompanyLogoProps> = ({ company, className = '
           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
         </svg>
+      </div>
+    );
+  }
+
+  if (norm.includes('revolut')) {
+    return (
+      <div className={`${sizeClasses} bg-black border border-slate-700 text-white rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 font-sans font-black text-sm tracking-tighter ${className}`}>
+        R
+      </div>
+    );
+  }
+
+  if (norm.includes('mckinsey')) {
+    return (
+      <div className={`${sizeClasses} bg-[#051C2C] border border-blue-900/60 rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-serif font-black text-white text-[11px] tracking-tighter">McK</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('huel')) {
+    return (
+      <div className={`${sizeClasses} bg-black border border-slate-700 rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-black text-white text-[10px] tracking-wider font-mono">HUEL</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('learning curve') || norm.includes('learningcurve')) {
+    return (
+      <div className={`${sizeClasses} bg-[#582C83] rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-extrabold text-white text-[11px] tracking-tight">LCG</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('oliver wyman')) {
+    return (
+      <div className={`${sizeClasses} bg-[#002D62] rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-serif font-black text-white text-[10px] tracking-tighter">OW</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('abound')) {
+    return (
+      <div className={`${sizeClasses} bg-[#1D4ED8] rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-black text-white text-xs tracking-tight">ab</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('playstation') || norm.includes('sony')) {
+    return (
+      <div className={`${sizeClasses} bg-[#003791] rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-black text-white text-xs tracking-tighter">PS</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('pdi')) {
+    return (
+      <div className={`${sizeClasses} bg-[#042A2B] border border-cyan-700/60 rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-black text-[#54F2F2] text-[11px] tracking-tight">PDI</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('knowbe4')) {
+    return (
+      <div className={`${sizeClasses} bg-[#0c1b33] border border-orange-500/40 rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-bold text-[#FF6A00] text-[10px] tracking-tight">KB4</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('sparkbox')) {
+    return (
+      <div className={`${sizeClasses} bg-[#1a0f12] border border-rose-600/40 rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-extrabold text-[#FF453A] text-xs">SB</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('chattermill')) {
+    return (
+      <div className={`${sizeClasses} bg-[#FF5A5F] rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-bold text-white text-xs">@</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('sage')) {
+    return (
+      <div className={`${sizeClasses} bg-[#00D639] rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-bold text-black text-xs">sage</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('stackadapt')) {
+    return (
+      <div className={`${sizeClasses} bg-[#0052FF] rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-black text-white text-[11px]">SA</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('tesco')) {
+    return (
+      <div className={`${sizeClasses} bg-[#00539F] rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-black text-white text-[10px] tracking-wider font-sans">TESCO</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('abound')) {
+    return (
+      <div className={`${sizeClasses} bg-gradient-to-tr from-violet-700 to-indigo-600 rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-black text-white text-xs">Ab</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('lucideon')) {
+    return (
+      <div className={`${sizeClasses} bg-[#0E3A8A] rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-bold text-white text-xs">L</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('conquer ai') || norm.includes('conquer')) {
+    return (
+      <div className={`${sizeClasses} bg-gradient-to-tr from-purple-700 to-pink-600 rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-bold text-white text-[10px]">AI</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('tria')) {
+    return (
+      <div className={`${sizeClasses} bg-[#0A2540] border border-cyan-500/40 rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-black text-cyan-400 text-[10px]">TRIA</span>
+      </div>
+    );
+  }
+
+  if (norm.includes('spg')) {
+    return (
+      <div className={`${sizeClasses} bg-[#2D1B69] rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
+        <span className="font-black text-purple-300 text-[10px]">SPG</span>
       </div>
     );
   }
@@ -53,156 +205,6 @@ export const CompanyLogo: React.FC<CompanyLogoProps> = ({ company, className = '
     );
   }
 
-  if (norm.includes('capital one') || norm.includes('capitalone')) {
-    return (
-      <div className={`${sizeClasses} bg-[#101b33] rounded-xl p-1 flex items-center justify-center border border-slate-700/60 shadow-sm flex-shrink-0 ${className}`}>
-        <svg viewBox="0 0 24 24" className="w-full h-full">
-          <path fill="#D03027" d="M3 14.5c4-7 14-8 18-4-6 0-11 2-18 4z"/>
-          <path fill="#004977" d="M4 16.5c3-1 12-2 17-7-4 6-12 8-17 7z"/>
-        </svg>
-      </div>
-    );
-  }
-
-  if (norm.includes('deloitte')) {
-    return (
-      <div className={`${sizeClasses} bg-[#111625] rounded-xl p-1 flex items-center justify-center border border-slate-700/60 shadow-sm flex-shrink-0 ${className}`}>
-        <span className="font-extrabold text-white text-base tracking-tighter">D<span className="text-[#86BC25] font-black">.</span></span>
-      </div>
-    );
-  }
-
-  if (norm.includes('zoho')) {
-    return (
-      <div className={`${sizeClasses} bg-white rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <div className="grid grid-cols-2 gap-0.5 w-full h-full p-0.5">
-          <div className="bg-[#E42528] rounded-sm"></div>
-          <div className="bg-[#218838] rounded-sm"></div>
-          <div className="bg-[#0070BA] rounded-sm"></div>
-          <div className="bg-[#F8A80D] rounded-sm"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (norm.includes('jp morgan') || norm.includes('jpmorgan') || norm.includes('chase')) {
-    return (
-      <div className={`${sizeClasses} bg-[#fff8e7] rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <span className="font-serif font-black text-[#2e1d0f] text-xs tracking-tight">JP</span>
-      </div>
-    );
-  }
-
-  if (norm.includes('salesforce')) {
-    return (
-      <div className={`${sizeClasses} bg-[#00A1E0] rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <svg viewBox="0 0 24 24" className="w-full h-full" fill="white">
-          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
-        </svg>
-      </div>
-    );
-  }
-
-  if (norm.includes('adobe')) {
-    return (
-      <div className={`${sizeClasses} bg-[#FA0F00] rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <svg viewBox="0 0 24 24" className="w-full h-full" fill="white">
-          <path d="M15.1 2H24v20L15.1 2zM8.9 2H0v20L8.9 2zM12 9.4l4.5 10.6h-3.1l-1.4-3.5H9.6L12 9.4z"/>
-        </svg>
-      </div>
-    );
-  }
-
-  if (norm.includes('meta') || norm.includes('facebook')) {
-    return (
-      <div className={`${sizeClasses} bg-white rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <svg viewBox="0 0 24 24" className="w-full h-full" fill="#0081FB">
-          <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/>
-        </svg>
-      </div>
-    );
-  }
-
-  if (norm.includes('tesla')) {
-    return (
-      <div className={`${sizeClasses} bg-[#E82127] rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <svg viewBox="0 0 24 24" className="w-full h-full" fill="white">
-          <path d="M12 4.5c2.3 0 4.4.5 6.3 1.4l1.3-2.5C16.9 2.1 14.5 1.5 12 1.5S7.1 2.1 4.4 3.4L5.7 5.9c1.9-.9 4-1.4 6.3-1.4zm0 4.5c2.1 0 4.1.5 5.9 1.4l1.5-2.8C16.9 6.4 14.5 5.8 12 5.8S7.1 6.4 4.6 7.6l1.5 2.8c1.8-.9 3.8-1.4 5.9-1.4zm1.5 3.5V22h-3v-9.5c-1.8 0-3.5.4-5.1 1.2L4 11.2C6.4 9.8 9.1 9 12 9s5.6.8 8 2.2l-1.4 2.5c-1.6-.8-3.3-1.2-5.1-1.2z"/>
-        </svg>
-      </div>
-    );
-  }
-
-  if (norm.includes('apple')) {
-    return (
-      <div className={`${sizeClasses} bg-white dark:bg-slate-800 rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <svg viewBox="0 0 24 24" className="w-full h-full" fill="currentColor">
-          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.63-.79 1.06-1.88.94-2.97-.93.04-2.03.63-2.68 1.4-.58.68-1.09 1.77-.95 2.84 1.04.08 2.06-.51 2.69-1.27z"/>
-        </svg>
-      </div>
-    );
-  }
-
-  if (norm.includes('oracle')) {
-    return (
-      <div className={`${sizeClasses} bg-white rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <svg viewBox="0 0 24 24" className="w-full h-full" fill="#F80000">
-          <path d="M16.5 6h-9C4.5 6 2 8.7 2 12s2.5 6 5.5 6h9c3 0 5.5-2.7 5.5-6s-2.5-6-5.5-6zm-.2 9.5h-8.6C5.9 15.5 4.5 14 4.5 12s1.4-3.5 3.2-3.5h8.6c1.8 0 3.2 1.5 3.2 3.5s-1.4 3.5-3.2 3.5z"/>
-        </svg>
-      </div>
-    );
-  }
-
-  if (norm.includes('bloomberg')) {
-    return (
-      <div className={`${sizeClasses} bg-[#121212] rounded-xl p-1 flex items-center justify-center border border-slate-700/60 shadow-sm flex-shrink-0 ${className}`}>
-        <span className="font-extrabold text-white text-xs tracking-tighter">BBG</span>
-      </div>
-    );
-  }
-
-  if (norm.includes('block') || norm.includes('square')) {
-    return (
-      <div className={`${sizeClasses} bg-white rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <div className="w-4 h-4 bg-black rounded-sm flex items-center justify-center">
-          <div className="w-2 h-2 bg-white rounded-sm"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (norm.includes('chattermill')) {
-    return (
-      <div className={`${sizeClasses} bg-[#ff5a5f] rounded-xl p-1 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <span className="font-bold text-white text-xs">@</span>
-      </div>
-    );
-  }
-
-  if (norm.includes('linkedin')) {
-    return (
-      <div className={`${sizeClasses} bg-[#0A66C2] rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <span className="font-bold text-white text-xs">in</span>
-      </div>
-    );
-  }
-
-  if (norm.includes('indeed')) {
-    return (
-      <div className={`${sizeClasses} bg-[#003A9B] rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <span className="font-bold text-white text-xs">ind</span>
-      </div>
-    );
-  }
-
-  if (norm.includes('sage')) {
-    return (
-      <div className={`${sizeClasses} bg-[#00D639] rounded-xl p-1.5 flex items-center justify-center shadow-sm flex-shrink-0 ${className}`}>
-        <span className="font-bold text-black text-xs">sage</span>
-      </div>
-    );
-  }
-
   // Fallback stylish monogram badge
   const initials = (company || '?')
     .replace(/[^a-zA-Z0-9 ]/g, '')
@@ -214,8 +216,8 @@ export const CompanyLogo: React.FC<CompanyLogoProps> = ({ company, className = '
     .toUpperCase() || 'JB';
 
   const colors = [
-    'from-indigo-600 to-violet-700',
-    'from-purple-600 to-pink-600',
+    'from-rose-500 to-pink-500',
+    'from-pink-500 to-rose-400',
     'from-emerald-600 to-teal-700',
     'from-amber-500 to-orange-600',
     'from-rose-600 to-red-700',

@@ -6,10 +6,13 @@ import {
   Email,
   AnalyticsData,
   AssistantResponse,
+  AssistantRequest,
   GmailStatus,
   GmailSyncResult,
   GoogleAuthUrlResponse,
-  GoogleConfigResponse
+  GoogleConfigResponse,
+  Opportunity,
+  OpportunityScanResult
 } from '../types';
 
 const API_BASE = '/api';
@@ -75,6 +78,11 @@ export const authApi = {
       body: JSON.stringify(data),
     }),
   getCurrentUser: () => request<User>('/auth/me'),
+  updateProfile: (data: { name?: string; avatarUrl?: string }) =>
+    request<User>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
 };
 
 // Gmail & Google OAuth API
@@ -85,6 +93,10 @@ export const gmailApi = {
   getConfig: () => request<GoogleConfigResponse>('/auth/google/config'),
   sync: (maxResults?: number) =>
     request<GmailSyncResult>(`/gmail/sync?maxResults=${maxResults || 300}`, {
+      method: 'POST',
+    }),
+  reprocess: () =>
+    request<GmailSyncResult>('/gmail/reprocess', {
       method: 'POST',
     }),
   disconnect: () =>
@@ -123,6 +135,7 @@ export const applicationsApi = {
 export const emailsApi = {
   getFolder: (folder: string) => request<Email[]>(`/emails?folder=${folder}`),
   getById: (id: number) => request<Email>(`/emails/${id}`),
+  getByApplication: (appId: number) => request<Email[]>(`/emails/application/${appId}`),
   markRead: (id: number, read: boolean) =>
     request<Email>(`/emails/${id}/read?read=${read}`, {
       method: 'PATCH',
@@ -141,6 +154,11 @@ export const emailsApi = {
     }),
   compose: (data: { to: string; subject: string; body: string }) =>
     request<Email>('/emails/compose', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  send: (data: { to: string; subject: string; body: string }) =>
+    request<Email>('/emails/send', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -202,11 +220,29 @@ export const analyticsApi = {
   getDashboard: () => request<AnalyticsData>('/analytics'),
 };
 
+// Opportunities API
+export const opportunitiesApi = {
+  getAll: () => request<Opportunity[]>('/opportunities'),
+  convert: (emailId: number, data?: Partial<JobApplication>) =>
+    request<JobApplication>(`/opportunities/${emailId}/convert`, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    }),
+  scan: () =>
+    request<OpportunityScanResult>('/opportunities/scan', {
+      method: 'POST',
+    }),
+};
+
 // Career Assistant API
 export const assistantApi = {
-  ask: (query: string, currentScreen?: string) =>
-    request<AssistantResponse>('/assistant/ask', {
+  ask: (queryOrRequest: string | AssistantRequest, currentScreen?: string) => {
+    const payload = typeof queryOrRequest === 'string'
+      ? { query: queryOrRequest, currentScreen }
+      : queryOrRequest;
+    return request<AssistantResponse>('/assistant/ask', {
       method: 'POST',
-      body: JSON.stringify({ query, currentScreen }),
-    }),
+      body: JSON.stringify(payload),
+    });
+  },
 };

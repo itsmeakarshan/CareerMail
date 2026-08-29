@@ -17,6 +17,12 @@ import java.util.Optional;
 public interface EmailRepository extends JpaRepository<Email, Long> {
     List<Email> findByUserAndFolderOrderByTimestampDesc(User user, EmailFolder folder);
 
+    List<Email> findByUserOrderByTimestampDesc(User user);
+
+    List<Email> findByUserOrderByTimestampAsc(User user);
+
+    List<Email> findByUserAndJobApplication(User user, JobApplication jobApplication);
+
     List<Email> findByUserAndIsStarredTrueOrderByTimestampDesc(User user);
 
     List<Email> findByUserAndIsImportantTrueOrderByTimestampDesc(User user);
@@ -30,6 +36,8 @@ public interface EmailRepository extends JpaRepository<Email, Long> {
     List<Email> findByUserAndGmailThreadId(User user, String gmailThreadId);
 
     List<Email> findByJobApplicationOrderByTimestampDesc(JobApplication jobApplication);
+
+    long countByUser(User user);
 
     long countByUserAndFolder(User user, EmailFolder folder);
 

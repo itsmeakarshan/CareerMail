@@ -63,6 +63,10 @@ public class EmailAnalysisService {
 
         if (!result.isJobRelated()) {
             email.setJobRelated(false);
+            email.setClassification(null);
+            email.setDetectedCompany(null);
+            email.setDetectedRole(null);
+            email.setDetectedStatus(null);
             email.setProcessedAt(LocalDateTime.now());
             return new ProcessOutcome(false, false, false, false, false);
         }
@@ -71,6 +75,11 @@ public class EmailAnalysisService {
         email.setDetectedCompany(result.getCompany());
         email.setDetectedRole(result.getJobTitle());
         email.setDetectedStatus(result.getStatus() != null ? result.getStatus().name() : ApplicationStatus.APPLIED.name());
+        email.setDetectedRecruiterName(result.getRecruiterName());
+        email.setDetectedRecruiterEmail(result.getRecruiterEmail());
+        email.setDetectedRecruiterTitle(result.getRecruiterTitle());
+        email.setDetectedRecruiterType(result.getRecruiterType());
+        email.setDetectedRecruiterConfidence(result.getContactConfidence());
         email.setClassification(result.getClassification());
         email.setProcessedAt(LocalDateTime.now());
 
@@ -96,6 +105,11 @@ public class EmailAnalysisService {
             matchedApp = jobApplicationRepository.findTopByUserAndCompanyIgnoreCase(user, company).orElse(null);
         }
 
+        if (matchedApp == null && result.getClassification() == EmailClassification.NEW_OPPORTUNITY) {
+            // Keep email saved as a discovered job opportunity lead without auto-creating an APPLIED application
+            return new ProcessOutcome(true, false, false, false, false);
+        }
+
         JobApplication app;
         boolean appCreated = false;
         boolean appUpdated = false;
@@ -106,6 +120,15 @@ public class EmailAnalysisService {
             app = matchedApp;
             appUpdated = true;
 
+            // Always update with cleaned/improved company name and role
+            if (company != null && !company.isBlank() && !company.equalsIgnoreCase("Unknown Company")) {
+                app.setCompany(company);
+                app.setCompanyLogo(company.toLowerCase().replaceAll("[^a-z0-9]", ""));
+            }
+            if (result.getJobTitle() != null && !result.getJobTitle().isBlank() && !result.getJobTitle().equalsIgnoreCase("Applicant")) {
+                app.setTitle(result.getJobTitle());
+            }
+
             // Intelligent status progression
             if (shouldUpgradeStatus(app.getStatus(), result.getStatus())) {
                 app.setStatus(result.getStatus());
@@ -114,11 +137,31 @@ public class EmailAnalysisService {
             if (result.getSalary() != null && app.getSalary() == null) {
                 app.setSalary(result.getSalary());
             }
-            if (result.getRecruiterName() != null && app.getRecruiterName() == null) {
-                app.setRecruiterName(result.getRecruiterName());
+
+            // Update recruiter intelligence if higher confidence or human identified
+            if (result.getRecruiterName() != null && !result.getRecruiterName().isBlank()) {
+                boolean shouldUpdateRecruiter = app.getRecruiterName() == null
+                        || (result.getRecruiterType() == com.careermail.model.enums.RecruiterType.HUMAN_RECRUITER && app.getRecruiterType() != com.careermail.model.enums.RecruiterType.HUMAN_RECRUITER)
+                        || (result.getContactConfidence() != null && (app.getContactConfidence() == null || result.getContactConfidence() > app.getContactConfidence()));
+
+                if (shouldUpdateRecruiter) {
+                    app.setRecruiterName(result.getRecruiterName());
+                    app.setRecruiterEmail(result.getRecruiterEmail());
+                    app.setRecruiterTitle(result.getRecruiterTitle());
+                    app.setRecruiterPhone(result.getRecruiterPhone());
+                    app.setRecruiterLinkedin(result.getRecruiterLinkedin());
+                    app.setRecruiterType(result.getRecruiterType());
+                    app.setContactConfidence(result.getContactConfidence());
+                    app.setContactExtractionSource(result.getContactExtractionSource());
+                }
             }
-            if (result.getRecruiterEmail() != null && app.getRecruiterEmail() == null) {
-                app.setRecruiterEmail(result.getRecruiterEmail());
+
+            // Keep dateApplied as the earliest application/confirmation date
+            if (email.getTimestamp() != null) {
+                LocalDate emailDate = email.getTimestamp().toLocalDate();
+                if (app.getDateApplied() == null || emailDate.isBefore(app.getDateApplied())) {
+                    app.setDateApplied(emailDate);
+                }
             }
 
             app.setLastActivityDate(LocalDate.now());
@@ -146,8 +189,16 @@ public class EmailAnalysisService {
             app.setLastActivityDate(LocalDate.now());
             app.setStatus(result.getStatus() != null ? result.getStatus() : ApplicationStatus.APPLIED);
             app.setPriority(computePriority(result.getStatus()));
+
             app.setRecruiterName(result.getRecruiterName());
             app.setRecruiterEmail(result.getRecruiterEmail());
+            app.setRecruiterTitle(result.getRecruiterTitle());
+            app.setRecruiterPhone(result.getRecruiterPhone());
+            app.setRecruiterLinkedin(result.getRecruiterLinkedin());
+            app.setRecruiterType(result.getRecruiterType() != null ? result.getRecruiterType() : com.careermail.model.enums.RecruiterType.NO_RECRUITER_IDENTIFIED);
+            app.setContactConfidence(result.getContactConfidence());
+            app.setContactExtractionSource(result.getContactExtractionSource());
+
             app.setSource("Gmail Auto-Detection");
             app.setCompanyLogo(company.toLowerCase().replaceAll("[^a-z0-9]", ""));
             app.setActivitySubtitle(computeSubtitle(app.getStatus()));
@@ -239,6 +290,36 @@ public class EmailAnalysisService {
             case REJECTED -> 7;
             case WITHDRAWN -> 8;
         };
+    }
+
+    @Transactional
+    public void reprocessAllUserEmails(User user) {
+        // Clear old auto-detected interviews and followups
+        interviewRepository.deleteAll(interviewRepository.findByUserOrderByInterviewDateAsc(user));
+        followUpRepository.deleteAll(followUpRepository.findByUserOrderByDueDateAsc(user));
+
+        // Clear old auto-detected entities
+        var userApps = jobApplicationRepository.findByUser(user);
+        for (var app : userApps) {
+            if ("Gmail Auto-Detection".equalsIgnoreCase(app.getSource()) || app.getSource() == null) {
+                var emailsLinked = emailRepository.findByUserAndJobApplication(user, app);
+                for (var e : emailsLinked) {
+                    e.setJobApplication(null);
+                    e.setJobRelated(false);
+                    emailRepository.save(e);
+                }
+                jobApplicationRepository.delete(app);
+            }
+        }
+        jobApplicationRepository.flush();
+        emailRepository.flush();
+
+        // Re-process all emails with the new accurate rule-based analyzer in chronological order (earliest first)
+        var allEmails = emailRepository.findByUserOrderByTimestampAsc(user);
+        for (var e : allEmails) {
+            processEmail(e, user);
+            emailRepository.save(e);
+        }
     }
 
     private Priority computePriority(ApplicationStatus status) {
