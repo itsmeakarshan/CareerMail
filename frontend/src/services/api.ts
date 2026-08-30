@@ -40,7 +40,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       },
     });
   } catch {
-    throw new Error('Cannot reach backend server. Please ensure Spring Boot is running on port 8080 (cd backend && mvn spring-boot:run).');
+    throw new Error('Cannot reach backend server. Please ensure the C# .NET API is running on port 8080 (cd backend && dotnet run).');
   }
 
   if (response.status === 401) {

@@ -1,14 +1,19 @@
 # Build stage
-FROM maven:3.9.8-eclipse-temurin-21-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-alpine AS build
 WORKDIR /app
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
-COPY src ./src
-RUN mvn clean package -DskipTests
+
+COPY *.csproj ./
+RUN dotnet restore
+
+COPY . ./
+RUN dotnet publish -c Release -o /app/out
 
 # Run stage
-FROM eclipse-temurin:21-jre-alpine
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview-alpine
 WORKDIR /app
-COPY --from=build /app/target/careermail-backend-*.jar app.jar
+COPY --from=build /app/out .
+
+ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
+
+ENTRYPOINT ["dotnet", "CareerMail.Api.dll"]

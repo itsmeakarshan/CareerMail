@@ -1,5 +1,5 @@
 services:
-  # CareerMail Java Spring Boot Backend
+  # CareerMail C# ASP.NET Core Web API Backend
   - type: web
     name: careermail-backend
     runtime: docker

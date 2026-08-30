@@ -1,4 +1,6 @@
-target
+bin/
+obj/
+.vs/
 .git
 .gitignore
 *.log

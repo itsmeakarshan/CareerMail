@@ -9,18 +9,19 @@
 
 [![Watch Full Demo on YouTube](https://img.shields.io/badge/▶_Watch_Full_Video_Demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/xVjkWtoF9zU)
 [![Author](https://img.shields.io/badge/Created_by-Akarshan_Rasyal-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/akarshanrasyal/)
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![.NET](https://img.shields.io/badge/.NET-10.0_%7C_8.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-Web_API-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://learn.microsoft.com/aspnet/core)
+[![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=csharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Tests](https://img.shields.io/badge/Tests-29%2F29_Passing-brightgreen?style=for-the-badge&logo=junit5&logoColor=white)](https://junit.org/junit5/)
 [![Docker Ready](https://img.shields.io/badge/Docker_Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
 <p align="center">
   <b>CareerMail bridges high-performance email management with automated job application tracking, live Gmail OAuth synchronization, recruiter intelligence, and context-aware AI career assistance.</b>
 </p>
 
-[**📺 Watch Video Demo**](https://youtu.be/xVjkWtoF9zU) • [**✨ Key Features**](#-key-features) • [**🧪 Test with Your Own Gmail**](#-test-careermail-with-your-own-gmail) • [**🏗️ Architecture**](#-system-architecture) • [**🚀 Quickstart**](#-quick-start-with-docker) • [**📡 REST API**](#-rest-api-documentation)
+[**📺 Watch Video Demo**](https://youtu.be/xVjkWtoF9zU) • [**✨ Key Features**](#-key-features) • [**🧪 Test with Your Own Gmail**](#-test-careermail-with-your-own-gmail) • [**🏗️ Architecture**](#-system-architecture) • [**🚀 Quickstart**](#-quick-start-with-docker) • [**☁️ Deployment Guide**](#-deployment-guide) • [**📡 REST API**](#-rest-api-documentation)
 
 </div>
 
@@ -37,8 +38,8 @@ Designed with inspiration from **Linear**, **Notion**, and high-end fintech dash
 ## ✨ Key Features
 
 ### 1. 🤖 Context-Aware AI Career Assistant
-* **PostgreSQL Data Grounding**: Never hallucinates—answers questions directly from your live application records, interview timelines, recruiter notes, and emails.
-* **"✨ What Should I Do Next?" Engine**: Automatically categorizes your live career data into actionable priorities:
+* **PostgreSQL Data Grounding**: Answers questions directly from your live application records, interview timelines, recruiter notes, and emails.
+* **"✨ What Should I Do Next?" Engine**: Categorizes live career data into actionable priorities:
   - 🔴 **Urgent**: Interviews within 48h and overdue follow-ups.
   - 🟠 **Needs Attention**: Stale applications waiting >10 days without a reply.
   - 🔵 **Upcoming**: Scheduled calls and deadlines.
@@ -76,12 +77,13 @@ Designed with inspiration from **Linear**, **Notion**, and high-end fintech dash
 | Layer | Technologies |
 |---|---|
 | **Frontend** | React 18, TypeScript, Vite 5, Tailwind CSS, Lucide React, Framer Motion, Axios |
-| **Backend** | Java 21, Spring Boot 3.3.3, Spring Security 6.1 (Stateless JWT), Spring Data JPA |
+| **Backend** | C#, ASP.NET Core Web API (.NET 10 / .NET 8), Entity Framework Core (EF Core), Npgsql |
+| **Security & Auth** | Stateless JWT Bearer Authentication (`Microsoft.AspNetCore.Authentication.JwtBearer`), BCrypt |
 | **Parsing Engine** | Rule-Based Email Intelligence Pipeline (10 classifications + regex entity extractors) |
 | **AI Integration** | Context-Aware Career Assistant Service + Optional Gemini 1.5 Flash Fallback |
-| **Database** | PostgreSQL 16 (Primary) / H2 In-Memory (Local Profile) |
-| **Google Cloud** | Google OAuth 2.0, Gmail REST API (`gmail.readonly`, `gmail.send`) |
-| **DevOps & Containers**| Docker, Docker Compose (Multi-stage builds, Nginx reverse proxy) |
+| **Database** | PostgreSQL 16 (Entity Framework Core auto-migration & initialization) |
+| **Google Cloud** | Google OAuth 2.0, Gmail REST API (`gmail.readonly`, `gmail.send`, MimeKit RFC 822 MIME generation) |
+| **DevOps & Containers**| Docker, Docker Compose (Multi-stage builds, Nginx reverse proxy), Vercel, Render |
 
 ---
 
@@ -211,11 +213,11 @@ docker compose up --build
 
 ##### Option B: Local Development Mode
 ```bash
-# Terminal 1: Start Backend (Port 8080)
+# Terminal 1: Start C# .NET Backend (Port 8080)
 cd backend
-mvn spring-boot:run
+dotnet run
 
-# Terminal 2: Start Frontend (Port 5173)
+# Terminal 2: Start React Frontend (Port 5173)
 cd frontend
 npm install
 npm run dev
@@ -245,13 +247,13 @@ npm run dev
 | **`Access blocked: CareerMail has not completed the Google verification process`** | Gmail address is missing from Test Users in Google Cloud. | Go to **OAuth consent screen > Test users**, add your Gmail address, and click Save. |
 | **`Error 400: redirect_uri_mismatch`** | Redirect URI in `.env` doesn't match Google Cloud Console. | Verify `http://localhost:8080/api/auth/google/callback` is added under **Authorized redirect URIs**. |
 | **`403 FORBIDDEN: Request had insufficient authentication scopes`** | Account was connected before `gmail.send` was requested. | Go to **Settings**, click **Disconnect**, and re-click **Connect Gmail** to approve sending permissions. |
-| **Backend DB connection error** | PostgreSQL container or service is not running. | Run `docker compose up` or use `-Dspring-boot.run.profiles=local` for embedded H2. |
+| **Backend DB connection error** | PostgreSQL container or service is not running. | Run `docker compose up` or ensure PostgreSQL is running on port `5432`. |
 
 ---
 
 ## 🚀 Quick Start with Docker
 
-Launch PostgreSQL, Spring Boot Backend, and React Frontend in isolated containers:
+Launch PostgreSQL, C# ASP.NET Core Backend, and React Frontend in isolated containers:
 
 ```bash
 docker compose up --build
@@ -260,18 +262,19 @@ docker compose up --build
 Once running:
 * **Web App (Frontend)**: [http://localhost](http://localhost) (or [http://localhost:5173](http://localhost:5173))
 * **REST API (Backend)**: [http://localhost:8080/api](http://localhost:8080/api)
+* **Health Check**: [http://localhost:8080/api/health](http://localhost:8080/api/health)
 * **Database (PostgreSQL)**: `localhost:5432` (`careermail` / `careermail123`)
 
 ---
 
 ## 💻 Local Setup Without Docker
 
-### 1. Start the Backend
+### 1. Start the Backend (.NET)
 ```bash
 cd backend
-mvn spring-boot:run -Dspring-boot.run.profiles=local
+dotnet run
 ```
-The backend starts at `http://localhost:8080` (uses local in-memory H2 database).
+The C# Web API starts at `http://localhost:8080` (auto-initializes database schema and demo user on startup).
 
 ### 2. Start the Frontend
 ```bash
@@ -283,9 +286,36 @@ The Vite development server will start at `http://localhost:5173`.
 
 ---
 
+## ☁️ Deployment Guide
+
+### Deploying Frontend to Vercel (Free)
+
+CareerMail includes pre-configured [`vercel.json`](vercel.json) files for seamless single-page application (SPA) deployment on Vercel.
+
+1. Push your repository to GitHub.
+2. Import your repository on **[Vercel](https://vercel.com/)**.
+3. Under **Environment Variables**, add:
+   * `VITE_API_URL`: Your deployed backend URL (e.g. `https://careermail-backend.onrender.com`)
+4. Click **Deploy**. Vercel will automatically build and serve the React SPA with rewrite routing.
+
+---
+
+### Deploying Backend to Render (Free)
+
+CareerMail includes [`render.yaml`](render.yaml) for 1-click Dockerized backend & PostgreSQL deployment.
+
+1. On **[Render](https://render.com/)**, select **New > Blueprint**.
+2. Connect your GitHub repository.
+3. Render will provision:
+   * **`careermail-backend`**: Dockerized C# ASP.NET Core Web API
+   * **`careermail-db`**: Managed PostgreSQL Database
+4. Under Environment Variables on Render, provide your `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI`.
+
+---
+
 ## 🔐 Default Demo Account Credentials
 
-CareerMail seeds a rich dataset on startup:
+CareerMail seeds a demo account automatically on startup:
 
 | Field | Value |
 |---|---|
@@ -301,12 +331,12 @@ CareerMail seeds a rich dataset on startup:
 │               CareerMail Web Application               │
 │          (React 18 + TypeScript + Vite + Tailwind)     │
 └──────────┬──────────────────────────────────▲──────────┘
-           │ REST Calls / Bearer JWT          │ WebSocket / Polling
+           │ REST Calls / Bearer JWT          │ JSON / Polling
            ▼                                  │
 ┌────────────────────────────────────────────────────────┐
-│           Spring Boot 3.3 Backend Microservice         │
+│        C# ASP.NET Core Web API Microservice (.NET)      │
 │  ┌──────────────────────────────────────────────────┐  │
-│  │   Security Filter Chain & Stateless JWT Auth     │  │
+│  │   Authentication Middleware & Stateless JWT      │  │
 │  └──────────────────────────────────────────────────┘  │
 │  ┌──────────────────────────────────────────────────┐  │
 │  │    Rule-Based Email Ingestion & Analysis Engine  │  │
@@ -318,7 +348,7 @@ CareerMail seeds a rich dataset on startup:
 │  │    Google OAuth 2.0 & RFC 822 MIME Gmail Client  │  │
 │  └──────────────────────────────────────────────────┘  │
 └──────────┬──────────────────────────────────┬──────────┘
-           │ SQL Queries                      │ REST / OAuth
+           │ Entity Framework Core (Npgsql)   │ REST / OAuth
            ▼                                  ▼
 ┌──────────────────────┐           ┌──────────────────────┐
 │    PostgreSQL 16     │           │   Google Gmail API   │
@@ -348,7 +378,7 @@ CareerMail seeds a rich dataset on startup:
 * `POST /api/gmail/disconnect` — Disconnect linked Google account
 
 ### AI Career Assistant (`/api/assistant`)
-* `POST /api/assistant/ask` — Context-aware natural language Q&A, draft generation, and priority engine
+* `POST /api/assistant/ask` (or `/api/assistant/query`) — Context-aware natural language Q&A, draft generation, and priority engine
 
 ### Extracted Opportunities (`/api/opportunities`)
 * `GET /api/opportunities` — Get extracted opportunity leads from Gmail
@@ -365,7 +395,7 @@ CareerMail seeds a rich dataset on startup:
 * `GET /api/applications/search` — Search applications by keyword
 
 ### Emails (`/api/emails`)
-* `GET /api/emails` — Filter emails by folder (`INBOX`, `SENT`, `STARRED`, `IMPORTANT`, `DRAFTS`)
+* `GET /api/emails` — Filter emails by folder (`inbox`, `sent`, `starred`, `important`, `drafts`)
 * `GET /api/emails/{id}` — Get email by ID
 * `POST /api/emails/compose` — Send outgoing email via Gmail API
 * `PATCH /api/emails/{id}/read` — Toggle read status
@@ -377,19 +407,22 @@ CareerMail seeds a rich dataset on startup:
 * `GET /api/interviews` | `POST /api/interviews` | `PUT /api/interviews/{id}` | `DELETE /api/interviews/{id}`
 * `GET /api/followups` | `POST /api/followups` | `PUT /api/followups/{id}` | `DELETE /api/followups/{id}`
 
-### Analytics (`/api/analytics`)
+### Analytics (`/api/analytics` & `/api/dashboard`)
 * `GET /api/analytics/dashboard` — Get KPI metrics, response rates, monthly & daily trend charts
+
+### System Health (`/api/health`)
+* `GET /api/health` — Service health check endpoint
 
 ---
 
 ## 🧪 Testing & Verification
 
-### Backend Tests
+### Backend Build (.NET)
 ```bash
 cd backend
-mvn clean test
+dotnet build
 ```
-* **Result**: `29/29 tests passed (100% SUCCESS)` in `~5.7s`.
+* **Result**: `Build succeeded: 0 Warning(s), 0 Error(s)`.
 
 ### Frontend Typecheck & Build
 ```bash
