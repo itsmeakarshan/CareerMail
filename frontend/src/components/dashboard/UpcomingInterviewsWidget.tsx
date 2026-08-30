@@ -15,12 +15,21 @@ export const UpcomingInterviewsWidget: React.FC<WidgetProps> = ({ interviews, on
     <div className="bg-white dark:bg-[#16181f] border border-[#e0e2e7] dark:border-[#282a2d] rounded-2xl p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-lg hover:border-pink-300 dark:hover:border-pink-800/60 group">
       <div className="flex items-center justify-between mb-3 px-1">
         <h3 className="text-sm font-bold text-[#1f1f1f] dark:text-white tracking-tight">Upcoming Interviews</h3>
-        <Link
-          to="/interviews"
-          className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:underline transition-colors"
-        >
-          View all
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/calendar"
+            className="text-xs font-semibold text-pink-600 dark:text-pink-400 hover:underline transition-colors flex items-center gap-1"
+          >
+            <span>Calendar</span>
+          </Link>
+          <span className="text-slate-300 dark:text-slate-700">•</span>
+          <Link
+            to="/interviews"
+            className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline transition-colors"
+          >
+            View all
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">

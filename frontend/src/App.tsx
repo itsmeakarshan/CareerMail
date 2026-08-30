@@ -6,6 +6,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import { JobTrackerPage } from './pages/JobTrackerPage';
 import { InboxPage } from './pages/InboxPage';
 import { InterviewsPage } from './pages/InterviewsPage';
+import { CalendarPage } from './pages/CalendarPage';
 import { FollowUpsPage } from './pages/FollowUpsPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -51,6 +52,7 @@ export const App: React.FC = () => {
             >
               <Route index element={<JobTrackerPage />} />
               <Route path="inbox" element={<InboxPage />} />
+              <Route path="calendar" element={<CalendarPage />} />
               <Route path="interviews" element={<InterviewsPage />} />
               <Route path="follow-ups" element={<FollowUpsPage />} />
               <Route path="analytics" element={<AnalyticsPage />} />

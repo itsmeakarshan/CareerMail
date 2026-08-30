@@ -65,7 +65,12 @@ Designed with inspiration from **Linear**, **Notion**, and high-end fintech dash
 * **Autonomous Entity Extraction**: Automatically extracts human recruiter names, direct emails, phone numbers, job titles, and LinkedIn profiles.
 * **Confidence Scoring**: Flags verified human recruiters vs. automated ATS notification systems (`Greenhouse`, `Workday`, `Lever`, `Ashby`).
 
-### 6. 📊 Real-Time Analytics & Trend Charts
+### 6. 📅 Interactive Modern Career Calendar
+* **Unified Event Timeline**: Real-time aggregation of technical rounds, screening calls, system design sessions, follow-up deadlines, and application milestones.
+* **Month & Agenda Views**: Sleek interactive month grid with day-level inspection, event chips, countdown indicators, and today highlights.
+* **1-Click Video Calls & Calendar Sync**: Direct launch for Google Meet / Zoom links, 1-click **Add to Google Calendar**, and **.ics export** for Apple Calendar & Outlook.
+
+### 7. 📊 Real-Time Analytics & Trend Charts
 * **Live KPI Counters**: Total Applications, Active Interviews, Formal Offers, Rejection Rates, and Response Rates.
 * **Dynamic Time-Series Visualizations**: 3-Month, 14-Day, and 7-Day application velocity trendlines.
 * **Status Distribution**: Real-time breakdown of your entire job search funnel.

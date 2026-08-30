@@ -18,6 +18,10 @@ import {
   Sun,
   Camera,
   Sparkles,
+  CalendarDays,
+  BarChart3,
+  Video,
+  Clock,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -65,6 +69,10 @@ export const AppLayout: React.FC = () => {
     { label: 'Sent', path: '/inbox?folder=SENT', icon: Send },
     { label: 'Drafts', path: '/inbox?folder=DRAFTS', icon: FileEdit },
     { label: 'Job Tracker', path: '/', icon: Briefcase },
+    { label: 'Calendar', path: '/calendar', icon: CalendarDays },
+    { label: 'Interviews', path: '/interviews', icon: Video },
+    { label: 'Follow-ups', path: '/follow-ups', icon: Clock },
+    { label: 'Analytics', path: '/analytics', icon: BarChart3 },
     { label: 'Settings', path: '/settings', icon: Settings },
   ];
 
@@ -164,10 +172,9 @@ export const AppLayout: React.FC = () => {
               item.path === '/inbox' &&
               location.pathname === '/inbox' &&
               (!location.search || location.search === '');
-            const isTracker = item.path === '/' && location.pathname === '/';
-            const isSettings = item.path === '/settings' && location.pathname === '/settings';
+            const isExactPathMatch = item.path !== '/inbox' && !item.path.includes('?') && location.pathname === item.path;
 
-            const active = isFolderMatch || isRootInbox || isTracker || isSettings;
+            const active = isFolderMatch || isRootInbox || isExactPathMatch;
 
             return (
               <NavLink
