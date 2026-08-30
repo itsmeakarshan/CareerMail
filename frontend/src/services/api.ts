@@ -15,7 +15,10 @@ import {
   OpportunityScanResult
 } from '../types';
 
-const API_BASE = '/api';
+const envApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const API_BASE = envApiUrl
+  ? (envApiUrl.endsWith('/api') ? envApiUrl : `${envApiUrl.replace(/\/+$/, '')}/api`)
+  : '/api';
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('careermail_token');
