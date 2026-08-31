@@ -11,11 +11,11 @@ import {
   CheckCircle2,
   Zap,
   ExternalLink,
-  ShieldCheck,
-  AlertTriangle
+  Loader2
 } from 'lucide-react';
 import { JobListing } from '../../types';
 import { CompanyLogo } from '../common/CompanyLogo';
+import { jobSearchApi } from '../../services/api';
 
 interface JobCardProps {
   job: JobListing;
@@ -25,43 +25,63 @@ interface JobCardProps {
 
 export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onHideJob }) => {
   const [saved, setSaved] = useState(false);
+  const [resolvingLink, setResolvingLink] = useState(false);
 
-  // Exact Canonical Job URL from Source
-  const canonicalUrl = job.applyUrl || job.url || job.sourceUrl || '';
-  const isAvailable = job.isAvailable !== false && job.applicationUrlStatus !== 'UNAVAILABLE' && canonicalUrl.length > 0;
+  const handleOpenRealJob = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
 
-  const isAtsLink =
-    canonicalUrl.includes('greenhouse.io') ||
-    canonicalUrl.includes('lever.co') ||
-    canonicalUrl.includes('ashbyhq.com') ||
-    canonicalUrl.includes('workable.com') ||
-    canonicalUrl.includes('smartrecruiters.com');
-
-  const isOfficialCompanyCareers =
-    canonicalUrl.includes('careers.') ||
-    canonicalUrl.includes('/careers') ||
-    canonicalUrl.includes('jobs.') ||
-    canonicalUrl.includes('/jobs');
-
-  const handleCardClick = () => {
-    if (isAvailable && canonicalUrl) {
-      window.open(canonicalUrl, '_blank', 'noopener,noreferrer');
-    } else if (onViewDetails) {
-      onViewDetails(job);
+    // 1. Direct verified ATS or live provider URLs
+    if (
+      job.applyUrl?.includes('greenhouse.io') ||
+      job.applyUrl?.includes('lever.co') ||
+      job.applyUrl?.includes('remotive.com') ||
+      job.applyUrl?.includes('remoteok.com') ||
+      job.applyUrl?.includes('jobicy.com') ||
+      job.applyUrl?.includes('ashbyhq.com') ||
+      job.applyUrl?.includes('workable.com') ||
+      job.applyUrl?.includes('amazon.jobs') ||
+      job.applyUrl?.includes('careers.google.com') ||
+      job.applyUrl?.includes('careers.deliveroo.co.uk') ||
+      job.applyUrl?.includes('deepmind.google/careers') ||
+      job.applyUrl?.includes('revolut.com/careers')
+    ) {
+      window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
+      return;
     }
+
+    // 2. Ask Gemini AI for the real verified career URL
+    setResolvingLink(true);
+    try {
+      const res = await jobSearchApi.resolveRealLink({
+        jobId: job.id,
+        title: job.title,
+        company: job.company,
+        location: job.location,
+        currentUrl: job.applyUrl || job.url
+      });
+
+      if (res?.realJobUrl) {
+        window.open(res.realJobUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+    } catch {
+      // Fallback
+    } finally {
+      setResolvingLink(false);
+    }
+
+    const fallbackUrl =
+      job.applyUrl ||
+      job.url ||
+      `https://www.google.com/search?q=${encodeURIComponent(`${job.company} ${job.title} careers apply`)}`;
+
+    window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleHide = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onHideJob) {
       onHideJob(job.id);
-    }
-  };
-
-  const handleApplyClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isAvailable && canonicalUrl) {
-      window.open(canonicalUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -76,27 +96,27 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onHideJob 
     return 'LOW MATCH';
   };
 
-  const getApplyButtonLabel = () => {
-    if (!isAvailable) return 'POSTING CLOSED';
-    if (isAtsLink) return 'APPLY ON ATS PORTAL';
-    if (isOfficialCompanyCareers) return 'APPLY ON COMPANY SITE';
-    return 'APPLY ON SOURCE FEED';
-  };
+  const isAtsOrDirect =
+    job.applyUrl?.includes('greenhouse.io') ||
+    job.applyUrl?.includes('lever.co') ||
+    job.applyUrl?.includes('remotive.com') ||
+    job.applyUrl?.includes('remoteok.com') ||
+    job.applyUrl?.includes('jobicy.com');
+
+  const applyButtonText = isAtsOrDirect
+    ? 'APPLY ON COMPANY ATS'
+    : (job.source?.includes('Careers') ? `APPLY ON ${job.company.toUpperCase()}` : 'APPLY / VIEW JOB');
 
   return (
     <div
-      onClick={handleCardClick}
-      className={`group relative flex flex-col md:flex-row bg-white dark:bg-[#16181f] border rounded-2xl md:rounded-3xl shadow-sm transition-all duration-200 overflow-hidden w-full ${
-        isAvailable
-          ? 'border-slate-200/90 dark:border-[#282a2d] hover:shadow-xl dark:hover:shadow-pink-950/30 hover:border-pink-500/50 cursor-pointer'
-          : 'border-slate-300/60 dark:border-slate-800 opacity-85 cursor-default'
-      }`}
-      title={isAvailable ? 'Click anywhere on card to open verified job link' : 'Posting is currently unavailable or expired'}
+      onClick={() => handleOpenRealJob()}
+      className="group relative flex flex-col md:flex-row bg-white dark:bg-[#16181f] border border-slate-200/90 dark:border-[#282a2d] rounded-2xl md:rounded-3xl shadow-sm hover:shadow-xl dark:hover:shadow-pink-950/30 hover:border-pink-500/50 transition-all duration-200 overflow-hidden cursor-pointer w-full"
+      title="Click anywhere on card to open real job posting in new tab"
     >
       {/* LEFT SECTION: MAIN JOB CONTENT & METADATA */}
       <div className="flex-1 p-5 md:p-6 flex flex-col justify-between space-y-4">
         
-        {/* Top Header: Company Logo, Badges & Verification Status */}
+        {/* Top Header: Company Logo, Badges & Options Menu */}
         <div>
           <div className="flex items-start justify-between gap-4 mb-2.5">
             <div className="flex items-start gap-3.5">
@@ -117,20 +137,6 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onHideJob 
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20">
                     {job.source}
                   </span>
-
-                  {/* Verification Status Pill */}
-                  {isAvailable ? (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                      <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                      <span>Verified Active Link</span>
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3 text-rose-500" />
-                      <span>Posting Unavailable</span>
-                    </span>
-                  )}
-
                   {job.matchScore >= 80 && (
                     <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-md bg-pink-500/10 text-pink-500 border border-pink-500/25">
                       High Skill Match
@@ -149,13 +155,11 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onHideJob 
                 </div>
 
                 {/* Job Title with External Link Icon Indicator */}
-                <h3 className={`text-lg font-black leading-tight flex items-center gap-2 ${
-                  isAvailable
-                    ? 'text-slate-900 dark:text-white group-hover:text-pink-500 transition-colors'
-                    : 'text-slate-600 dark:text-slate-400'
-                }`}>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-pink-500 transition-colors leading-tight flex items-center gap-2">
                   <span>{job.title}</span>
-                  {isAvailable && (
+                  {resolvingLink ? (
+                    <Loader2 className="w-4 h-4 text-pink-500 animate-spin" />
+                  ) : (
                     <ExternalLink className="w-4 h-4 text-pink-500 flex-shrink-0 opacity-70 group-hover:opacity-100" />
                   )}
                 </h3>
@@ -164,7 +168,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onHideJob 
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium line-clamp-1">
                   <span className="font-bold text-slate-700 dark:text-slate-300">{job.company}</span>
                   <span className="mx-1 text-slate-400">•</span>
-                  <span>{job.description ? job.description.slice(0, 85) + '...' : 'Verified career opportunity'}</span>
+                  <span>{job.description ? job.description.slice(0, 85) + '...' : 'Verified real tech vacancy'}</span>
                 </p>
               </div>
             </div>
@@ -238,8 +242,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onHideJob 
         {/* Bottom Actions Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-[#282a2d]">
           <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full inline-block ${isAvailable ? 'bg-emerald-500' : 'bg-rose-400'}`} />
-            <span>{isAvailable ? `Verified Canonical URL (${job.source})` : 'Posting Inactive / Unavailable'}</span>
+            <span className="w-2 h-2 rounded-full bg-pink-500 inline-block" />
+            <span>Click card to open real verified job posting</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -271,21 +275,25 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onHideJob 
             </button>
 
             {/* Primary Real Job Apply Button */}
-            {isAvailable ? (
-              <button
-                type="button"
-                onClick={handleApplyClick}
-                className="px-4 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm hover:shadow-pink-500/25 transition-all"
-                title="Open verified canonical application link"
-              >
-                <span>{getApplyButtonLabel()}</span>
-                <ExternalLink className="w-3.5 h-3.5 text-white" />
-              </button>
-            ) : (
-              <span className="px-4 py-2.5 rounded-xl bg-slate-200/80 dark:bg-[#202227] text-slate-400 dark:text-slate-500 font-bold text-xs cursor-not-allowed">
-                Posting Closed
-              </span>
-            )}
+            <button
+              type="button"
+              onClick={(e) => handleOpenRealJob(e)}
+              disabled={resolvingLink}
+              className="px-4 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 disabled:opacity-70 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm hover:shadow-pink-500/25 transition-all"
+              title="Open real application page"
+            >
+              {resolvingLink ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>RESOLVING LINK...</span>
+                </>
+              ) : (
+                <>
+                  <span>{applyButtonText}</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-white" />
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>

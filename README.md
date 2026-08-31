@@ -7,21 +7,11 @@
 
 <br/>
 
-[![Watch Full Demo on YouTube](https://img.shields.io/badge/▶_Watch_Full_Video_Demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/xVjkWtoF9zU)
-[![Author](https://img.shields.io/badge/Created_by-Akarshan_Rasyal-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/akarshanrasyal/)
-[![.NET](https://img.shields.io/badge/.NET-10.0_%7C_8.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-[![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-Web_API-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://learn.microsoft.com/aspnet/core)
-[![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=csharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Docker Ready](https://img.shields.io/badge/Docker_Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-
 <p align="center">
   <b>CareerMail bridges high-performance email management with automated job application tracking, live Gmail OAuth synchronization, recruiter intelligence, and context-aware AI career assistance.</b>
 </p>
 
-[**📺 Watch Video Demo**](https://youtu.be/xVjkWtoF9zU) • [**✨ Key Features**](#-key-features) • [**🧪 Test with Your Own Gmail**](#-test-careermail-with-your-own-gmail) • [**🏗️ Architecture**](#-system-architecture) • [**🚀 Quickstart**](#-quick-start-with-docker) • [**☁️ Deployment Guide**](#-deployment-guide) • [**📡 REST API**](#-rest-api-documentation)
+[**📺 Watch Video Demo**](https://youtu.be/xVjkWtoF9zU) • [**📸 Screenshots**](#-application-showcase) • [**✨ Key Features**](#-key-features) • [**🧪 Test with Your Own Gmail**](#-test-careermail-with-your-own-gmail) • [**🏗️ Architecture**](#-system-architecture) • [**🚀 Quickstart**](#-quick-start-with-docker) • [**☁️ Deployment Guide**](#-deployment-guide) • [**📡 REST API**](#-rest-api-documentation)
 
 </div>
 
@@ -32,6 +22,79 @@
 CareerMail eliminates the chaos job seekers experience when managing dozens of recruitment threads across their inbox. By combining a modern webmail client with an autonomous NLP ingestion pipeline, CareerMail scans incoming recruiter emails, categorizes interview invites, assessments, rejections, and job offers, extracts contact info and deadlines, and keeps your entire career pipeline updated in real time.
 
 Designed with inspiration from **Linear**, **Notion**, and high-end fintech dashboards, CareerMail features a fluid dark theme, responsive Kanban boards, dynamic analytics charts, recruiter contact books, and an integrated **AI Career Assistant** grounded in your live PostgreSQL data.
+
+---
+
+## 📸 Application Showcase
+
+### 1. 🎯 Job Tracker Dashboard & Kanban Pipeline
+Track all your job applications, interviews, offers, and rejections in one high-performance dashboard with real-time KPI metrics, velocity trendlines, and a 6-stage Kanban board.
+
+<div align="center">
+  <img src="assets/job-tracker-light.png" alt="Job Tracker Dashboard - Light Theme" width="100%" />
+  <p><em>Job Tracker Dashboard (Light Theme) — Live KPI Metrics, Velocity Trendlines, Domain Breakdown & Kanban Pipeline</em></p>
+</div>
+
+<details>
+<summary><b>🌙 View Dark Theme Dashboard & Application Dossier Modals</b></summary>
+<br/>
+
+<div align="center">
+  <img src="assets/job-tracker-dark.png" alt="Job Tracker Dashboard - Dark Theme" width="100%" />
+  <p><em>Job Tracker Dashboard (Dark Theme) — Sleek Fintech & Linear-Inspired Aesthetic</em></p>
+</div>
+
+<div align="center">
+  <img src="assets/application-dossier.png" alt="Application Overview & Recruiter Intelligence Dossier" width="85%" />
+  <p><em>Application Dossier Modal — Automated Recruiter Contact Extraction & Confidence Scoring</em></p>
+</div>
+
+<div align="center">
+  <img src="assets/application-email-history.png" alt="Synchronized Email History in Application Dossier" width="85%" />
+  <p><em>Linked Email History — Full Rich HTML Recruiter Communications directly inside Application Record</em></p>
+</div>
+
+<div align="center">
+  <img src="assets/gmail-extracted-opportunities.png" alt="Extracted Opportunities from Gmail" width="100%" />
+  <p><em>Gmail Opportunity Scanner — Automated Discovery of Recruiter Outreach & 1-Click Pipeline Ingestion</em></p>
+</div>
+
+</details>
+
+---
+
+### 2. 🔍 Job Search & Deterministic CV Match Engine
+Dynamic multi-source job aggregation from public ATS boards (Greenhouse, Lever, Remotive, RemoteOK, Jobicy) with deterministic 5-pillar CV matching and direct 1-click apply links.
+
+<div align="center">
+  <img src="assets/job-search-match.png" alt="Job Search and CV Match Engine" width="100%" />
+  <p><em>Job Search & Match Engine — Dynamic NLP CV Skill Extraction, Transparent Match Gauges & Direct Company ATS Links</em></p>
+</div>
+
+---
+
+### 3. 📅 Interactive Career Calendar
+Unified timeline for upcoming technical interviews, recruiter screens, take-home assessment deadlines, and hiring milestones.
+
+<div align="center">
+  <img src="assets/career-calendar.png" alt="Career Calendar and Interview Timeline" width="100%" />
+  <p><em>Career Calendar — Month Grid & Day Agenda, Active Interview Countdown, and 1-Click Google Meet / Zoom Links</em></p>
+</div>
+
+---
+
+### 4. 📬 Integrated Webmail Inbox & Recruiter AI Composer
+Full RFC 822 compliant email client synchronized with your real Gmail account, featuring AI-assisted recruiter follow-up drafting.
+
+<div align="center">
+  <img src="assets/inbox-sync.png" alt="Integrated Gmail Inbox & Message Viewer" width="100%" />
+  <p><em>Integrated Inbox — Synchronized Gmail Folder Tree, Rich HTML Email Rendering & One-Click Opportunity Conversion</em></p>
+</div>
+
+<div align="center">
+  <img src="assets/recruiter-followup-compose.png" alt="Quick Recruiter Follow-up & Gmail Compose Modal" width="85%" />
+  <p><em>Gmail Compose Modal — Context-Aware AI Follow-up Templates with Direct Google RFC 822 Sending</em></p>
+</div>
 
 ---
 
@@ -233,7 +296,7 @@ npm run dev
 #### 8️⃣ Step 8: Connect Your Gmail & Test the Pipeline
 
 1. Open **[http://localhost:5173](http://localhost:5173)** in your browser.
-2. Sign in with the default credentials (`arjun.sharma@email.com` / `password123`) or click **"Continue with Google"**.
+2. Sign in with the default credentials (`akarshan@email.com` / `password123`).
 3. Navigate to **Settings** (`/settings`) from the sidebar.
 4. Click **"Connect Gmail"**.
 5. When Google displays the consent screen, select your test Gmail account (click *Advanced > Go to CareerMail (unsafe)* if prompted).
@@ -324,7 +387,7 @@ CareerMail seeds a demo account automatically on startup:
 
 | Field | Value |
 |---|---|
-| **Email** | `arjun.sharma@email.com` |
+| **Email** | `akarshan@email.com` |
 | **Password** | `password123` |
 
 ---

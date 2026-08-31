@@ -320,6 +320,12 @@ export const jobSearchApi = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+
+  resolveRealLink: (payload: { jobId?: string; title?: string; company?: string; location?: string; currentUrl?: string }) =>
+    request<{ realJobUrl: string }>('/job-search/resolve-real-link', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };
 
 // Settings API (Gemini AI Key Management)

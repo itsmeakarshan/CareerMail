@@ -120,8 +120,7 @@ builder.Services.AddScoped<IJobProvider, RemotiveJobProvider>();
 builder.Services.AddScoped<IJobProvider, AtsPublicJobProvider>();
 builder.Services.AddScoped<IJobProvider, JobicyJobProvider>();
 builder.Services.AddScoped<IJobProvider, RemoteOKJobProvider>();
-builder.Services.AddMemoryCache();
-builder.Services.AddHttpClient<IJobUrlVerificationService, JobUrlVerificationService>();
+builder.Services.AddScoped<IJobProvider, AggregatorJobProvider>();
 builder.Services.AddScoped<IJobSearchService, JobSearchService>();
 
 var app = builder.Build();

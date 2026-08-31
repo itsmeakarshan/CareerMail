@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Sparkles,
-  Minus,
   Maximize2,
   Minimize2,
   Send,
@@ -48,7 +47,6 @@ export const CareerAssistantWidget: React.FC = () => {
   const navigate = useNavigate();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [isMinimized, setIsMinimized] = useState<boolean>(false);
   const [isMaximized, setIsMaximized] = useState<boolean>(false);
   const [query, setQuery] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -87,10 +85,10 @@ export const CareerAssistantWidget: React.FC = () => {
   }, [messages, loading]);
 
   useEffect(() => {
-    if (isOpen && !isMinimized) {
+    if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 150);
     }
-  }, [isOpen, isMinimized]);
+  }, [isOpen]);
 
   const handleSend = async (customPrompt?: string, actionCode?: string) => {
     const messageText = customPrompt || query;
@@ -157,66 +155,227 @@ export const CareerAssistantWidget: React.FC = () => {
     }
   };
 
-  // Render markdown text cleanly
+  // Helper to parse inline markdown (bold, italic, code, links)
+  const formatInlineText = (text: string) => {
+    // Regex splits by:
+    // 1. `code`
+    // 2. ***bold italic***
+    // 3. **bold** or __bold__
+    // 4. *italic* or _italic_ (including quotes like *"text"*)
+    // 5. [text](url)
+    const tokens = text.split(/(`[^`]+`|\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_|\[[^\]]+\]\([^)]+\))/g);
+
+    return tokens.map((token, i) => {
+      if (!token) return null;
+
+      // Inline code `...`
+      if (token.startsWith('`') && token.endsWith('`') && token.length >= 2) {
+        return (
+          <code
+            key={i}
+            className="px-1.5 py-0.5 mx-0.5 rounded-md bg-slate-200/80 dark:bg-slate-800 text-pink-700 dark:text-pink-300 font-mono text-[11px] font-semibold border border-slate-300/60 dark:border-slate-700"
+          >
+            {token.slice(1, -1)}
+          </code>
+        );
+      }
+
+      // Bold + Italic ***...***
+      if (token.startsWith('***') && token.endsWith('***') && token.length >= 6) {
+        return (
+          <strong key={i} className="font-extrabold italic text-slate-900 dark:text-white">
+            {token.slice(3, -3)}
+          </strong>
+        );
+      }
+
+      // Bold **...** or __...__
+      if (
+        (token.startsWith('**') && token.endsWith('**') && token.length >= 4) ||
+        (token.startsWith('__') && token.endsWith('__') && token.length >= 4)
+      ) {
+        return (
+          <strong key={i} className="font-bold text-slate-900 dark:text-white">
+            {token.slice(2, -2)}
+          </strong>
+        );
+      }
+
+      // Italic *...* or _..._
+      if (
+        (token.startsWith('*') && token.endsWith('*') && token.length >= 2) ||
+        (token.startsWith('_') && token.endsWith('_') && token.length >= 2)
+      ) {
+        return (
+          <em key={i} className="italic text-slate-700 dark:text-slate-200 font-medium">
+            {token.slice(1, -1)}
+          </em>
+        );
+      }
+
+      // Markdown Link [text](url)
+      const linkMatch = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      if (linkMatch) {
+        return (
+          <a
+            key={i}
+            href={linkMatch[2]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-pink-600 dark:text-pink-400 font-semibold underline hover:text-pink-700 dark:hover:text-pink-300"
+          >
+            {linkMatch[1]}
+          </a>
+        );
+      }
+
+      return <span key={i}>{token}</span>;
+    });
+  };
+
+  // Render markdown text cleanly and structure all AI chatbot responses
   const renderFormattedText = (content: string) => {
-    const lines = content.split('\n');
-    return (
-      <div className="space-y-1.5 leading-relaxed">
-        {lines.map((line, idx) => {
-          if (!line.trim()) return <div key={idx} className="h-1" />;
+    const rawLines = content.split('\n');
+    const elements: React.ReactNode[] = [];
+    let inCodeBlock = false;
+    let codeBlockBuffer: string[] = [];
 
-          // Process bold text **text** and `code`
-          const parts = line.split(/(\*\*.*?\*\*|`.*?`)/g);
+    for (let idx = 0; idx < rawLines.length; idx++) {
+      const line = rawLines[idx];
+      const trimmed = line.trim();
 
-          const formattedLine = parts.map((part, pIdx) => {
-            if (part.startsWith('**') && part.endsWith('**')) {
-              return (
-                <strong key={pIdx} className="font-bold text-[#111318] dark:text-white">
-                  {part.slice(2, -2)}
-                </strong>
-              );
-            }
-            if (part.startsWith('`') && part.endsWith('`')) {
-              return (
-                <code
-                  key={pIdx}
-                  className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-pink-700 dark:text-pink-300 font-mono text-[11px]"
-                >
-                  {part.slice(1, -1)}
-                </code>
-              );
-            }
-            return part;
-          });
+      // Handle Code Fences ```
+      if (trimmed.startsWith('```')) {
+        if (inCodeBlock) {
+          // Close code block
+          const codeContent = codeBlockBuffer.join('\n');
+          elements.push(
+            <div
+              key={`code-${idx}`}
+              className="my-2 p-3 rounded-xl bg-slate-900 text-slate-100 text-[11px] font-mono overflow-x-auto border border-slate-800 shadow-inner"
+            >
+              <pre className="whitespace-pre">{codeContent}</pre>
+            </div>
+          );
+          codeBlockBuffer = [];
+          inCodeBlock = false;
+        } else {
+          // Open code block
+          inCodeBlock = true;
+        }
+        continue;
+      }
 
-          // Bullet points
-          if (line.trim().startsWith('•') || line.trim().startsWith('-')) {
-            return (
-              <div key={idx} className="flex items-start gap-2 pl-1">
-                <span className="text-pink-500 font-bold text-xs mt-0.5">•</span>
-                <span className="flex-1">{formattedLine}</span>
-              </div>
-            );
-          }
+      if (inCodeBlock) {
+        codeBlockBuffer.push(line);
+        continue;
+      }
 
-          // Numbered lists
-          if (/^\d+\./.test(line.trim())) {
-            return (
-              <div key={idx} className="flex items-start gap-2 pl-1 font-medium">
-                <span className="flex-1">{formattedLine}</span>
-              </div>
-            );
-          }
+      // Empty spacing line
+      if (!trimmed) {
+        elements.push(<div key={`gap-${idx}`} className="h-1.5" />);
+        continue;
+      }
 
-          // Code block
-          if (line.trim().startsWith('```')) {
-            return null; // Skip code fence markers
-          }
+      // 1. Callout / Action banner (e.g. 💡 Action:, 🔒 Safety Note:, ⚠️ Note:)
+      if (
+        trimmed.startsWith('💡') ||
+        trimmed.startsWith('🔒') ||
+        trimmed.startsWith('⚠️') ||
+        trimmed.toLowerCase().includes('action:') ||
+        trimmed.toLowerCase().includes('safety note:')
+      ) {
+        elements.push(
+          <div
+            key={`callout-${idx}`}
+            className="my-2 p-2.5 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs leading-relaxed flex items-start gap-2 shadow-2xs"
+          >
+            <div className="flex-1">{formatInlineText(trimmed)}</div>
+          </div>
+        );
+        continue;
+      }
 
-          return <p key={idx}>{formattedLine}</p>;
-        })}
-      </div>
-    );
+      // 2. Major Section Headers (e.g. "👤 **Identified Recruiter Contacts...**" or "# Header")
+      if (
+        trimmed.startsWith('#') ||
+        (trimmed.endsWith(':**') &&
+          (trimmed.startsWith('👤') ||
+            trimmed.startsWith('📅') ||
+            trimmed.startsWith('🎯') ||
+            trimmed.startsWith('📊') ||
+            trimmed.startsWith('✉️') ||
+            trimmed.startsWith('✨')))
+      ) {
+        const headerText = trimmed.replace(/^#+\s*/, '');
+        elements.push(
+          <div
+            key={`hdr-${idx}`}
+            className="pt-2 pb-1 border-b border-pink-100 dark:border-slate-800/80 text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5"
+          >
+            {formatInlineText(headerText)}
+          </div>
+        );
+        continue;
+      }
+
+      // 3. Sub-items / Indented Details (e.g. "  - Email: ... | Role: ..." or "   • Date: ...")
+      // Check if line has 2+ leading spaces or tabs followed by bullet/dash
+      const isIndented = /^(\s{2,}|\t+)[•\-\*\+]?\s*/.test(line);
+      if (isIndented) {
+        // Strip the indentation AND bullet marker
+        const cleanSubText = line.replace(/^(\s{2,}|\t+)[•\-\*\+]?\s*/, '');
+        elements.push(
+          <div key={`sub-${idx}`} className="flex items-start gap-2 pl-5 py-0.5 text-xs text-slate-600 dark:text-slate-300">
+            <span className="text-pink-400 dark:text-pink-500 font-bold text-[10px] mt-0.5 select-none">↳</span>
+            <span className="flex-1 leading-snug">{formatInlineText(cleanSubText)}</span>
+          </div>
+        );
+        continue;
+      }
+
+      // 4. Top-level Bullet Points (e.g. "• Item", "- Item", "* Item")
+      if (/^[•\-\*\+]\s+/.test(trimmed)) {
+        // Strip the bullet marker
+        const cleanBulletText = trimmed.replace(/^[•\-\*\+]\s+/, '');
+        elements.push(
+          <div key={`bullet-${idx}`} className="flex items-start gap-2 pl-1 py-0.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-pink-500 flex-shrink-0 mt-1.5" />
+            <span className="flex-1 text-xs text-slate-800 dark:text-slate-200 leading-relaxed">
+              {formatInlineText(cleanBulletText)}
+            </span>
+          </div>
+        );
+        continue;
+      }
+
+      // 5. Numbered Lists (e.g. "1. Item", "2. Item")
+      const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+      if (numMatch) {
+        const num = numMatch[1];
+        const textAfter = numMatch[2];
+        elements.push(
+          <div key={`num-${idx}`} className="flex items-start gap-2 pl-1 py-0.5">
+            <span className="w-4 h-4 rounded-full bg-pink-100 dark:bg-pink-950/80 text-pink-700 dark:text-pink-300 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5 border border-pink-200 dark:border-pink-800">
+              {num}
+            </span>
+            <span className="flex-1 text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+              {formatInlineText(textAfter)}
+            </span>
+          </div>
+        );
+        continue;
+      }
+
+      // 6. Standard Paragraph
+      elements.push(
+        <p key={`p-${idx}`} className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed">
+          {formatInlineText(trimmed)}
+        </p>
+      );
+    }
+
+    return <div className="space-y-1">{elements}</div>;
   };
 
   // Render priority badge color
@@ -243,7 +402,6 @@ export const CareerAssistantWidget: React.FC = () => {
         <button
           onClick={() => {
             setIsOpen(true);
-            setIsMinimized(false);
           }}
           className="relative px-4 py-3 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-2xl shadow-xl shadow-pink-500/25 flex items-center gap-2.5 transition-all hover:scale-105 group border border-pink-400/40"
         >
@@ -264,9 +422,7 @@ export const CareerAssistantWidget: React.FC = () => {
     <>
       <div
         className={`fixed bottom-5 right-5 z-40 bg-white dark:bg-[#16181f] border border-[#e0e2e7] dark:border-[#282a2d] rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 flex flex-col ${
-          isMinimized
-            ? 'w-80 h-14'
-            : isMaximized
+          isMaximized
             ? 'w-[95vw] sm:w-[680px] md:w-[760px] h-[85vh] max-h-[820px]'
             : 'w-[95vw] sm:w-[440px] md:w-[480px] h-[580px] max-h-[90vh]'
         }`}
@@ -294,7 +450,7 @@ export const CareerAssistantWidget: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-1">
-            {messages.length > 0 && !isMinimized && (
+            {messages.length > 0 && (
               <button
                 onClick={handleClearHistory}
                 className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-[#5f6368] dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors"
@@ -304,15 +460,7 @@ export const CareerAssistantWidget: React.FC = () => {
               </button>
             )}
             <button
-              onClick={() => setIsMinimized(!isMinimized)}
-              className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-[#5f6368] dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors"
-              title={isMinimized ? 'Expand' : 'Minimize'}
-            >
-              <Minus className="w-3.5 h-3.5" />
-            </button>
-            <button
               onClick={() => {
-                setIsMinimized(false);
                 setIsMaximized(!isMaximized);
               }}
               className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-[#5f6368] dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors hidden sm:block"
@@ -330,9 +478,7 @@ export const CareerAssistantWidget: React.FC = () => {
           </div>
         </div>
 
-        {!isMinimized && (
-          <>
-            {/* Quick Action Chips Strip */}
+        {/* Quick Action Chips Strip */}
             <div className="px-3 py-2 bg-[#f6f8fc] dark:bg-[#111318] border-b border-[#e0e2e7] dark:border-[#282a2d] overflow-x-auto custom-scrollbar flex items-center gap-1.5 flex-nowrap">
               {quickActionChips.map((chip, idx) => (
                 <button
@@ -640,9 +786,7 @@ export const CareerAssistantWidget: React.FC = () => {
                 <span>Press Enter to send</span>
               </div>
             </div>
-          </>
-        )}
-      </div>
+          </div>
 
       {/* Real Gmail Compose Modal for AI Drafted Emails */}
       {activeDraftToCompose && (

@@ -49,7 +49,7 @@ export const ComposeEmailModal: React.FC<ComposeProps> = ({
     const greeting = recruiterFirstName ? `Hey ${recruiterFirstName},` : 'Hey,';
     const roleStr = roleTitle ? `the ${roleTitle}` : 'this';
     const compStr = companyName ? ` at ${companyName}` : '';
-    return `${greeting}\n\nI had applied for ${roleStr} role${compStr} and I am eager to know the further process.\n\nCould you please let me know if there are any updates regarding my application?\n\nBest regards,\nArjun`;
+    return `${greeting}\n\nI had applied for ${roleStr} role${compStr} and I am eager to know the further process.\n\nCould you please let me know if there are any updates regarding my application?\n\nBest regards,\nAkarshan`;
   };
 
   useEffect(() => {

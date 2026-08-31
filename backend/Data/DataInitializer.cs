@@ -19,13 +19,20 @@ public static class DataInitializer
             // Ignore if column already exists or in-memory DB
         }
 
-        // Seed demo user if not present
-        if (!await context.Users.AnyAsync(u => u.Email == "arjun.sharma@email.com"))
+        // Seed or update demo user
+        var demoUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "akarshan@email.com" || u.Email == "arjun.sharma@email.com");
+        if (demoUser != null)
+        {
+            demoUser.Name = "Akarshan";
+            demoUser.Email = "akarshan@email.com";
+            await context.SaveChangesAsync();
+        }
+        else
         {
             var user = new User
             {
-                Name = "Arjun Sharma",
-                Email = "arjun.sharma@email.com",
+                Name = "Akarshan",
+                Email = "akarshan@email.com",
                 Password = BCrypt.Net.BCrypt.HashPassword("password123"),
                 AvatarUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
                 CreatedAt = DateTime.UtcNow,

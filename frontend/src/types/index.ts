@@ -316,9 +316,6 @@ export interface JobListing {
   linkedInUrl?: string;
   indeedUrl?: string;
   googleJobsUrl?: string;
-  isAvailable?: boolean;
-  isUrlVerified?: boolean;
-  applicationUrlStatus?: string;
   isExternalApplication?: boolean;
   postedDate: string;
   source: string;

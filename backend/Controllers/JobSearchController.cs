@@ -21,17 +21,23 @@ public class JobSearchController : ControllerBase
     private readonly ICvParsingService _cvParsingService;
     private readonly IJobSearchService _jobSearchService;
     private readonly IJobApplicationService _jobApplicationService;
+    private readonly IGeminiCvService _geminiCvService;
+    private readonly IConfiguration _configuration;
 
     public JobSearchController(
         AppDbContext context,
         ICvParsingService cvParsingService,
         IJobSearchService jobSearchService,
-        IJobApplicationService jobApplicationService)
+        IJobApplicationService jobApplicationService,
+        IGeminiCvService geminiCvService,
+        IConfiguration configuration)
     {
         _context = context;
         _cvParsingService = cvParsingService;
         _jobSearchService = jobSearchService;
         _jobApplicationService = jobApplicationService;
+        _geminiCvService = geminiCvService;
+        _configuration = configuration;
     }
 
     private long GetUserId()
@@ -188,6 +194,24 @@ public class JobSearchController : ControllerBase
         return Ok(saved);
     }
 
+    // POST /api/jobs/resolve-real-link
+    [HttpPost("resolve-real-link")]
+    public async Task<IActionResult> ResolveRealJobLink([FromBody] ResolveRealLinkRequest req)
+    {
+        var userId = GetUserId();
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var apiKey = user?.GeminiApiKey ?? _configuration["Gemini:ApiKey"] ?? Environment.GetEnvironmentVariable("GEMINI_API_KEY");
+
+        var realUrl = await _geminiCvService.ResolveRealJobUrlAsync(
+            req.Title ?? string.Empty,
+            req.Company ?? string.Empty,
+            req.Location ?? string.Empty,
+            req.CurrentUrl,
+            apiKey);
+
+        return Ok(new { realJobUrl = realUrl ?? req.CurrentUrl });
+    }
+
     // POST /api/jobs/{id}/hide or POST /api/job-search/hide
     [HttpPost("{id}/hide")]
     [HttpPost("hide")]
@@ -277,4 +301,13 @@ public class JobSearchPayload
     public string? WorkType { get; set; }
     public int MinScore { get; set; }
     public string? SortBy { get; set; }
+}
+
+public class ResolveRealLinkRequest
+{
+    public string? JobId { get; set; }
+    public string? Title { get; set; }
+    public string? Company { get; set; }
+    public string? Location { get; set; }
+    public string? CurrentUrl { get; set; }
 }

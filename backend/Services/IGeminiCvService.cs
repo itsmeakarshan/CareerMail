@@ -21,4 +21,5 @@ public interface IGeminiCvService
 {
     Task<(bool Success, string Message)> TestApiKeyAsync(string apiKey);
     Task<GeminiStructuredCvProfileDto?> ExtractStructuredCvAsync(string rawCvText, string apiKey);
+    Task<string?> ResolveRealJobUrlAsync(string jobTitle, string companyName, string location, string? currentUrl, string? apiKey);
 }

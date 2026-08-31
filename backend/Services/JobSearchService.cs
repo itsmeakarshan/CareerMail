@@ -37,11 +37,6 @@ public class JobListingDto
     public string IndeedUrl { get; set; } = string.Empty;
     public string GoogleJobsUrl { get; set; } = string.Empty;
 
-    // Active URL Verification & Availability
-    public bool IsAvailable { get; set; } = true;
-    public bool IsUrlVerified { get; set; } = true;
-    public string ApplicationUrlStatus { get; set; } = "ACTIVE"; // "ACTIVE", "UNAVAILABLE"
-
     // Match Engine Breakdown (Deterministic 5-Pillar C# Engine)
     public int MatchScore { get; set; }
     public string MatchQualityLabel { get; set; } = "FAIR MATCH";
@@ -74,20 +69,17 @@ public class JobSearchService : IJobSearchService
     private readonly IEnumerable<IJobProvider> _providers;
     private readonly IJobMatchEngineService _matchEngine;
     private readonly ICandidateDomainEngine _domainEngine;
-    private readonly IJobUrlVerificationService _urlVerificationService;
     private readonly ILogger<JobSearchService> _logger;
 
     public JobSearchService(
         IEnumerable<IJobProvider> providers,
         IJobMatchEngineService matchEngine,
         ICandidateDomainEngine domainEngine,
-        IJobUrlVerificationService urlVerificationService,
         ILogger<JobSearchService> logger)
     {
         _providers = providers;
         _matchEngine = matchEngine;
         _domainEngine = domainEngine;
-        _urlVerificationService = urlVerificationService;
         _logger = logger;
     }
 
@@ -256,13 +248,7 @@ public class JobSearchService : IJobSearchService
         }
 
         // 6. Sort Results
-        var sortedListings = ApplySorting(matchedListings, sortBy);
-
-        // 7. Active URL Verification & Resolution (Priority: ATS -> Company Careers -> Source Board)
-        // Runs active validation on the top matched results to ensure zero broken links
-        await _urlVerificationService.VerifyJobListingsAsync(sortedListings.Take(60).ToList());
-
-        return sortedListings;
+        return ApplySorting(matchedListings, sortBy);
     }
 
     public async Task<JobListingDto?> GetJobByIdAsync(CvProfile profile, string jobId)
