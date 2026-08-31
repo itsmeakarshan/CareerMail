@@ -35,10 +35,6 @@ Track all your job applications, interviews, offers, and rejections in one high-
   <p><em>Job Tracker Dashboard (Light Theme) — Live KPI Metrics, Velocity Trendlines, Domain Breakdown & Kanban Pipeline</em></p>
 </div>
 
-<details>
-<summary><b>🌙 View Dark Theme Dashboard & Application Dossier Modals</b></summary>
-<br/>
-
 <div align="center">
   <img src="assets/job-tracker-dark.png" alt="Job Tracker Dashboard - Dark Theme" width="100%" />
   <p><em>Job Tracker Dashboard (Dark Theme) — Sleek Fintech & Linear-Inspired Aesthetic</em></p>
@@ -58,8 +54,6 @@ Track all your job applications, interviews, offers, and rejections in one high-
   <img src="assets/gmail-extracted-opportunities.png" alt="Extracted Opportunities from Gmail" width="100%" />
   <p><em>Gmail Opportunity Scanner — Automated Discovery of Recruiter Outreach & 1-Click Pipeline Ingestion</em></p>
 </div>
-
-</details>
 
 ---
 
