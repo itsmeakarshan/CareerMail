@@ -3,44 +3,51 @@ import {
   MapPin,
   Clock,
   Briefcase,
-  DollarSign,
+  Banknote,
   GraduationCap,
   Sparkles,
   Heart,
   Ban,
   CheckCircle2,
-  PlusCircle,
-  Check,
-  Zap
+  Zap,
+  ExternalLink,
+  ShieldCheck,
+  AlertTriangle
 } from 'lucide-react';
 import { JobListing } from '../../types';
-import { jobSearchApi } from '../../services/api';
 import { CompanyLogo } from '../common/CompanyLogo';
 
 interface JobCardProps {
   job: JobListing;
-  onViewDetails: (job: JobListing) => void;
-  onJobConverted?: () => void;
+  onViewDetails?: (job: JobListing) => void;
   onHideJob?: (jobId: string) => void;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConverted, onHideJob }) => {
+export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onHideJob }) => {
   const [saved, setSaved] = useState(false);
-  const [converting, setConverting] = useState(false);
-  const [converted, setConverted] = useState(false);
 
-  const handleTrackInPipeline = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (converted || converting) return;
-    setConverting(true);
-    try {
-      await jobSearchApi.convertToApplication(job);
-      setConverted(true);
-      if (onJobConverted) onJobConverted();
-    } catch {
-      // Fallback
-    } finally {
-      setConverting(false);
+  // Exact Canonical Job URL from Source
+  const canonicalUrl = job.applyUrl || job.url || job.sourceUrl || '';
+  const isAvailable = job.isAvailable !== false && job.applicationUrlStatus !== 'UNAVAILABLE' && canonicalUrl.length > 0;
+
+  const isAtsLink =
+    canonicalUrl.includes('greenhouse.io') ||
+    canonicalUrl.includes('lever.co') ||
+    canonicalUrl.includes('ashbyhq.com') ||
+    canonicalUrl.includes('workable.com') ||
+    canonicalUrl.includes('smartrecruiters.com');
+
+  const isOfficialCompanyCareers =
+    canonicalUrl.includes('careers.') ||
+    canonicalUrl.includes('/careers') ||
+    canonicalUrl.includes('jobs.') ||
+    canonicalUrl.includes('/jobs');
+
+  const handleCardClick = () => {
+    if (isAvailable && canonicalUrl) {
+      window.open(canonicalUrl, '_blank', 'noopener,noreferrer');
+    } else if (onViewDetails) {
+      onViewDetails(job);
     }
   };
 
@@ -51,41 +58,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConve
     }
   };
 
-  // Color Theme based on Match Score
-  const getTheme = (score: number) => {
-    if (score >= 85) {
-      return {
-        sideCardBg: 'bg-gradient-to-b from-[#1b2b34] to-[#121c22]',
-        ringColor: '#10b981', // emerald-500
-        pillBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-        textColor: 'text-emerald-500'
-      };
+  const handleApplyClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isAvailable && canonicalUrl) {
+      window.open(canonicalUrl, '_blank', 'noopener,noreferrer');
     }
-    if (score >= 70) {
-      return {
-        sideCardBg: 'bg-gradient-to-b from-[#241e38] to-[#151221]',
-        ringColor: '#a855f7', // purple-500
-        pillBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-        textColor: 'text-purple-500'
-      };
-    }
-    if (score >= 50) {
-      return {
-        sideCardBg: 'bg-gradient-to-b from-[#2a241e] to-[#1a1612]',
-        ringColor: '#f59e0b', // amber-500
-        pillBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-        textColor: 'text-amber-500'
-      };
-    }
-    return {
-      sideCardBg: 'bg-gradient-to-b from-[#222329] to-[#16171b]',
-      ringColor: '#64748b', // slate-500
-      pillBg: 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
-      textColor: 'text-slate-500'
-    };
   };
 
-  const theme = getTheme(job.matchScore);
   const radius = 26;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (job.matchScore / 100) * circumference;
@@ -97,15 +76,27 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConve
     return 'LOW MATCH';
   };
 
+  const getApplyButtonLabel = () => {
+    if (!isAvailable) return 'POSTING CLOSED';
+    if (isAtsLink) return 'APPLY ON ATS PORTAL';
+    if (isOfficialCompanyCareers) return 'APPLY ON COMPANY SITE';
+    return 'APPLY ON SOURCE FEED';
+  };
+
   return (
     <div
-      onClick={() => onViewDetails(job)}
-      className="group relative flex flex-col md:flex-row bg-white dark:bg-[#16181f] border border-slate-200/90 dark:border-[#282a2d] rounded-2xl md:rounded-3xl shadow-sm hover:shadow-xl dark:hover:shadow-pink-950/20 hover:border-pink-500/40 transition-all duration-200 overflow-hidden cursor-pointer w-full"
+      onClick={handleCardClick}
+      className={`group relative flex flex-col md:flex-row bg-white dark:bg-[#16181f] border rounded-2xl md:rounded-3xl shadow-sm transition-all duration-200 overflow-hidden w-full ${
+        isAvailable
+          ? 'border-slate-200/90 dark:border-[#282a2d] hover:shadow-xl dark:hover:shadow-pink-950/30 hover:border-pink-500/50 cursor-pointer'
+          : 'border-slate-300/60 dark:border-slate-800 opacity-85 cursor-default'
+      }`}
+      title={isAvailable ? 'Click anywhere on card to open verified job link' : 'Posting is currently unavailable or expired'}
     >
       {/* LEFT SECTION: MAIN JOB CONTENT & METADATA */}
       <div className="flex-1 p-5 md:p-6 flex flex-col justify-between space-y-4">
         
-        {/* Top Header: Company Logo, Badges & Options Menu */}
+        {/* Top Header: Company Logo, Badges & Verification Status */}
         <div>
           <div className="flex items-start justify-between gap-4 mb-2.5">
             <div className="flex items-start gap-3.5">
@@ -123,14 +114,31 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConve
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#202227] text-slate-600 dark:text-slate-400">
                     {job.postedDate || 'Recently posted'}
                   </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20">
+                    {job.source}
+                  </span>
+
+                  {/* Verification Status Pill */}
+                  {isAvailable ? (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                      <span>Verified Active Link</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 text-rose-500" />
+                      <span>Posting Unavailable</span>
+                    </span>
+                  )}
+
                   {job.matchScore >= 80 && (
-                    <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                    <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-md bg-pink-500/10 text-pink-500 border border-pink-500/25">
                       High Skill Match
                     </span>
                   )}
                   {(job.experienceLevel?.includes('Entry') || job.title.toLowerCase().includes('graduate') || job.title.toLowerCase().includes('junior') || job.title.toLowerCase().includes('0-1')) && (
                     <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-500 border border-purple-500/20">
-                      🎓 Graduate / 0-1 Yrs Exp
+                      🎓 Grad / 0-1 Yrs Exp
                     </span>
                   )}
                   {job.location.toLowerCase().includes('remote') && (
@@ -140,16 +148,23 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConve
                   )}
                 </div>
 
-                {/* Job Title */}
-                <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-pink-500 transition-colors leading-tight">
-                  {job.title}
+                {/* Job Title with External Link Icon Indicator */}
+                <h3 className={`text-lg font-black leading-tight flex items-center gap-2 ${
+                  isAvailable
+                    ? 'text-slate-900 dark:text-white group-hover:text-pink-500 transition-colors'
+                    : 'text-slate-600 dark:text-slate-400'
+                }`}>
+                  <span>{job.title}</span>
+                  {isAvailable && (
+                    <ExternalLink className="w-4 h-4 text-pink-500 flex-shrink-0 opacity-70 group-hover:opacity-100" />
+                  )}
                 </h3>
 
-                {/* Company Name & Tagline */}
+                {/* Company Name & Description Snippet */}
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium line-clamp-1">
                   <span className="font-bold text-slate-700 dark:text-slate-300">{job.company}</span>
                   <span className="mx-1 text-slate-400">•</span>
-                  <span>{job.description ? job.description.slice(0, 85) + '...' : 'Verified tech opportunity'}</span>
+                  <span>{job.description ? job.description.slice(0, 85) + '...' : 'Verified career opportunity'}</span>
                 </p>
               </div>
             </div>
@@ -167,9 +182,10 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConve
               <span className="font-medium truncate">{job.employmentType}</span>
             </div>
 
+            {/* Universal Currency Compensation Chip (No hardcoded Dollar sign) */}
             <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-[#202227] px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-800/80">
-              <DollarSign className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-              <span className="font-bold text-slate-900 dark:text-slate-100 truncate">{job.salary || 'Competitive market rate'}</span>
+              <Banknote className="w-4 h-4 text-pink-500 flex-shrink-0" />
+              <span className="font-bold text-slate-900 dark:text-slate-100 truncate">{job.salary || 'Competitive compensation'}</span>
             </div>
 
             <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-[#202227] px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-800/80">
@@ -183,7 +199,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConve
             </div>
 
             <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-[#202227] px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-800/80">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-pink-500 flex-shrink-0" />
               <span className="font-medium truncate">{(job.matchingSkills || []).length} Exact + {(job.relatedSkills || []).length} Related</span>
             </div>
           </div>
@@ -193,7 +209,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConve
             {(job.matchingSkills || []).slice(0, 4).map((s) => (
               <span
                 key={s}
-                className="text-[11px] font-semibold px-2.5 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
+                className="text-[11px] font-semibold px-2.5 py-0.5 rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20"
               >
                 ✓ {s}
               </span>
@@ -222,11 +238,11 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConve
         {/* Bottom Actions Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-[#282a2d]">
           <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-            <span>Verified job posting</span>
+            <span className={`w-2 h-2 rounded-full inline-block ${isAvailable ? 'bg-emerald-500' : 'bg-rose-400'}`} />
+            <span>{isAvailable ? `Verified Canonical URL (${job.source})` : 'Posting Inactive / Unavailable'}</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Ignore / Hide Button */}
             <button
               type="button"
@@ -254,60 +270,46 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConve
               <Heart className={`w-4 h-4 ${saved ? 'fill-current' : ''}`} />
             </button>
 
-            {/* CareerMail Assist Button */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewDetails(job);
-              }}
-              className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-[#202227] hover:bg-slate-200 dark:hover:bg-[#282a30] text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 border border-slate-200 dark:border-slate-800 transition-colors"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-pink-500" />
-              <span>CAREERMAIL ASSIST</span>
-            </button>
-
-            {/* 1-Click Track Button */}
-            <button
-              type="button"
-              onClick={handleTrackInPipeline}
-              disabled={converting || converted}
-              className={`px-4 py-2.5 rounded-xl font-extrabold text-xs flex items-center gap-1.5 shadow-sm transition-all ${
-                converted
-                  ? 'bg-emerald-500 text-white cursor-default'
-                  : 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white'
-              }`}
-            >
-              {converted ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  <span>TRACKED</span>
-                </>
-              ) : (
-                <>
-                  <PlusCircle className="w-4 h-4" />
-                  <span>{converting ? 'ADDING...' : '1-CLICK TRACK'}</span>
-                </>
-              )}
-            </button>
+            {/* Primary Real Job Apply Button */}
+            {isAvailable ? (
+              <button
+                type="button"
+                onClick={handleApplyClick}
+                className="px-4 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm hover:shadow-pink-500/25 transition-all"
+                title="Open verified canonical application link"
+              >
+                <span>{getApplyButtonLabel()}</span>
+                <ExternalLink className="w-3.5 h-3.5 text-white" />
+              </button>
+            ) : (
+              <span className="px-4 py-2.5 rounded-xl bg-slate-200/80 dark:bg-[#202227] text-slate-400 dark:text-slate-500 font-bold text-xs cursor-not-allowed">
+                Posting Closed
+              </span>
+            )}
           </div>
         </div>
       </div>
 
-      {/* RIGHT SIDEBAR BLOCK: CIRCULAR MATCH GAUGE & BREAKDOWN */}
-      <div className={`w-full md:w-56 p-6 flex flex-col items-center justify-between text-center border-t md:border-t-0 md:border-l border-slate-200 dark:border-[#282a2d] transition-colors ${theme.sideCardBg}`}>
+      {/* RIGHT SIDEBAR BLOCK: LUXURY CAREERMAIL PINK MATCH GAUGE */}
+      <div className="w-full md:w-56 p-6 flex flex-col items-center justify-between text-center border-t md:border-t-0 md:border-l border-pink-500/20 dark:border-pink-500/20 bg-gradient-to-b from-[#220d1b] via-[#180913] to-[#10050c] dark:from-[#220d1b] dark:via-[#180913] dark:to-[#10050c] shadow-inner transition-colors">
         
-        {/* SVG Circular Ring Gauge */}
+        {/* SVG Circular Pink Gradient Ring Gauge */}
         <div className="relative w-24 h-24 flex items-center justify-center my-auto">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 64 64">
+            <defs>
+              <linearGradient id={`pinkRingGrad-${job.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ec4899" />
+                <stop offset="100%" stopColor="#f43f5e" />
+              </linearGradient>
+            </defs>
+
             {/* Background Ring */}
             <circle
               cx="32"
               cy="32"
               r={radius}
-              stroke="currentColor"
+              stroke="rgba(236, 72, 153, 0.18)"
               strokeWidth="5"
-              className="text-slate-200 dark:text-slate-800"
               fill="transparent"
             />
             {/* Value Progress Ring */}
@@ -315,7 +317,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConve
               cx="32"
               cy="32"
               r={radius}
-              stroke={theme.ringColor}
+              stroke={`url(#pinkRingGrad-${job.id})`}
               strokeWidth="5"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
@@ -327,29 +329,29 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onViewDetails, onJobConve
 
           {/* Percentage Text Center */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xl font-black text-white leading-none">
-              {job.matchScore}<span className="text-xs font-bold">%</span>
+            <span className="text-2xl font-black text-white leading-none tracking-tight">
+              {job.matchScore}<span className="text-xs font-bold text-pink-400 ml-0.5">%</span>
             </span>
           </div>
         </div>
 
         {/* Match Title & Key Metrics */}
-        <div className="space-y-2 mt-3 w-full">
-          <div className="text-xs font-black tracking-wider uppercase text-white">
+        <div className="space-y-2.5 mt-3 w-full">
+          <div className="px-2.5 py-0.5 rounded-full bg-pink-500/15 text-pink-400 border border-pink-500/30 text-[10px] font-black tracking-widest uppercase inline-block">
             {getMatchLevelText(job.matchScore)}
           </div>
 
-          <div className="text-[11px] text-slate-300 space-y-1 pt-1 text-left font-medium">
+          <div className="text-[11px] text-pink-100/90 space-y-1 pt-1 text-left font-medium">
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-pink-400 flex-shrink-0" />
               <span className="truncate">{(job.matchingSkills || []).length} Exact + {(job.relatedSkills || []).length} Related</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-pink-400 flex-shrink-0" />
               <span className="truncate">Role Relevance Fit</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-pink-400 flex-shrink-0" />
               <span className="truncate">Experience Fit</span>
             </div>
           </div>

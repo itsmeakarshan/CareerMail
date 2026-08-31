@@ -42,6 +42,13 @@ public interface IJobMatchEngineService
 
 public class JobMatchEngineService : IJobMatchEngineService
 {
+    private readonly ICandidateDomainEngine _domainEngine;
+
+    public JobMatchEngineService(ICandidateDomainEngine domainEngine)
+    {
+        _domainEngine = domainEngine;
+    }
+
     private static readonly string[] RecognizedSkills = new[]
     {
         "C#", ".NET", "ASP.NET", "EF Core", "Entity Framework", "React", "TypeScript", "JavaScript", "HTML", "CSS",
@@ -50,7 +57,8 @@ public class JobMatchEngineService : IJobMatchEngineService
         "MongoDB", "Redis", "Docker", "Kubernetes", "AWS", "Azure", "GCP", "DevOps", "Terraform", "CI/CD",
         "REST API", "GraphQL", "Microservices", "System Design", "Git", "Linux", "Agile", "Scrum",
         "Machine Learning", "Data Science", "Deep Learning", "PyTorch", "TensorFlow", "Pandas", "NumPy",
-        "Scikit-Learn", "UI/UX", "Unit Testing", "Jest", "Data Engineering", "Data Analytics"
+        "Scikit-Learn", "UI/UX", "Unit Testing", "Jest", "Data Engineering", "Data Analytics", "Statistical Modeling",
+        "NLP", "Computer Vision", "Tableau", "PowerBI", "Spark", "Kafka", "Hadoop", "Snowflake", "BigQuery"
     };
 
     // Semantic Skill Relationship Graph (Candidate Skill -> Related Target Job Skill, Multiplier, Type)
@@ -69,6 +77,7 @@ public class JobMatchEngineService : IJobMatchEngineService
         ("Data Science", "Machine Learning", 0.80, "Strong", "Data Science and ML are closely aligned domains"),
         ("Machine Learning", "Data Science", 0.80, "Strong", "ML expertise directly translates to Data Science"),
         ("Machine Learning", "Artificial Intelligence", 0.90, "Strong", "ML is the core discipline of modern AI"),
+        ("Statistical Modeling", "Data Science", 0.90, "Strong", "Statistical modeling is core to Data Science"),
 
         // Web / Frontend Relationships
         ("React", "Frontend Development", 0.90, "Strong", "React is the primary frontend UI framework"),
@@ -101,8 +110,6 @@ public class JobMatchEngineService : IJobMatchEngineService
         ("AWS", "Cloud", 0.90, "Strong", "AWS is the market-leading cloud computing provider"),
         ("Azure", "Cloud", 0.90, "Strong", "Azure is Microsoft's enterprise cloud platform"),
         ("GCP", "Cloud", 0.90, "Strong", "Google Cloud Platform is a major cloud provider"),
-        ("AWS", "Azure", 0.60, "Moderate", "Transferable cloud infrastructure concepts between AWS & Azure"),
-        ("Azure", "AWS", 0.60, "Moderate", "Transferable cloud infrastructure concepts between Azure & AWS"),
         ("CI/CD", "DevOps", 0.85, "Strong", "Continuous integration/deployment is essential to DevOps"),
         ("Git", "DevOps", 0.60, "Moderate", "Version control is a prerequisite for DevOps pipelines"),
         ("REST API", "Microservices", 0.75, "Strong", "REST APIs are standard communication protocols for microservices")
@@ -119,8 +126,6 @@ public class JobMatchEngineService : IJobMatchEngineService
     {
         var cvSkillsList = JsonSerializer.Deserialize<List<string>>(profile.ExtractedSkillsJson ?? "[]") ?? new List<string>();
         var cvSkills = new HashSet<string>(cvSkillsList, StringComparer.OrdinalIgnoreCase);
-
-        var cvRolesList = JsonSerializer.Deserialize<List<string>>(profile.TargetRolesJson ?? "[]") ?? new List<string>();
 
         // 1. EXTRACT & NORMALIZE JOB SKILLS
         var detectedJobSkills = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -148,9 +153,8 @@ public class JobMatchEngineService : IJobMatchEngineService
         var missingSkills = new List<string>();
 
         double totalEarnedSkillWeight = 0.0;
-        int totalRequiredSkills = detectedJobSkills.Count;
 
-        if (totalRequiredSkills > 0)
+        if (detectedJobSkills.Count > 0)
         {
             foreach (var jobSkill in detectedJobSkills)
             {
@@ -188,7 +192,7 @@ public class JobMatchEngineService : IJobMatchEngineService
         }
         else
         {
-            // Fallback text check if job specifies no distinct taxonomy skills
+            // Fallback check against candidate skills in job description
             foreach (var cvSkill in cvSkills)
             {
                 if (Regex.IsMatch(combinedJobText, $@"\b{Regex.Escape(cvSkill)}\b", RegexOptions.IgnoreCase))
@@ -197,66 +201,26 @@ public class JobMatchEngineService : IJobMatchEngineService
                     totalEarnedSkillWeight += 1.0;
                 }
             }
-            totalRequiredSkills = Math.Max(1, exactMatches.Count + 2);
         }
 
-        int skillsScore = totalRequiredSkills > 0
-            ? (int)Math.Round((totalEarnedSkillWeight / totalRequiredSkills) * 40.0)
-            : 0;
+        // CRITICAL BUG FIX: Ensure a minimum denominator of 3 so a single isolated skill match (1/1) cannot falsely yield 40/40!
+        int effectiveDenominator = Math.Max(3, detectedJobSkills.Count);
+        int skillsScore = (int)Math.Round((totalEarnedSkillWeight / effectiveDenominator) * 40.0);
         skillsScore = Math.Clamp(skillsScore, 0, 40);
 
         // 3. ROLE & JOB TITLE RELEVANCE (25 points max)
-        int roleScore = 0;
-        string lowerJobTitle = jobTitle.ToLowerInvariant();
-
-        foreach (var role in cvRolesList)
-        {
-            string lowerRole = role.ToLowerInvariant();
-            if (lowerJobTitle.Contains(lowerRole) || lowerRole.Contains(lowerJobTitle))
-            {
-                roleScore = 25;
-                break;
-            }
-
-            var titleTokens = lowerJobTitle.Split(new[] { ' ', '/', '-', '&', ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var roleTokens = lowerRole.Split(new[] { ' ', '/', '-', '&', ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-            int overlap = titleTokens.Intersect(roleTokens).Count();
-            if (overlap > 0)
-            {
-                int tokenScore = Math.Min(22, overlap * 11);
-                if (tokenScore > roleScore) roleScore = tokenScore;
-            }
-        }
-
-        // Domain similarity heuristics if direct title tokens don't match
-        if (roleScore == 0)
-        {
-            bool isDataJob = Regex.IsMatch(lowerJobTitle, @"\b(data|ml|machine learning|ai|scientist|analytics)\b");
-            bool isDataCandidate = cvSkills.Any(s => s.Contains("Data", StringComparison.OrdinalIgnoreCase) || s.Contains("Learning", StringComparison.OrdinalIgnoreCase) || s.Contains("Python", StringComparison.OrdinalIgnoreCase));
-
-            bool isWebJob = Regex.IsMatch(lowerJobTitle, @"\b(frontend|backend|full stack|react|c#|\.net|web|software)\b");
-            bool isWebCandidate = cvSkills.Any(s => s.Contains("React", StringComparison.OrdinalIgnoreCase) || s.Contains("C#", StringComparison.OrdinalIgnoreCase) || s.Contains("JavaScript", StringComparison.OrdinalIgnoreCase) || s.Contains(".NET", StringComparison.OrdinalIgnoreCase));
-
-            if ((isDataJob && isDataCandidate) || (isWebJob && isWebCandidate))
-            {
-                roleScore = 14;
-            }
-            else
-            {
-                roleScore = 2; // Low relevance across divergent engineering disciplines
-            }
-        }
+        var candidateDomain = _domainEngine.AnalyzeProfile(profile);
+        int roleScore = _domainEngine.CalculateRoleCompatibility(candidateDomain, jobTitle);
         roleScore = Math.Clamp(roleScore, 0, 25);
 
         // 4. EXPERIENCE LEVEL COMPATIBILITY (15 points max)
         int candidateYears = profile.ExperienceYears;
-        int expScore = 8;
+        int expScore = 6;
 
         bool isSeniorJob = Regex.IsMatch(combinedJobText, @"\b(Senior|Lead|Principal|Staff|Head|Director|Architect|5\+\s*years?|7\+\s*years?)\b", RegexOptions.IgnoreCase);
         bool isJuniorOrGradJob = Regex.IsMatch(combinedJobText, @"\b(Graduate|Junior|Associate|Entry|Intern|Internship|New Grad|0-1|0 to 1|0\s*years?|1\s*years?|Trainee|Apprentice)\b", RegexOptions.IgnoreCase);
 
-        if (candidateYears == 0 || candidateYears <= 1)
+        if (candidateYears <= 1)
         {
             // Candidate is a New Graduate / Entry Level (0-1 years)
             if (isJuniorOrGradJob)
@@ -269,7 +233,7 @@ public class JobMatchEngineService : IJobMatchEngineService
             }
             else
             {
-                expScore = 5; // Mid-level typically expects 2-4 years
+                expScore = 6; // Mid-level without graduate tag
             }
         }
         else if (candidateYears >= 5)
@@ -281,11 +245,11 @@ public class JobMatchEngineService : IJobMatchEngineService
             }
             else if (isJuniorOrGradJob)
             {
-                expScore = 8; // Overqualified
+                expScore = 6; // Overqualified
             }
             else
             {
-                expScore = 13;
+                expScore = 12;
             }
         }
         else
@@ -293,11 +257,11 @@ public class JobMatchEngineService : IJobMatchEngineService
             // Mid-level candidate (2-4 years)
             if (isSeniorJob)
             {
-                expScore = candidateYears >= 3 ? 9 : 4;
+                expScore = candidateYears >= 3 ? 8 : 3;
             }
             else if (isJuniorOrGradJob)
             {
-                expScore = 12;
+                expScore = 10;
             }
             else
             {
@@ -318,7 +282,8 @@ public class JobMatchEngineService : IJobMatchEngineService
         }
         else if (!string.IsNullOrWhiteSpace(profile.PreferredLocation) &&
                  (location.ToLowerInvariant().Contains(profile.PreferredLocation.ToLowerInvariant()) ||
-                  profile.PreferredLocation.ToLowerInvariant().Contains("uk") && location.ToLowerInvariant().Contains("united kingdom")))
+                  profile.PreferredLocation.ToLowerInvariant().Contains("uk") && location.ToLowerInvariant().Contains("united kingdom") ||
+                  location.ToLowerInvariant().Contains("london") || location.ToLowerInvariant().Contains("uk")))
         {
             locationScore = 10;
         }
@@ -332,7 +297,7 @@ public class JobMatchEngineService : IJobMatchEngineService
         }
         locationScore = Math.Clamp(locationScore, 0, 10);
 
-        // 6. EDUCATION / ADDITIONAL REQUIREMENTS (10 points max)
+        // 6. EDUCATION / DEGREE FIT (10 points max)
         int educationScore = 7;
         if (!string.IsNullOrWhiteSpace(profile.EducationLevel))
         {
@@ -347,7 +312,7 @@ public class JobMatchEngineService : IJobMatchEngineService
         }
         educationScore = Math.Clamp(educationScore, 0, 10);
 
-        // 7. TOTAL WEIGHTED DETERMINISTIC SCORE (100% max)
+        // 7. TOTAL WEIGHTED EVIDENCE-BASED SCORE (100% max)
         int totalScore = Math.Clamp(skillsScore + roleScore + expScore + locationScore + educationScore, 0, 100);
 
         string qualityLabel = "LOW MATCH";
@@ -355,19 +320,18 @@ public class JobMatchEngineService : IJobMatchEngineService
         else if (totalScore >= 70) qualityLabel = "GOOD MATCH";
         else if (totalScore >= 50) qualityLabel = "FAIR MATCH";
 
-        string expExplanation = candidateYears == 0
+        string expExplanation = candidateYears <= 1
             ? (isJuniorOrGradJob ? "Perfect fit for Graduate / Entry-level role (0-1 yrs exp)" : (isSeniorJob ? "Senior role requiring 5+ years experience" : "Role typically seeks 2+ years experience"))
             : $"Candidate has ~{candidateYears} yrs experience";
 
-        // Build human-readable structured explanation
         var explanationParts = new List<string>
         {
             $"CareerMail Match Score: {totalScore}% ({qualityLabel}).",
-            $"• Technical Skills ({skillsScore}/40): {exactMatches.Count} exact matches, {relatedMatches.Count} semantic/transferable matches.",
-            $"• Role Relevance ({roleScore}/25): Title '{jobTitle}' matches target profile.",
+            $"• Technical Skills ({skillsScore}/40): {exactMatches.Count} exact matches, {relatedMatches.Count} related matches.",
+            $"• Role Relevance ({roleScore}/25): Title '{jobTitle}' vs target domain.",
             $"• Experience ({expScore}/15): {expExplanation}.",
-            $"• Location ({locationScore}/10): Work mode fit.",
-            $"• Education ({educationScore}/10): Level '{profile.EducationLevel}'."
+            $"• Location ({locationScore}/10): Location compatibility.",
+            $"• Education ({educationScore}/10): '{profile.EducationLevel}'."
         };
 
         return new JobMatchResult

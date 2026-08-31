@@ -1,5 +1,6 @@
-import React from 'react';
-import { X, SlidersHorizontal, MapPin, Briefcase, Sparkles, RotateCcw, Check, DollarSign } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { X, SlidersHorizontal, MapPin, Briefcase, Sparkles, RotateCcw, Check, Banknote } from 'lucide-react';
 
 export interface JobFilterState {
   searchQuery: string;
@@ -30,6 +31,17 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
   onResetFilters,
   totalFilteredCount
 }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const popularRoles = [
@@ -48,271 +60,249 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
   const popularLocations = [
     'Anywhere',
     'London',
-    'United Kingdom',
     'Manchester',
-    'Remote',
-    'United States',
-    'Europe'
-  ];
-
-  const workModes = [
-    { value: 'ALL', label: 'All Modes' },
-    { value: 'REMOTE', label: '🌐 Remote' },
-    { value: 'HYBRID', label: '🏢 Hybrid' },
-    { value: 'ONSITE', label: '📍 On-site' }
+    'Cambridge',
+    'Oxford',
+    'Bristol',
+    'Edinburgh',
+    'Birmingham',
+    'United Kingdom',
+    'Remote'
   ];
 
   const experienceLevels = [
     { value: 'ALL', label: 'All Experience Levels' },
     { value: 'GRAD', label: '🎓 Graduate / 0-1 Yrs' },
-    { value: 'ENTRY', label: '🌱 Entry Level' },
-    { value: 'JUNIOR', label: '⚡ Junior (1-2 Yrs)' },
-    { value: 'MID', label: '🚀 Mid Level (2-4 Yrs)' },
-    { value: 'SENIOR', label: '👑 Senior (5+ Yrs)' }
+    { value: 'ENTRY', label: '🌱 Entry Level (0-2 Yrs)' },
+    { value: 'MID', label: '⚡ Mid Level (2-5 Yrs)' },
+    { value: 'SENIOR', label: '🚀 Senior / Lead (5+ Yrs)' }
   ];
 
-  const sortOptions = [
-    { value: 'score_desc', label: 'Match Score: High to Low' },
-    { value: 'score_asc', label: 'Match Score: Low to High' },
-    { value: 'recent', label: 'Most Recent Postings' },
-    { value: 'company', label: 'Company Name (A-Z)' },
-    { value: 'salary_desc', label: 'Salary: High to Low' }
-  ];
+  const drawerContent = (
+    <div className="fixed inset-0 z-[9999] overflow-hidden animate-fadeIn">
+      {/* Dimmed Backdrop */}
+      <div
+        onClick={onClose}
+        className="absolute inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
+      />
 
-  return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs animate-fadeIn">
-      {/* Click outside to close */}
-      <div className="flex-1" onClick={onClose} />
-
-      {/* Slide-over Content Drawer */}
-      <div className="w-full max-w-lg bg-white dark:bg-[#16181f] border-l border-slate-200 dark:border-[#282a2d] h-full shadow-2xl flex flex-col justify-between overflow-hidden animate-slideLeft">
-        
-        {/* Drawer Header */}
-        <div className="p-5 border-b border-slate-200 dark:border-[#282a2d] flex items-center justify-between bg-slate-50/70 dark:bg-[#1c1e24]/70">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-pink-500/10 text-pink-500">
-              <SlidersHorizontal className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-black text-slate-900 dark:text-white">
-                All Search & Job Filters
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Fine-tune matched listings and requirements
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#282a2d] transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Drawer Scrollable Filter Sections */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+      {/* Slide-over Drawer Panel */}
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+        <div className="w-screen max-w-md bg-white dark:bg-[#16181f] border-l border-slate-200 dark:border-[#282a2d] shadow-2xl flex flex-col justify-between overflow-hidden animate-slideLeft">
           
-          {/* 1. Target Role & Title */}
-          <div className="space-y-2.5">
-            <label className="font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-              <Briefcase className="w-3.5 h-3.5 text-pink-500" />
-              <span>Target Role & Category</span>
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {popularRoles.map((role) => {
-                const isSelected = (role === 'All Roles' && !filters.role) || filters.role === role;
-                return (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => onFilterChange('role', role === 'All Roles' ? '' : role)}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
-                      isSelected
-                        ? 'bg-pink-500 text-white shadow-xs'
-                        : 'bg-slate-100 dark:bg-[#202227] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#282a2f] border border-slate-200 dark:border-slate-800'
-                    }`}
-                  >
-                    {role}
-                  </button>
-                );
-              })}
+          {/* Drawer Header */}
+          <div className="p-5 border-b border-slate-200 dark:border-[#282a2d] bg-slate-50/80 dark:bg-[#1e131d]/80 backdrop-blur-sm flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-pink-500/10 text-pink-500">
+                <SlidersHorizontal className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  Advanced Filters
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Tailor multi-source job aggregation
+                </p>
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-[#282a2d] transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          {/* 2. Location */}
-          <div className="space-y-2.5">
-            <label className="font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-pink-500" />
-              <span>Location / Region</span>
-            </label>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {popularLocations.map((loc) => {
-                const isSelected = (loc === 'Anywhere' && !filters.location) || filters.location.toLowerCase() === loc.toLowerCase();
-                return (
-                  <button
-                    key={loc}
-                    type="button"
-                    onClick={() => onFilterChange('location', loc === 'Anywhere' ? '' : loc)}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
-                      isSelected
-                        ? 'bg-purple-600 text-white shadow-xs'
-                        : 'bg-slate-100 dark:bg-[#202227] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#282a2f] border border-slate-200 dark:border-slate-800'
-                    }`}
-                  >
-                    {loc}
-                  </button>
-                );
-              })}
+          {/* Drawer Body Options */}
+          <div className="p-6 overflow-y-auto space-y-6 flex-1 text-slate-800 dark:text-slate-200">
+            
+            {/* Minimum Match Score Slider */}
+            <div className="space-y-2 bg-slate-50 dark:bg-[#202227] p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-pink-500" />
+                  <span>Minimum Match Score</span>
+                </label>
+                <span className="text-xs font-black text-pink-500 bg-pink-500/10 px-2 py-0.5 rounded-lg border border-pink-500/20">
+                  {filters.minMatchScore}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="90"
+                step="5"
+                value={filters.minMatchScore}
+                onChange={(e) => onFilterChange('minMatchScore', parseInt(e.target.value))}
+                className="w-full accent-pink-500 cursor-pointer h-2 bg-slate-200 dark:bg-slate-700 rounded-lg"
+              />
+              <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                <span>0% (All Jobs)</span>
+                <span>50% (Fair)</span>
+                <span>70% (Good)</span>
+                <span>85% (Strong)</span>
+              </div>
             </div>
-            <input
-              type="text"
-              placeholder="Or type custom city/country (e.g. Edinburgh, Cambridge)..."
-              value={filters.location}
-              onChange={(e) => onFilterChange('location', e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#202227] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-pink-500 transition-colors"
-            />
-          </div>
 
-          {/* 3. Work Mode */}
-          <div className="space-y-2.5">
-            <label className="font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Work Mode Preference
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {workModes.map((mode) => {
-                const isSelected = filters.workMode === mode.value;
-                return (
+            {/* Work Mode Toggle Pills */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-900 dark:text-white">
+                Work Mode
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'ALL', label: 'All Modes' },
+                  { value: 'REMOTE', label: '🌐 Remote Only' },
+                  { value: 'HYBRID', label: '🏢 Hybrid' },
+                  { value: 'ONSITE', label: '📍 On-site' }
+                ].map((mode) => (
                   <button
                     key={mode.value}
                     type="button"
                     onClick={() => onFilterChange('workMode', mode.value)}
-                    className={`px-3 py-2.5 rounded-xl font-bold text-center border transition-all ${
-                      isSelected
-                        ? 'bg-pink-500/10 border-pink-500 text-pink-600 dark:text-pink-400'
-                        : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#202227]'
+                    className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      filters.workMode === mode.value
+                        ? 'bg-pink-500 text-white border-pink-500 shadow-sm'
+                        : 'bg-slate-50 dark:bg-[#202227] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-[#282a30]'
                     }`}
                   >
                     {mode.label}
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* 4. Experience Level */}
-          <div className="space-y-2.5">
-            <label className="font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Experience Level
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {experienceLevels.map((exp) => {
-                const isSelected = filters.experienceLevel === exp.value;
-                return (
+            {/* Experience Level Selector */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-900 dark:text-white">
+                Experience Level
+              </label>
+              <div className="space-y-1.5">
+                {experienceLevels.map((lvl) => (
                   <button
-                    key={exp.value}
+                    key={lvl.value}
                     type="button"
-                    onClick={() => onFilterChange('experienceLevel', exp.value)}
-                    className={`px-3 py-2 rounded-xl font-semibold text-left border transition-all ${
-                      isSelected
-                        ? 'bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-bold'
-                        : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#202227]'
+                    onClick={() => onFilterChange('experienceLevel', lvl.value)}
+                    className={`w-full text-left py-2.5 px-3 rounded-xl text-xs font-medium border flex items-center justify-between transition-all ${
+                      filters.experienceLevel === lvl.value
+                        ? 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/30 font-bold'
+                        : 'bg-slate-50 dark:bg-[#202227] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-[#282a30]'
                     }`}
                   >
-                    {exp.label}
+                    <span>{lvl.label}</span>
+                    {filters.experienceLevel === lvl.value && (
+                      <Check className="w-4 h-4 text-pink-500" />
+                    )}
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
+
+            {/* Popular Roles Chips */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+                <span>Job Role Filter</span>
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {popularRoles.map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => onFilterChange('role', role)}
+                    className={`text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${
+                      filters.role === role
+                        ? 'bg-pink-500 text-white border-pink-500 font-bold shadow-sm'
+                        : 'bg-slate-50 dark:bg-[#202227] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-[#282a30]'
+                    }`}
+                  >
+                    {role}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Popular Locations */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                <span>Popular UK / Global Locations</span>
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {popularLocations.map((loc) => (
+                  <button
+                    key={loc}
+                    type="button"
+                    onClick={() => onFilterChange('location', loc)}
+                    className={`text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${
+                      filters.location === loc
+                        ? 'bg-pink-500 text-white border-pink-500 font-bold shadow-sm'
+                        : 'bg-slate-50 dark:bg-[#202227] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-[#282a30]'
+                    }`}
+                  >
+                    {loc}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sort Strategy */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-900 dark:text-white">
+                Sort Results By
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'score_desc', label: 'Match Score (High ➔ Low)' },
+                  { value: 'recent', label: 'Most Recent' },
+                  { value: 'company', label: 'Company Name' },
+                  { value: 'salary_desc', label: 'Highest Salary' }
+                ].map((sort) => (
+                  <button
+                    key={sort.value}
+                    type="button"
+                    onClick={() => onFilterChange('sortOption', sort.value)}
+                    className={`py-2 px-2.5 rounded-xl text-xs font-medium border text-left truncate transition-all ${
+                      filters.sortOption === sort.value
+                        ? 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/30 font-bold'
+                        : 'bg-slate-50 dark:bg-[#202227] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-[#282a30]'
+                    }`}
+                  >
+                    {sort.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
           </div>
 
-          {/* 5. Minimum Match Score Slider */}
-          <div className="space-y-2.5 bg-slate-50 dark:bg-[#202227] p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between font-extrabold">
-              <span className="text-slate-700 dark:text-slate-300">Minimum Match Percentage</span>
-              <span className="text-pink-500 text-sm font-black">{filters.minMatchScore}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="90"
-              step="5"
-              value={filters.minMatchScore}
-              onChange={(e) => onFilterChange('minMatchScore', Number(e.target.value))}
-              className="w-full accent-pink-500 cursor-pointer h-2 bg-slate-200 dark:bg-slate-700 rounded-lg"
-            />
-            <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
-              <span>0% (All Jobs)</span>
-              <span>50% (Fair)</span>
-              <span>75% (Strong)</span>
-              <span>90% (Top Fit)</span>
-            </div>
-          </div>
-
-          {/* 6. Sorting */}
-          <div className="space-y-2">
-            <label className="font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Sort Results By
-            </label>
-            <select
-              value={filters.sortOption}
-              onChange={(e) => onFilterChange('sortOption', e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#202227] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-pink-500 cursor-pointer"
-            >
-              {sortOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 7. Recommended Only Toggle */}
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-[#202227] border border-slate-200 dark:border-slate-800">
-            <div>
-              <span className="font-bold text-slate-900 dark:text-white">Recommended Jobs Only</span>
-              <p className="text-[11px] text-slate-400">Show only jobs matching ≥ 70% with high skill overlap</p>
-            </div>
+          {/* Drawer Footer Actions */}
+          <div className="p-4 border-t border-slate-200 dark:border-[#282a2d] bg-slate-50/80 dark:bg-[#1e131d]/80 flex items-center justify-between gap-3 flex-shrink-0">
             <button
               type="button"
-              onClick={() => onFilterChange('recommendedOnly', !filters.recommendedOnly)}
-              className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
-                filters.recommendedOnly ? 'bg-pink-500' : 'bg-slate-300 dark:bg-slate-700'
-              }`}
+              onClick={onResetFilters}
+              className="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#282a30] font-bold text-xs flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 transition-colors"
             >
-              <div
-                className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
-                  filters.recommendedOnly ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset All</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md transition-all"
+            >
+              <Check className="w-4 h-4" />
+              <span>Apply ({totalFilteredCount} Jobs)</span>
             </button>
           </div>
 
         </div>
-
-        {/* Drawer Footer Actions */}
-        <div className="p-4 border-t border-slate-200 dark:border-[#282a2d] bg-slate-50/70 dark:bg-[#1c1e24]/70 flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={onResetFilters}
-            className="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#282a30] font-bold text-xs flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 transition-colors"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset All</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md transition-all"
-          >
-            <Check className="w-4 h-4" />
-            <span>Apply ({totalFilteredCount} Jobs)</span>
-          </button>
-        </div>
-
       </div>
     </div>
   );
+
+  return createPortal(drawerContent, document.body);
 };

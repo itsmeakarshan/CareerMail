@@ -114,10 +114,14 @@ builder.Services.AddScoped<IGmailService, GmailService>();
 builder.Services.AddScoped<IEmailAnalyzer, RuleBasedEmailAnalyzer>();
 builder.Services.AddHttpClient<IGeminiCvService, GeminiCvService>();
 builder.Services.AddScoped<ICvParsingService, CvParsingService>();
+builder.Services.AddScoped<ICandidateDomainEngine, CandidateDomainEngine>();
 builder.Services.AddScoped<IJobMatchEngineService, JobMatchEngineService>();
+builder.Services.AddScoped<IJobProvider, RemotiveJobProvider>();
+builder.Services.AddScoped<IJobProvider, AtsPublicJobProvider>();
 builder.Services.AddScoped<IJobProvider, JobicyJobProvider>();
 builder.Services.AddScoped<IJobProvider, RemoteOKJobProvider>();
-builder.Services.AddScoped<IJobProvider, AggregatorJobProvider>();
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<IJobUrlVerificationService, JobUrlVerificationService>();
 builder.Services.AddScoped<IJobSearchService, JobSearchService>();
 
 var app = builder.Build();

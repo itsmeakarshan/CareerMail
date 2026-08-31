@@ -2,37 +2,18 @@ namespace CareerMail.Api.Services.JobProviders;
 
 public class AggregatorJobProvider : IJobProvider
 {
-    public string ProviderName => "Global Aggregator Feed";
+    public string ProviderName => "UK & Global Career Hub";
 
     public Task<List<JobListingDto>> FetchJobsAsync(string? query, string? location, string? workMode)
     {
         var catalog = new List<JobListingDto>
         {
-            // 🎓 Graduate & Entry Level (0-1 Years Experience) Roles
+            // ==========================================
+            // 🎓 DATA SCIENCE & AI / ML (UK WIDE)
+            // ==========================================
             new JobListingDto
             {
-                Id = "agg_grad_101",
-                Title = "Graduate Software Engineer (0-1 Years Exp)",
-                Company = "Google",
-                CompanyDomain = "google.com",
-                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=google.com&sz=128",
-                Location = "London, United Kingdom",
-                Country = "United Kingdom",
-                City = "London",
-                WorkMode = "HYBRID",
-                EmploymentType = "Full-time",
-                ExperienceLevel = "Entry Level",
-                Salary = "£65,000 - £85,000 / year",
-                Description = "Join Google's graduate engineering cohort in London. Designed specifically for new graduates and early-career developers (0-1 years experience) with skills in Python, C#, Java, React, SQL, and distributed systems.",
-                Url = "https://careers.google.com",
-                PostedDate = "2 hours ago",
-                Source = "Google Graduate Careers",
-                SourceJobId = "google_grad_101",
-                Skills = new List<string> { "Python", "C#", "JavaScript", "SQL", "Git", "Algorithms", "Data Structures" }
-            },
-            new JobListingDto
-            {
-                Id = "agg_grad_102",
+                Id = "uk_ds_101",
                 Title = "Graduate Data Scientist & ML Associate",
                 Company = "DeepMind",
                 CompanyDomain = "deepmind.google",
@@ -44,16 +25,359 @@ public class AggregatorJobProvider : IJobProvider
                 EmploymentType = "Full-time",
                 ExperienceLevel = "Entry Level",
                 Salary = "£70,000 - £95,000 / year",
-                Description = "Exciting entry-level data scientist opportunity in London for graduates (0-1 years exp) passionate about frontier AI, neural networks, Python, PyTorch, SQL, and data analytics pipelines.",
+                Description = "Entry-level Data Scientist opportunity in London for graduates (0-1 years exp) passionate about frontier AI, deep learning, PyTorch, statistical modeling, and data pipelines.",
                 Url = "https://deepmind.google/careers",
-                PostedDate = "3 hours ago",
+                SourceUrl = "https://deepmind.google/careers",
+                ApplyUrl = "https://deepmind.google/careers/graduates-london",
+                PostedDate = "1 hour ago",
                 Source = "DeepMind Careers",
-                SourceJobId = "deepmind_102",
-                Skills = new List<string> { "Python", "Data Science", "Machine Learning", "SQL", "Git", "PyTorch" }
+                SourceJobId = "deepmind_ds_101",
+                Skills = new List<string> { "Python", "Data Science", "Machine Learning", "PyTorch", "SQL", "Git", "Statistical Modeling" },
+                IsExternalApplication = true
             },
             new JobListingDto
             {
-                Id = "agg_grad_103",
+                Id = "uk_ds_102",
+                Title = "Junior Machine Learning Engineer (0-1 Years)",
+                Company = "Revolut",
+                CompanyDomain = "revolut.com",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=revolut.com&sz=128",
+                Location = "London, United Kingdom",
+                Country = "United Kingdom",
+                City = "London",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Entry Level",
+                Salary = "£60,000 - £80,000 / year",
+                Description = "Revolut London is seeking an early-career ML Engineer / Data Scientist to design automated transaction categorization models and real-time fraud detection systems using Python, Scikit-learn, and SQL.",
+                Url = "https://revolut.com/careers",
+                SourceUrl = "https://revolut.com/careers",
+                ApplyUrl = "https://revolut.com/careers/position/ml-associate-london",
+                PostedDate = "3 hours ago",
+                Source = "Revolut Careers",
+                SourceJobId = "revolut_ml_102",
+                Skills = new List<string> { "Python", "Machine Learning", "SQL", "Scikit-learn", "Git", "Docker", "Data Analysis" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_103",
+                Title = "Applied Data Scientist & Analytics Engineer",
+                Company = "Amazon",
+                CompanyDomain = "amazon.com",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=amazon.com&sz=128",
+                Location = "Cambridge, United Kingdom",
+                Country = "United Kingdom",
+                City = "Cambridge",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Mid Level",
+                Salary = "£75,000 - £105,000 / year",
+                Description = "Amazon Development Centre in Cambridge is hiring a Data Scientist to work on Alexa conversational AI, time-series forecasting, and customer behavior modeling using Python, AWS SageMaker, and SQL.",
+                Url = "https://amazon.jobs",
+                SourceUrl = "https://amazon.jobs",
+                ApplyUrl = "https://amazon.jobs/en/jobs/2589012/data-scientist-cambridge",
+                PostedDate = "4 hours ago",
+                Source = "Amazon Jobs",
+                SourceJobId = "amz_cam_103",
+                Skills = new List<string> { "Python", "Data Science", "SQL", "AWS", "Machine Learning", "Data Analysis", "Time Series" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_104",
+                Title = "Data Scientist - Healthcare & Genomics AI",
+                Company = "AstraZeneca",
+                CompanyDomain = "astrazeneca.co.uk",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=astrazeneca.co.uk&sz=128",
+                Location = "Cambridge, United Kingdom",
+                Country = "United Kingdom",
+                City = "Cambridge",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Mid Level",
+                Salary = "£65,000 - £85,000 / year",
+                Description = "AstraZeneca's Discovery Sciences AI unit in Cambridge is hiring a Data Scientist to analyze multi-omics data, develop predictive biomarkers, and build machine learning pipelines in Python and R.",
+                Url = "https://careers.astrazeneca.com",
+                SourceUrl = "https://careers.astrazeneca.com",
+                ApplyUrl = "https://careers.astrazeneca.com/job/cambridge/data-scientist/4321",
+                PostedDate = "5 hours ago",
+                Source = "AstraZeneca Careers",
+                SourceJobId = "az_ds_104",
+                Skills = new List<string> { "Python", "Data Science", "Machine Learning", "R", "SQL", "Statistics", "Bioinformatics" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_105",
+                Title = "Lead Data Scientist & Analytics Specialist",
+                Company = "BBC",
+                CompanyDomain = "bbc.co.uk",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=bbc.co.uk&sz=128",
+                Location = "Manchester, United Kingdom",
+                Country = "United Kingdom",
+                City = "Manchester",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Senior Level",
+                Salary = "£75,000 - £95,000 / year",
+                Description = "BBC D&E in MediaCityUK Manchester is hiring a Lead Data Scientist to build audience recommendation algorithms, personalize BBC iPlayer, and lead analytics modeling.",
+                Url = "https://bbc.co.uk/careers",
+                SourceUrl = "https://bbc.co.uk/careers",
+                ApplyUrl = "https://careers.bbc.co.uk/job/manchester/lead-data-scientist/58291",
+                PostedDate = "1 day ago",
+                Source = "BBC Careers",
+                SourceJobId = "bbc_ds_105",
+                Skills = new List<string> { "Python", "Data Science", "SQL", "Recommender Systems", "Machine Learning", "AWS", "BigQuery" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_106",
+                Title = "AI Research Scientist (Computer Vision & NLP)",
+                Company = "Microsoft",
+                CompanyDomain = "microsoft.com",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=microsoft.com&sz=128",
+                Location = "Oxford, United Kingdom",
+                Country = "United Kingdom",
+                City = "Oxford",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Senior Level",
+                Salary = "£90,000 - £125,000 / year",
+                Description = "Microsoft Research Cambridge/Oxford is hiring an AI Research Scientist to conduct breakthrough fundamental and applied research in foundation models, LLMs, and multi-modal neural networks.",
+                Url = "https://careers.microsoft.com",
+                SourceUrl = "https://careers.microsoft.com",
+                ApplyUrl = "https://careers.microsoft.com/us/en/job/1684920/ai-research-scientist",
+                PostedDate = "2 days ago",
+                Source = "Microsoft Careers",
+                SourceJobId = "ms_ds_106",
+                Skills = new List<string> { "Python", "PyTorch", "Deep Learning", "Machine Learning", "NLP", "Computer Vision", "Research" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_107",
+                Title = "Decision Scientist & Quantitative Analyst",
+                Company = "Monzo Bank",
+                CompanyDomain = "monzo.com",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=monzo.com&sz=128",
+                Location = "London, United Kingdom",
+                Country = "United Kingdom",
+                City = "London",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Mid Level",
+                Salary = "£70,000 - £90,000 / year",
+                Description = "Monzo is looking for a Decision Scientist in London to design A/B experimentation frameworks, analyze credit risk data, and optimize product growth using Python and BigQuery SQL.",
+                Url = "https://monzo.com/careers",
+                SourceUrl = "https://monzo.com/careers",
+                ApplyUrl = "https://job-boards.greenhouse.io/monzo/jobs/8143930",
+                PostedDate = "1 day ago",
+                Source = "Greenhouse (Monzo)",
+                SourceJobId = "monzo_ds_107",
+                Skills = new List<string> { "Python", "SQL", "Data Science", "A/B Testing", "Statistics", "BigQuery", "Machine Learning" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_108",
+                Title = "Data Scientist (NLP & LLMs)",
+                Company = "Bloomberg",
+                CompanyDomain = "bloomberg.com",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=bloomberg.com&sz=128",
+                Location = "London, United Kingdom",
+                Country = "United Kingdom",
+                City = "London",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Senior Level",
+                Salary = "£95,000 - £130,000 / year",
+                Description = "Bloomberg London's AI Group is hiring a Data Scientist / NLP Engineer to build domain-specific financial large language models, automated earnings report summarization, and market sentiment pipelines.",
+                Url = "https://bloomberg.com/careers",
+                SourceUrl = "https://bloomberg.com/careers",
+                ApplyUrl = "https://careers.bloomberg.com/job/detail/109283",
+                PostedDate = "6 hours ago",
+                Source = "Bloomberg Careers",
+                SourceJobId = "bbg_ds_108",
+                Skills = new List<string> { "Python", "Data Science", "Machine Learning", "NLP", "PyTorch", "SQL", "C++" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_109",
+                Title = "Junior Data Analyst & Insights Specialist (0-1 Years)",
+                Company = "Deliveroo",
+                CompanyDomain = "deliveroo.co.uk",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=deliveroo.co.uk&sz=128",
+                Location = "London, United Kingdom",
+                Country = "United Kingdom",
+                City = "London",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Entry Level",
+                Salary = "£45,000 - £60,000 / year",
+                Description = "Deliveroo London is hiring an Entry Level Data Analyst (0-1 years exp) to query relational databases with SQL, build interactive dashboards, and deliver operational insights to logistics leads.",
+                Url = "https://deliveroo.co.uk/careers",
+                SourceUrl = "https://deliveroo.co.uk/careers",
+                ApplyUrl = "https://deliveroo.co.uk/careers/jobs/data-analyst-grad",
+                PostedDate = "1 day ago",
+                Source = "Deliveroo Careers",
+                SourceJobId = "deliv_da_109",
+                Skills = new List<string> { "SQL", "Python", "Data Analysis", "Tableau", "Looker", "PostgreSQL", "Statistics" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_110",
+                Title = "Senior Machine Learning Engineer (Remote UK)",
+                Company = "Stripe",
+                CompanyDomain = "stripe.com",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=stripe.com&sz=128",
+                Location = "Remote, United Kingdom",
+                Country = "United Kingdom",
+                City = "Remote",
+                WorkMode = "REMOTE",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Senior Level",
+                Salary = "£100,000 - £140,000 / year",
+                Description = "Stripe is seeking a Remote ML Infrastructure Engineer in the UK to build distributed model training pipelines, real-time risk scoring, and low-latency fraud detection services.",
+                Url = "https://stripe.com/careers",
+                SourceUrl = "https://stripe.com/careers",
+                ApplyUrl = "https://stripe.com/jobs/listing/ml-infra-engineer/48201",
+                PostedDate = "2 days ago",
+                Source = "Stripe Careers",
+                SourceJobId = "stripe_ml_110",
+                Skills = new List<string> { "Python", "Machine Learning", "PyTorch", "Kubernetes", "AWS", "Distributed Systems", "SQL" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_111",
+                Title = "Data Science Consultant",
+                Company = "PwC UK",
+                CompanyDomain = "pwc.co.uk",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=pwc.co.uk&sz=128",
+                Location = "Birmingham, United Kingdom",
+                Country = "United Kingdom",
+                City = "Birmingham",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Mid Level",
+                Salary = "£55,000 - £75,000 / year",
+                Description = "PwC's Advanced Analytics team in Birmingham is hiring Data Science Consultants to solve complex client problems in predictive maintenance, financial forecasting, and customer churn using Python and SQL.",
+                Url = "https://jobs.pwc.co.uk",
+                SourceUrl = "https://jobs.pwc.co.uk",
+                ApplyUrl = "https://jobs.pwc.co.uk/job/birmingham/data-scientist/9281",
+                PostedDate = "3 days ago",
+                Source = "PwC UK Careers",
+                SourceJobId = "pwc_ds_111",
+                Skills = new List<string> { "Python", "Data Science", "SQL", "Machine Learning", "PowerBI", "Statistics" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_112",
+                Title = "Machine Learning Scientist (Edinburgh AI Hub)",
+                Company = "Skyscanner",
+                CompanyDomain = "skyscanner.net",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=skyscanner.net&sz=128",
+                Location = "Edinburgh, United Kingdom",
+                Country = "United Kingdom",
+                City = "Edinburgh",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Mid Level",
+                Salary = "£65,000 - £88,000 / year",
+                Description = "Skyscanner in Edinburgh is hiring an ML Scientist to optimize flight price prediction algorithms, search ranking, and personalization using Python, Spark, and TensorFlow.",
+                Url = "https://skyscanner.net/careers",
+                SourceUrl = "https://skyscanner.net/careers",
+                ApplyUrl = "https://careers.skyscanner.net/job/edinburgh/ml-scientist/7492",
+                PostedDate = "2 days ago",
+                Source = "Skyscanner Careers",
+                SourceJobId = "sky_ds_112",
+                Skills = new List<string> { "Python", "Machine Learning", "TensorFlow", "Spark", "SQL", "Data Science", "Algorithms" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_113",
+                Title = "Data Science Associate (Bristol Tech Center)",
+                Company = "Dyson",
+                CompanyDomain = "dyson.com",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=dyson.com&sz=128",
+                Location = "Bristol, United Kingdom",
+                Country = "United Kingdom",
+                City = "Bristol",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Entry Level",
+                Salary = "£42,000 - £58,000 / year",
+                Description = "Dyson's Technology Hub in Bristol is recruiting an Entry Level Data Science Associate (0-1 years exp) to process IoT telemetry data, build anomaly detection models, and optimize hardware performance.",
+                Url = "https://careers.dyson.com",
+                SourceUrl = "https://careers.dyson.com",
+                ApplyUrl = "https://careers.dyson.com/en-gb/job-details/data-science-associate-bristol/38190",
+                PostedDate = "1 day ago",
+                Source = "Dyson Careers",
+                SourceJobId = "dyson_ds_113",
+                Skills = new List<string> { "Python", "Data Science", "SQL", "IoT Data", "Machine Learning", "Git", "Data Analysis" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_ds_114",
+                Title = "Senior Analytics Engineer & Data Scientist",
+                Company = "Auto Trader UK",
+                CompanyDomain = "autotrader.co.uk",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=autotrader.co.uk&sz=128",
+                Location = "Manchester, United Kingdom",
+                Country = "United Kingdom",
+                City = "Manchester",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Senior Level",
+                Salary = "£70,000 - £90,000 / year",
+                Description = "Auto Trader UK in Manchester is seeking an Analytics Engineer / Data Scientist to build automated vehicle valuation models and real-time market trends using BigQuery, dbt, Python, and SQL.",
+                Url = "https://autotrader.co.uk/careers",
+                SourceUrl = "https://autotrader.co.uk/careers",
+                ApplyUrl = "https://careers.autotrader.co.uk/job/manchester/analytics-engineer-data-scientist/4819",
+                PostedDate = "3 days ago",
+                Source = "Auto Trader Careers",
+                SourceJobId = "at_ds_114",
+                Skills = new List<string> { "Python", "SQL", "Data Science", "dbt", "BigQuery", "Machine Learning", "Analytics" },
+                IsExternalApplication = true
+            },
+
+            // ==========================================
+            // 💼 SOFTWARE ENGINEERING & DEV (UK & GLOBAL)
+            // ==========================================
+            new JobListingDto
+            {
+                Id = "uk_se_101",
+                Title = "Graduate Software Engineer (0-1 Years Exp)",
+                Company = "Google",
+                CompanyDomain = "google.com",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=google.com&sz=128",
+                Location = "London, United Kingdom",
+                Country = "United Kingdom",
+                City = "London",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Entry Level",
+                Salary = "£65,000 - £85,000 / year",
+                Description = "Join Google's graduate engineering cohort in London. Designed specifically for new graduates and early-career developers (0-1 years exp) with skills in Python, C#, Java, React, SQL, and distributed systems.",
+                Url = "https://careers.google.com",
+                SourceUrl = "https://careers.google.com",
+                ApplyUrl = "https://careers.google.com/jobs/results/1948201-graduate-software-engineer-london",
+                PostedDate = "2 hours ago",
+                Source = "Google Graduate Careers",
+                SourceJobId = "google_grad_101",
+                Skills = new List<string> { "Python", "C#", "JavaScript", "SQL", "Git", "Algorithms", "Data Structures" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_se_102",
                 Title = "Junior C# .NET Developer (Graduate Welcome)",
                 Company = "Bloomberg",
                 CompanyDomain = "bloomberg.com",
@@ -67,14 +391,17 @@ public class AggregatorJobProvider : IJobProvider
                 Salary = "£60,000 - £78,000 / year",
                 Description = "Bloomberg London is hiring Junior & Graduate C# .NET Developers (0-1 years exp) to engineer low-latency real-time market data pipelines and financial tools.",
                 Url = "https://bloomberg.com/careers",
+                SourceUrl = "https://bloomberg.com/careers",
+                ApplyUrl = "https://careers.bloomberg.com/job/detail/junior-csharp-developer-10492",
                 PostedDate = "5 hours ago",
                 Source = "Bloomberg Careers",
-                SourceJobId = "bloomberg_grad_103",
-                Skills = new List<string> { "C#", ".NET", "SQL", "PostgreSQL", "REST API", "Git", "Unit Testing" }
+                SourceJobId = "bloomberg_grad_102",
+                Skills = new List<string> { "C#", ".NET", "SQL", "PostgreSQL", "REST API", "Git", "Unit Testing" },
+                IsExternalApplication = true
             },
             new JobListingDto
             {
-                Id = "agg_grad_104",
+                Id = "uk_se_103",
                 Title = "Graduate Full Stack Developer (React & Node)",
                 Company = "BBC",
                 CompanyDomain = "bbc.co.uk",
@@ -88,37 +415,17 @@ public class AggregatorJobProvider : IJobProvider
                 Salary = "£38,000 - £52,000 / year",
                 Description = "The BBC graduate engineering programme in MediaCityUK Manchester is welcoming new grads (0-1 years exp) to work on BBC iPlayer, web applications with React, TypeScript, and modern APIs.",
                 Url = "https://bbc.co.uk/careers",
+                SourceUrl = "https://bbc.co.uk/careers",
+                ApplyUrl = "https://careers.bbc.co.uk/job/manchester/graduate-full-stack-developer/49201",
                 PostedDate = "1 day ago",
                 Source = "BBC Early Careers",
-                SourceJobId = "bbc_grad_104",
-                Skills = new List<string> { "React", "TypeScript", "JavaScript", "HTML", "CSS", "REST API", "Git" }
+                SourceJobId = "bbc_grad_103",
+                Skills = new List<string> { "React", "TypeScript", "JavaScript", "HTML", "CSS", "REST API", "Git" },
+                IsExternalApplication = true
             },
             new JobListingDto
             {
-                Id = "agg_grad_105",
-                Title = "Junior Cloud & DevOps Associate (0-1 Years)",
-                Company = "Cloudflare",
-                CompanyDomain = "cloudflare.com",
-                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=cloudflare.com&sz=128",
-                Location = "Remote, United Kingdom",
-                Country = "United Kingdom",
-                City = "Remote",
-                WorkMode = "REMOTE",
-                EmploymentType = "Full-time",
-                ExperienceLevel = "Entry Level",
-                Salary = "£45,000 - £60,000 / year",
-                Description = "Cloudflare is seeking an Entry-level / Junior Cloud & DevOps Associate in the UK. Great training program for candidates with 0-1 years of experience in Linux, Docker, AWS/GCP, and CI/CD automation.",
-                Url = "https://cloudflare.com/careers",
-                PostedDate = "1 day ago",
-                Source = "Cloudflare Careers",
-                SourceJobId = "cloudflare_grad_105",
-                Skills = new List<string> { "Linux", "Docker", "AWS", "Git", "CI/CD", "DevOps" }
-            },
-
-            // 💼 Mid & Senior Level Roles
-            new JobListingDto
-            {
-                Id = "agg_101",
+                Id = "uk_se_104",
                 Title = "Senior C# .NET Core Engineer",
                 Company = "Monzo Bank",
                 CompanyDomain = "monzo.com",
@@ -132,14 +439,17 @@ public class AggregatorJobProvider : IJobProvider
                 Salary = "£85,000 - £110,000 / year",
                 Description = "Join Monzo's backend team in London building high-throughput C# .NET Core microservices, distributed banking systems, and PostgreSQL data stores.",
                 Url = "https://monzo.com/careers",
+                SourceUrl = "https://monzo.com/careers",
+                ApplyUrl = "https://job-boards.greenhouse.io/monzo/jobs/6635595",
                 PostedDate = "1 day ago",
-                Source = "Monzo Careers",
-                SourceJobId = "monzo_101",
-                Skills = new List<string> { "C#", ".NET", "PostgreSQL", "Docker", "Kubernetes", "Microservices", "REST API", "Git" }
+                Source = "Greenhouse (Monzo)",
+                SourceJobId = "monzo_se_104",
+                Skills = new List<string> { "C#", ".NET", "PostgreSQL", "Docker", "Kubernetes", "Microservices", "REST API", "Git" },
+                IsExternalApplication = true
             },
             new JobListingDto
             {
-                Id = "agg_103",
+                Id = "uk_se_105",
                 Title = "Full Stack React & C# Developer",
                 Company = "Auto Trader UK",
                 CompanyDomain = "autotrader.co.uk",
@@ -153,35 +463,17 @@ public class AggregatorJobProvider : IJobProvider
                 Salary = "£60,000 - £75,000 / year",
                 Description = "Auto Trader is looking for a C# and React full stack developer in Manchester to build high performance web applications and consumer features.",
                 Url = "https://autotrader.co.uk/careers",
+                SourceUrl = "https://autotrader.co.uk/careers",
+                ApplyUrl = "https://careers.autotrader.co.uk/job/manchester/full-stack-developer/39201",
                 PostedDate = "2 days ago",
-                Source = "Auto Trader",
-                SourceJobId = "autotrader_103",
-                Skills = new List<string> { "React", "TypeScript", "C#", ".NET", "SQL", "JavaScript", "HTML", "CSS" }
+                Source = "Auto Trader Careers",
+                SourceJobId = "autotrader_105",
+                Skills = new List<string> { "React", "TypeScript", "C#", ".NET", "SQL", "JavaScript", "HTML", "CSS" },
+                IsExternalApplication = true
             },
             new JobListingDto
             {
-                Id = "agg_104",
-                Title = "Lead Data Engineer & Analytics Specialist",
-                Company = "Revolut",
-                CompanyDomain = "revolut.com",
-                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=revolut.com&sz=128",
-                Location = "London, United Kingdom",
-                Country = "United Kingdom",
-                City = "London",
-                WorkMode = "HYBRID",
-                EmploymentType = "Full-time",
-                ExperienceLevel = "Senior Level",
-                Salary = "£95,000 - £130,000 / year",
-                Description = "Revolut is hiring a Lead Data Engineer in London to manage large-scale SQL data warehouses, BigQuery pipelines, Python ETLs, and analytics models.",
-                Url = "https://revolut.com/careers",
-                PostedDate = "4 hours ago",
-                Source = "Revolut Careers",
-                SourceJobId = "revolut_104",
-                Skills = new List<string> { "Python", "SQL", "PostgreSQL", "Data Science", "DevOps", "AWS", "Docker" }
-            },
-            new JobListingDto
-            {
-                Id = "agg_105",
+                Id = "uk_se_106",
                 Title = "Senior React & TypeScript Frontend Engineer",
                 Company = "Spotify",
                 CompanyDomain = "spotify.com",
@@ -195,14 +487,17 @@ public class AggregatorJobProvider : IJobProvider
                 Salary = "£80,000 - £105,000 / year",
                 Description = "Spotify is seeking a Remote Frontend Engineer in the UK to build dynamic web audio playback controls and responsive client UI using React and TypeScript.",
                 Url = "https://spotify.com/careers",
+                SourceUrl = "https://spotify.com/careers",
+                ApplyUrl = "https://jobs.lever.co/spotify/fe-react-remote",
                 PostedDate = "1 day ago",
-                Source = "Spotify Careers",
-                SourceJobId = "spotify_105",
-                Skills = new List<string> { "React", "TypeScript", "JavaScript", "HTML", "CSS", "Jest", "UI/UX", "Git" }
+                Source = "Lever (Spotify)",
+                SourceJobId = "spotify_106",
+                Skills = new List<string> { "React", "TypeScript", "JavaScript", "HTML", "CSS", "Jest", "UI/UX", "Git" },
+                IsExternalApplication = true
             },
             new JobListingDto
             {
-                Id = "agg_106",
+                Id = "uk_se_107",
                 Title = "Backend Platform Engineer (Go & PostgreSQL)",
                 Company = "Deliveroo",
                 CompanyDomain = "deliveroo.co.uk",
@@ -216,54 +511,103 @@ public class AggregatorJobProvider : IJobProvider
                 Salary = "£75,000 - £95,000 / year",
                 Description = "Deliveroo is hiring a Backend Engineer in London to optimize high-throughput order dispatch services using Go, PostgreSQL, Redis, and Kafka.",
                 Url = "https://deliveroo.co.uk/careers",
+                SourceUrl = "https://deliveroo.co.uk/careers",
+                ApplyUrl = "https://deliveroo.co.uk/careers/jobs/backend-go-london",
                 PostedDate = "6 hours ago",
                 Source = "Deliveroo Careers",
-                SourceJobId = "deliveroo_106",
-                Skills = new List<string> { "Go", "PostgreSQL", "Redis", "Docker", "Kubernetes", "Microservices", "REST API" }
+                SourceJobId = "deliveroo_107",
+                Skills = new List<string> { "Go", "PostgreSQL", "Redis", "Docker", "Kubernetes", "Microservices", "REST API" },
+                IsExternalApplication = true
             },
             new JobListingDto
             {
-                Id = "agg_107",
-                Title = "Machine Learning Infrastructure Engineer",
-                Company = "Stripe",
-                CompanyDomain = "stripe.com",
-                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=stripe.com&sz=128",
+                Id = "uk_se_108",
+                Title = "Junior Cloud & DevOps Associate (0-1 Years)",
+                Company = "Cloudflare",
+                CompanyDomain = "cloudflare.com",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=cloudflare.com&sz=128",
                 Location = "Remote, United Kingdom",
                 Country = "United Kingdom",
                 City = "Remote",
                 WorkMode = "REMOTE",
                 EmploymentType = "Full-time",
+                ExperienceLevel = "Entry Level",
+                Salary = "£45,000 - £60,000 / year",
+                Description = "Cloudflare is seeking an Entry-level / Junior Cloud & DevOps Associate in the UK. Great training program for candidates with 0-1 years of experience in Linux, Docker, AWS/GCP, and CI/CD automation.",
+                Url = "https://cloudflare.com/careers",
+                SourceUrl = "https://cloudflare.com/careers",
+                ApplyUrl = "https://job-boards.greenhouse.io/cloudflare/jobs/grad-devops-uk",
+                PostedDate = "1 day ago",
+                Source = "Greenhouse (Cloudflare)",
+                SourceJobId = "cloudflare_grad_108",
+                Skills = new List<string> { "Linux", "Docker", "AWS", "Git", "CI/CD", "DevOps" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_se_109",
+                Title = "Full Stack Engineer (TypeScript & Python)",
+                Company = "Snyk",
+                CompanyDomain = "snyk.io",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=snyk.io&sz=128",
+                Location = "London, United Kingdom",
+                Country = "United Kingdom",
+                City = "London",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
+                ExperienceLevel = "Mid Level",
+                Salary = "£70,000 - £90,000 / year",
+                Description = "Snyk is hiring a Full Stack Developer in London to build developer security platforms and container vulnerability scanning tools using React, TypeScript, and Python.",
+                Url = "https://www.linkedin.com/jobs/view/3829104829",
+                SourceUrl = "https://www.linkedin.com/jobs/view/3829104829",
+                ApplyUrl = "https://snyk.io/careers/jobs/full-stack-engineer-london",
+                PostedDate = "1 day ago",
+                Source = "LinkedIn Partner",
+                SourceJobId = "linkedin_snyk_109",
+                Skills = new List<string> { "TypeScript", "React", "Python", "Docker", "Node.js", "Security", "Git" },
+                IsExternalApplication = true
+            },
+            new JobListingDto
+            {
+                Id = "uk_se_110",
+                Title = "Cloud Infrastructure & SRE Engineer",
+                Company = "Checkout.com",
+                CompanyDomain = "checkout.com",
+                CompanyLogoUrl = "https://www.google.com/s2/favicons?domain=checkout.com&sz=128",
+                Location = "London, United Kingdom",
+                Country = "United Kingdom",
+                City = "London",
+                WorkMode = "HYBRID",
+                EmploymentType = "Full-time",
                 ExperienceLevel = "Senior Level",
-                Salary = "£100,000 - £140,000 / year",
-                Description = "Stripe is looking for a Remote ML Infrastructure Engineer in the UK to build scalable distributed training and inference platforms for fraud prevention.",
-                Url = "https://stripe.com/careers",
-                PostedDate = "3 days ago",
-                Source = "Stripe Careers",
-                SourceJobId = "stripe_107",
-                Skills = new List<string> { "Python", "Machine Learning", "PyTorch", "Kubernetes", "AWS", "Distributed Systems" }
+                Salary = "£85,000 - £115,000 / year",
+                Description = "Checkout.com in London is hiring an SRE / Cloud Engineer to manage global payment gateway infrastructure with Terraform, AWS, Kubernetes, and Prometheus.",
+                Url = "https://www.linkedin.com/jobs/view/3910283719",
+                SourceUrl = "https://www.linkedin.com/jobs/view/3910283719",
+                ApplyUrl = "https://checkout.com/careers/openings/sre-engineer-london",
+                PostedDate = "2 days ago",
+                Source = "LinkedIn Partner",
+                SourceJobId = "linkedin_checkout_110",
+                Skills = new List<string> { "AWS", "Kubernetes", "Terraform", "Docker", "Linux", "DevOps", "CI/CD" },
+                IsExternalApplication = true
             }
         };
 
-        // Apply Location and Query Filtering
+        var expandedRoles = RoleExpansionHelper.ExpandRole(query);
         var filtered = catalog.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(location))
         {
-            string locLower = location.Trim().ToLowerInvariant();
-            filtered = filtered.Where(j => j.Location.ToLowerInvariant().Contains(locLower) ||
-                                           j.Country.ToLowerInvariant().Contains(locLower) ||
-                                           j.City.ToLowerInvariant().Contains(locLower) ||
-                                           (locLower.Contains("remote") && j.WorkMode == "REMOTE") ||
-                                           (locLower.Contains("uk") && (j.Country == "United Kingdom" || j.Location.ToLowerInvariant().Contains("london") || j.Location.ToLowerInvariant().Contains("manchester"))));
+            filtered = filtered.Where(j => LocationExpansionHelper.MatchesLocation(location, j.Location, j.Country, j.City, j.WorkMode));
         }
 
         if (!string.IsNullOrWhiteSpace(query))
         {
-            string qLower = query.Trim().ToLowerInvariant();
-            filtered = filtered.Where(j => j.Title.ToLowerInvariant().Contains(qLower) ||
-                                           j.Company.ToLowerInvariant().Contains(qLower) ||
-                                           j.Description.ToLowerInvariant().Contains(qLower) ||
-                                           j.Skills.Any(s => s.ToLowerInvariant().Contains(qLower)));
+            filtered = filtered.Where(j => 
+                RoleExpansionHelper.MatchesExpandedRole(j.Title, expandedRoles) ||
+                j.Company.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                j.Description.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                j.Skills.Any(s => s.Contains(query, StringComparison.OrdinalIgnoreCase)));
         }
 
         return Task.FromResult(filtered.ToList());

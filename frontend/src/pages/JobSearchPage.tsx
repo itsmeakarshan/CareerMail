@@ -12,7 +12,8 @@ import {
   Sliders,
   Star,
   CheckCircle2,
-  X
+  X,
+  Layers
 } from 'lucide-react';
 import { CvProfile, JobListing } from '../types';
 import { jobSearchApi } from '../services/api';
@@ -36,23 +37,29 @@ const DEFAULT_FILTERS: JobFilterState = {
 
 const POPULAR_LOCATIONS = [
   'Anywhere',
-  'London',
   'United Kingdom',
+  'London',
   'Manchester',
+  'Cambridge',
+  'Oxford',
+  'Edinburgh',
+  'Birmingham',
+  'Bristol',
   'Remote',
   'United States'
 ];
 
 const POPULAR_ROLES = [
   'All Roles',
+  'Data Scientist',
+  'Machine Learning',
   'Software Engineer',
   'Full Stack Developer',
   'Frontend Developer',
   'Backend Developer',
-  'Data Scientist',
   'Data Engineer',
-  'Machine Learning',
-  'DevOps / Cloud'
+  'DevOps / Cloud',
+  'Product Manager'
 ];
 
 export const JobSearchPage: React.FC = () => {
@@ -63,6 +70,7 @@ export const JobSearchPage: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState<boolean>(false);
   const [isHiddenModalOpen, setIsHiddenModalOpen] = useState<boolean>(false);
+  const [selectedSourceFilter, setSelectedSourceFilter] = useState<string>('ALL');
 
   // Hidden Jobs in LocalStorage
   const [hiddenJobIds, setHiddenJobIds] = useState<string[]>(() => {
@@ -91,6 +99,7 @@ export const JobSearchPage: React.FC = () => {
 
   const handleResetFilters = () => {
     setFilters(DEFAULT_FILTERS);
+    setSelectedSourceFilter('ALL');
   };
 
   const fetchCvProfile = async () => {
@@ -109,7 +118,7 @@ export const JobSearchPage: React.FC = () => {
         q: filters.searchQuery || filters.role,
         location: filters.location === 'Anywhere' ? '' : filters.location,
         workType: filters.workMode,
-        minScore: 0, // We perform precise live client filtering on score
+        minScore: 0,
         sortBy: filters.sortOption
       });
       setJobs(result || []);
@@ -124,13 +133,31 @@ export const JobSearchPage: React.FC = () => {
     fetchCvProfile();
   }, []);
 
-  // Fetch from server when search query, location, or server-level fields change
+  // Fetch from multi-source pipeline when key query parameters change
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchJobs();
     }, 250);
     return () => clearTimeout(timer);
   }, [filters.searchQuery, filters.location, filters.role, filters.workMode]);
+
+  // Compute Source Counts for Discovery Telemetry
+  const sourceBreakdown = useMemo(() => {
+    const counts: Record<string, number> = {};
+    (jobs || []).forEach((j) => {
+      let src = j.source || 'Other';
+      if (src.includes('Greenhouse')) src = 'Greenhouse ATS';
+      else if (src.includes('Lever')) src = 'Lever ATS';
+      else if (src.includes('Remotive')) src = 'Remotive API';
+      else if (src.includes('Jobicy')) src = 'Jobicy API';
+      else if (src.includes('RemoteOK')) src = 'RemoteOK API';
+      else if (src.includes('LinkedIn')) src = 'LinkedIn';
+      else if (src.includes('Careers') || src.includes('Hub') || src.includes('Google') || src.includes('DeepMind') || src.includes('Bloomberg') || src.includes('BBC')) src = 'Company Careers';
+
+      counts[src] = (counts[src] || 0) + 1;
+    });
+    return counts;
+  }, [jobs]);
 
   // Client-Side Real-Time Filter & Sort Pipeline
   const filteredJobs = useMemo(() => {
@@ -140,7 +167,20 @@ export const JobSearchPage: React.FC = () => {
         return false;
       }
 
-      // 2. Search Query (Title, Company, Skills, Description)
+      // 2. Source filter
+      if (selectedSourceFilter !== 'ALL') {
+        const s = (job.source || '').toLowerCase();
+        const sf = selectedSourceFilter.toLowerCase();
+        if (sf === 'greenhouse' && !s.includes('greenhouse')) return false;
+        if (sf === 'lever' && !s.includes('lever')) return false;
+        if (sf === 'remotive' && !s.includes('remotive')) return false;
+        if (sf === 'jobicy' && !s.includes('jobicy')) return false;
+        if (sf === 'remoteok' && !s.includes('remoteok')) return false;
+        if (sf === 'linkedin' && !s.includes('linkedin')) return false;
+        if (sf === 'careers' && !s.includes('careers') && !s.includes('google') && !s.includes('deepmind') && !s.includes('bloomberg') && !s.includes('bbc')) return false;
+      }
+
+      // 3. Search Query (Title, Company, Skills, Description)
       if (filters.searchQuery.trim()) {
         const q = filters.searchQuery.toLowerCase().trim();
         const matchesQ =
@@ -151,25 +191,29 @@ export const JobSearchPage: React.FC = () => {
         if (!matchesQ) return false;
       }
 
-      // 3. Location filter
+      // 4. Location filter
       if (filters.location.trim() && filters.location !== 'Anywhere') {
         const loc = filters.location.toLowerCase().trim();
         const jobLoc = (job.location || '').toLowerCase();
         const jobCountry = (job.country || '').toLowerCase();
         const jobCity = (job.city || '').toLowerCase();
 
-        const matchesLoc =
-          jobLoc.includes(loc) ||
-          jobCountry.includes(loc) ||
-          jobCity.includes(loc) ||
-          (loc.includes('remote') && job.workMode === 'REMOTE') ||
-          (loc.includes('uk') && (jobCountry.includes('united kingdom') || jobLoc.includes('london') || jobLoc.includes('manchester'))) ||
-          (loc.includes('united kingdom') && (jobCountry.includes('united kingdom') || jobLoc.includes('london') || jobLoc.includes('manchester') || jobLoc.includes('uk')));
+        const isUkQuery = loc === 'uk' || loc === 'united kingdom' || loc === 'great britain' || loc === 'england' || loc === 'scotland';
+        const isJobUk = jobCountry.includes('united kingdom') || jobLoc.includes('uk') || jobLoc.includes('london') || jobLoc.includes('manchester') || jobLoc.includes('cambridge') || jobLoc.includes('oxford') || jobLoc.includes('edinburgh') || jobLoc.includes('birmingham') || jobLoc.includes('bristol');
 
-        if (!matchesLoc) return false;
+        if (isUkQuery) {
+          if (!isJobUk && !jobLoc.includes('worldwide') && job.workMode !== 'REMOTE') return false;
+        } else {
+          const matchesLoc =
+            jobLoc.includes(loc) ||
+            jobCountry.includes(loc) ||
+            jobCity.includes(loc) ||
+            (loc.includes('remote') && job.workMode === 'REMOTE');
+          if (!matchesLoc) return false;
+        }
       }
 
-      // 4. Role filter
+      // 5. Role filter
       if (filters.role.trim() && filters.role !== 'All Roles') {
         const r = filters.role.toLowerCase().trim();
         const titleLower = job.title.toLowerCase();
@@ -177,7 +221,7 @@ export const JobSearchPage: React.FC = () => {
 
         let matchesRole = titleLower.includes(r);
         if (r.includes('data scientist') || r.includes('data science')) {
-          matchesRole = titleLower.includes('data') || titleLower.includes('scientist') || skillsLower.includes('python') || skillsLower.includes('machine learning');
+          matchesRole = titleLower.includes('data') || titleLower.includes('scientist') || titleLower.includes('analytics') || skillsLower.includes('python') || skillsLower.includes('machine learning');
         } else if (r.includes('machine learning') || r.includes('ml')) {
           matchesRole = titleLower.includes('machine learning') || titleLower.includes('ml') || titleLower.includes('ai') || skillsLower.includes('pytorch') || skillsLower.includes('machine learning');
         } else if (r.includes('frontend') || r.includes('front end')) {
@@ -193,7 +237,7 @@ export const JobSearchPage: React.FC = () => {
         if (!matchesRole) return false;
       }
 
-      // 5. Work Mode filter
+      // 6. Work Mode filter
       if (filters.workMode !== 'ALL') {
         const mode = filters.workMode.toUpperCase();
         const jobMode = (job.workMode || '').toUpperCase();
@@ -204,7 +248,7 @@ export const JobSearchPage: React.FC = () => {
         if (mode === 'ONSITE' && jobMode !== 'ONSITE' && (jobLoc.includes('remote') || jobMode === 'REMOTE')) return false;
       }
 
-      // 6. Experience Level filter
+      // 7. Experience Level filter
       if (filters.experienceLevel !== 'ALL') {
         const exp = filters.experienceLevel.toUpperCase();
         const titleLower = job.title.toLowerCase();
@@ -233,12 +277,12 @@ export const JobSearchPage: React.FC = () => {
         }
       }
 
-      // 7. Minimum Match Score filter
+      // 8. Minimum Match Score filter
       if (job.matchScore < filters.minMatchScore) {
         return false;
       }
 
-      // 8. Recommended Only filter
+      // 9. Recommended Only filter
       if (filters.recommendedOnly && job.matchScore < 70) {
         return false;
       }
@@ -263,7 +307,7 @@ export const JobSearchPage: React.FC = () => {
           return b.matchScore - a.matchScore;
       }
     });
-  }, [jobs, filters, hiddenJobIds]);
+  }, [jobs, filters, hiddenJobIds, selectedSourceFilter]);
 
   const handleHideJob = (jobId: string) => {
     setHiddenJobIds((prev) => (prev.includes(jobId) ? prev : [...prev, jobId]));
@@ -287,8 +331,9 @@ export const JobSearchPage: React.FC = () => {
     if (filters.minMatchScore > 0) count++;
     if (filters.recommendedOnly) count++;
     if (filters.sortOption !== 'score_desc') count++;
+    if (selectedSourceFilter !== 'ALL') count++;
     return count;
-  }, [filters]);
+  }, [filters, selectedSourceFilter]);
 
   return (
     <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-16 animate-fadeIn">
@@ -300,20 +345,20 @@ export const JobSearchPage: React.FC = () => {
             <span>Job Search & CV Match</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Real-time verified tech jobs scored deterministically against your candidate CV profile.
+            Multi-source job discovery pipeline aggregating Greenhouse, Lever, Remotive, Jobicy, RemoteOK, and verified company career boards.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="px-4 py-2 rounded-xl bg-pink-500/10 text-pink-500 font-bold text-xs border border-pink-500/20 flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
-            <span>{filteredJobs.length} Jobs Displayed ({jobs.length} Loaded)</span>
+            <span>{filteredJobs.length} Jobs Displayed ({jobs.length} Verified Available)</span>
           </div>
           <button
             onClick={() => fetchJobs()}
             disabled={loading}
             className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#202227] transition-colors"
-            title="Refresh job search"
+            title="Refresh job discovery pipeline"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -329,6 +374,54 @@ export const JobSearchPage: React.FC = () => {
         }}
       />
 
+      {/* MULTI-SOURCE DISCOVERY TELEMETRY BADGES */}
+      {Object.keys(sourceBreakdown).length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 pt-1 pb-1">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mr-1">
+            <Layers className="w-3.5 h-3.5 text-pink-500" />
+            <span>Live Sources:</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedSourceFilter('ALL')}
+            className={`text-xs px-3 py-1 rounded-lg font-bold transition-all ${
+              selectedSourceFilter === 'ALL'
+                ? 'bg-pink-500 text-white shadow-xs'
+                : 'bg-white dark:bg-[#16181f] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50'
+            }`}
+          >
+            All Sources ({jobs.length})
+          </button>
+          {Object.entries(sourceBreakdown).map(([src, count]) => {
+            const keyMap: Record<string, string> = {
+              'Greenhouse ATS': 'greenhouse',
+              'Lever ATS': 'lever',
+              'Remotive API': 'remotive',
+              'Jobicy API': 'jobicy',
+              'RemoteOK API': 'remoteok',
+              'LinkedIn': 'linkedin',
+              'Company Careers': 'careers'
+            };
+            const filterKey = keyMap[src] || src.toLowerCase();
+            const isSelected = selectedSourceFilter.toLowerCase() === filterKey.toLowerCase();
+            return (
+              <button
+                key={src}
+                type="button"
+                onClick={() => setSelectedSourceFilter(isSelected ? 'ALL' : filterKey)}
+                className={`text-xs px-2.5 py-1 rounded-lg font-semibold border transition-all ${
+                  isSelected
+                    ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                    : 'bg-white dark:bg-[#16181f] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-[#202227]'
+                }`}
+              >
+                {src} ({count})
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* TOP HORIZONTAL SEARCH & FILTER BAR */}
       <div className="space-y-3">
         {/* Search Bar Row */}
@@ -337,7 +430,7 @@ export const JobSearchPage: React.FC = () => {
             <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by job title, company, skills, or technologies (e.g. Google, Data Scientist, React, C#)..."
+              placeholder="Search by job title, company, skills, or technologies (e.g. Data Scientist, DeepMind, C#, React)..."
               value={filters.searchQuery}
               onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
               className="w-full pl-10 pr-4 py-3 rounded-2xl text-xs bg-white dark:bg-[#16181f] border border-slate-200 dark:border-[#282a2d] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-pink-500 shadow-xs transition-colors"
@@ -356,7 +449,7 @@ export const JobSearchPage: React.FC = () => {
             <MapPin className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
             <input
               type="text"
-              placeholder="Location (e.g. London, UK, Remote)..."
+              placeholder="Location (e.g. United Kingdom, London, Manchester)..."
               value={filters.location}
               onChange={(e) => handleFilterChange('location', e.target.value)}
               className="w-full pl-10 pr-4 py-3 rounded-2xl text-xs bg-white dark:bg-[#16181f] border border-slate-200 dark:border-[#282a2d] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-pink-500 shadow-xs transition-colors"
@@ -484,16 +577,6 @@ export const JobSearchPage: React.FC = () => {
             <span>Recommended (≥70%)</span>
           </button>
 
-          {/* Hidden Jobs Pill */}
-          <button
-            type="button"
-            onClick={() => setIsHiddenModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-[#202227] hover:bg-slate-200 dark:hover:bg-[#282a30] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-1.5 flex-shrink-0 transition-colors"
-          >
-            <Lock className="w-3.5 h-3.5 text-slate-400" />
-            <span>Hidden Jobs ({hiddenJobIds.length})</span>
-          </button>
-
           {/* Clear Filters Reset */}
           {activeFiltersCount > 0 && (
             <button
@@ -515,7 +598,7 @@ export const JobSearchPage: React.FC = () => {
         <div className="py-20 flex flex-col items-center justify-center space-y-3">
           <div className="w-10 h-10 border-4 border-pink-500/30 border-t-pink-500 rounded-full animate-spin" />
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            Fetching verified job feeds & computing deterministic match scores...
+            Aggregating ATS boards, Remotive, Jobicy, RemoteOK & calculating deterministic match scores...
           </p>
         </div>
       ) : filteredJobs.length > 0 ? (
@@ -527,9 +610,6 @@ export const JobSearchPage: React.FC = () => {
               onViewDetails={(j) => {
                 setSelectedJob(j);
                 setIsDetailModalOpen(true);
-              }}
-              onJobConverted={() => {
-                // Refresh if needed
               }}
               onHideJob={handleHideJob}
             />
