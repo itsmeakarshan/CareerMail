@@ -79,7 +79,7 @@ public class CvParsingService : ICvParsingService
             else if (ext == ".docx")
             {
                 using var wordDoc = WordprocessingDocument.Open(fileStream, false);
-                rawText = wordDoc.MainDocumentPart?.Document.Body?.InnerText ?? string.Empty;
+                rawText = wordDoc.MainDocumentPart?.Document?.Body?.InnerText ?? string.Empty;
             }
             else
             {

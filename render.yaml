@@ -8,7 +8,7 @@ services:
     plan: free
     region: oregon
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DATABASE_URL
         fromDatabase:
           name: careermail-db
           property: connectionString

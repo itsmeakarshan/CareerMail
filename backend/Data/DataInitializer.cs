@@ -20,7 +20,7 @@ public static class DataInitializer
         }
 
         // Seed or update demo user
-        var demoUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "akarshan@email.com" || u.Email == "arjun.sharma@email.com");
+        var demoUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "akarshan@email.com");
         if (demoUser != null)
         {
             demoUser.Name = "Akarshan";

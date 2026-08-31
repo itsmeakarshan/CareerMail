@@ -13,16 +13,16 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Connection String Resolution
-var rawConn = Environment.GetEnvironmentVariable("SPRING_DATASOURCE_URL")
-    ?? Environment.GetEnvironmentVariable("DATABASE_URL")
+var rawConn = Environment.GetEnvironmentVariable("DATABASE_URL")
     ?? Environment.GetEnvironmentVariable("POSTGRES_URL")
+    ?? Environment.GetEnvironmentVariable("SPRING_DATASOURCE_URL")
     ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-var dbUser = Environment.GetEnvironmentVariable("SPRING_DATASOURCE_USERNAME")
-    ?? Environment.GetEnvironmentVariable("DB_USER")
+var dbUser = Environment.GetEnvironmentVariable("DB_USER")
+    ?? Environment.GetEnvironmentVariable("SPRING_DATASOURCE_USERNAME")
     ?? "careermail";
-var dbPass = Environment.GetEnvironmentVariable("SPRING_DATASOURCE_PASSWORD")
-    ?? Environment.GetEnvironmentVariable("DB_PASSWORD")
+var dbPass = Environment.GetEnvironmentVariable("DB_PASSWORD")
+    ?? Environment.GetEnvironmentVariable("SPRING_DATASOURCE_PASSWORD")
     ?? "careermail123";
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
 var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";

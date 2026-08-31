@@ -5,5 +5,11 @@
 node_modules
 target
 dist
+bin
+obj
 *.log
 .DS_Store
+.vscode
+.idea
+*.suo
+*.user
