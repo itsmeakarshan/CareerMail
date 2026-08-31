@@ -18,9 +18,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { gmailApi } from '../services/api';
-import { GmailStatus, GmailSyncResult } from '../types';
+import { gmailApi, settingsApi } from '../services/api';
+import { GmailStatus, GmailSyncResult, GeminiSettingsStatus } from '../types';
 import { AvatarPickerModal, PRESET_AVATARS } from '../components/common/AvatarPickerModal';
+import { Bot, Key, Eye, EyeOff, Check, X, ShieldAlert } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const { user, updateProfile, logout } = useAuth();
@@ -40,6 +41,14 @@ export const SettingsPage: React.FC = () => {
   const [oauthError, setOauthError] = useState<string | null>(null);
   const [oauthSuccess, setOauthSuccess] = useState<boolean>(false);
 
+  // Gemini AI Settings State
+  const [geminiStatus, setGeminiStatus] = useState<GeminiSettingsStatus | null>(null);
+  const [geminiApiKey, setGeminiApiKey] = useState<string>('');
+  const [showGeminiKey, setShowGeminiKey] = useState<boolean>(false);
+  const [geminiSaving, setGeminiSaving] = useState<boolean>(false);
+  const [geminiTesting, setGeminiTesting] = useState<boolean>(false);
+  const [geminiMessage, setGeminiMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   useEffect(() => {
     if (user) {
       setName(user.name || '');
@@ -53,6 +62,15 @@ export const SettingsPage: React.FC = () => {
       setGmailStatus(status);
     } catch (err) {
       console.error('Error fetching Gmail status:', err);
+    }
+  };
+
+  const fetchGeminiStatus = async () => {
+    try {
+      const status = await settingsApi.getGeminiSettings();
+      setGeminiStatus(status);
+    } catch (err) {
+      console.error('Error fetching Gemini status:', err);
     }
   };
 
@@ -80,7 +98,64 @@ export const SettingsPage: React.FC = () => {
     }
 
     fetchGmailStatus();
+    fetchGeminiStatus();
   }, []);
+
+  const handleSaveGeminiKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!geminiApiKey.trim()) return;
+
+    setGeminiSaving(true);
+    setGeminiMessage(null);
+    try {
+      const res = await settingsApi.saveGeminiKey(geminiApiKey.trim());
+      setGeminiStatus({
+        isConfigured: true,
+        isEnabled: true,
+        maskedKey: res.maskedKey,
+        status: res.status || '✓ Gemini Connected'
+      });
+      setGeminiApiKey('');
+      setGeminiMessage({ type: 'success', text: res.message || 'Gemini API key saved & validated successfully!' });
+    } catch (err: any) {
+      setGeminiMessage({ type: 'error', text: err.message || 'Failed to save Gemini API key. Please verify your key.' });
+    } finally {
+      setGeminiSaving(false);
+      setTimeout(() => setGeminiMessage(null), 6000);
+    }
+  };
+
+  const handleTestGeminiKey = async () => {
+    setGeminiTesting(true);
+    setGeminiMessage(null);
+    try {
+      const res = await settingsApi.testGeminiKey(geminiApiKey.trim() || undefined);
+      setGeminiMessage({ type: 'success', text: res.message || '✓ Gemini Connected: API key is active and responsive!' });
+    } catch (err: any) {
+      setGeminiMessage({ type: 'error', text: err.message || 'Connection failed: Invalid API key or network error.' });
+    } finally {
+      setGeminiTesting(false);
+      setTimeout(() => setGeminiMessage(null), 6000);
+    }
+  };
+
+  const handleRemoveGeminiKey = async () => {
+    try {
+      await settingsApi.removeGeminiKey();
+      setGeminiStatus({
+        isConfigured: false,
+        isEnabled: false,
+        maskedKey: '',
+        status: 'Not Configured'
+      });
+      setGeminiApiKey('');
+      setGeminiMessage({ type: 'success', text: 'Gemini API key removed. Rule-based skill extraction will be used.' });
+    } catch (err: any) {
+      setGeminiMessage({ type: 'error', text: err.message || 'Failed to remove Gemini API key.' });
+    } finally {
+      setTimeout(() => setGeminiMessage(null), 5000);
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -358,6 +433,142 @@ export const SettingsPage: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* GEMINI AI INTEGRATION CARD */}
+      <div className="p-6 rounded-2xl bg-white dark:bg-[#16181f] border border-[#e0e2e7] dark:border-[#282a2d] shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#e0e2e7] dark:border-[#282a2d] gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-pink-500/20">
+              <Bot className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-[#1f1f1f] dark:text-white">Gemini AI Integration</h2>
+                {geminiStatus?.isConfigured ? (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/40">
+                    Active ✓
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-[#202227] text-slate-600 dark:text-slate-400">
+                    Rule-Based Fallback
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#5f6368] dark:text-slate-400">
+                Gemini is used to improve CV skill extraction and semantic job matching.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <div className="text-right">
+              <span className="text-[11px] font-bold block text-slate-400">Status:</span>
+              <span className={`text-xs font-bold ${geminiStatus?.isConfigured ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                {geminiStatus?.status || 'Not Configured'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {geminiMessage && (
+          <div className={`p-3.5 rounded-xl text-xs flex items-center gap-2.5 animate-fadeIn ${
+            geminiMessage.type === 'success'
+              ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
+              : 'bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300'
+          }`}>
+            {geminiMessage.type === 'success' ? (
+              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+            ) : (
+              <ShieldAlert className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0" />
+            )}
+            <span>{geminiMessage.text}</span>
+          </div>
+        )}
+
+        {/* Saved Key Status Display */}
+        {geminiStatus?.isConfigured && (
+          <div className="p-4 rounded-xl bg-[#f6f8fc] dark:bg-[#1e1f20] border border-[#e0e2e7] dark:border-[#282a2d] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Key className="w-4 h-4 text-pink-500 flex-shrink-0" />
+              <div>
+                <span className="text-xs font-bold text-[#1f1f1f] dark:text-white block">Configured Gemini API Key</span>
+                <span className="text-xs font-mono text-slate-500 dark:text-slate-400 tracking-wider">
+                  {geminiStatus.maskedKey || 'AIza****************abcd'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleTestGeminiKey}
+                disabled={geminiTesting}
+                className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-[#16181f] border border-slate-200 dark:border-[#282a2d] hover:bg-slate-50 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-pink-500 ${geminiTesting ? 'animate-spin' : ''}`} />
+                <span>{geminiTesting ? 'Testing...' : 'Test Connection'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleRemoveGeminiKey}
+                className="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800/40 text-rose-700 dark:text-rose-300 text-xs font-semibold transition-colors"
+              >
+                Remove Key
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Input Form for New / Updating Key */}
+        <form onSubmit={handleSaveGeminiKey} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-[#1f1f1f] dark:text-slate-300 mb-1.5">
+              {geminiStatus?.isConfigured ? 'Update Gemini API Key' : 'Enter Gemini API Key'}
+            </label>
+            <div className="relative">
+              <input
+                type={showGeminiKey ? 'text' : 'password'}
+                value={geminiApiKey}
+                onChange={(e) => setGeminiApiKey(e.target.value)}
+                placeholder="Paste your Gemini API key (AIzaSy...)"
+                className="w-full pl-3.5 pr-10 py-2.5 bg-[#f6f8fc] dark:bg-[#1e1f20] border border-[#dadce0] dark:border-[#282a2d] rounded-xl text-sm font-mono text-[#1f1f1f] dark:text-white focus:outline-none focus:border-pink-400 placeholder:font-sans placeholder:text-xs"
+              />
+              <button
+                type="button"
+                onClick={() => setShowGeminiKey(!showGeminiKey)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                title={showGeminiKey ? 'Hide key' : 'Show key'}
+              >
+                {showGeminiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <span className="text-[11px] text-[#5f6368] dark:text-slate-400 mt-1 block">
+              Your API key is securely transmitted to and stored on the server. The frontend never makes direct client-side calls with secrets.
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-end gap-2.5 pt-1">
+            <button
+              type="button"
+              onClick={handleTestGeminiKey}
+              disabled={geminiTesting || (!geminiApiKey.trim() && !geminiStatus?.isConfigured)}
+              className="px-4 py-2 bg-white dark:bg-[#1e1f20] border border-slate-200 dark:border-[#282a2d] hover:bg-slate-50 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all disabled:opacity-40 flex items-center gap-1.5"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-pink-500 ${geminiTesting ? 'animate-spin' : ''}`} />
+              <span>{geminiTesting ? 'Testing...' : 'Test Connection'}</span>
+            </button>
+
+            <button
+              type="submit"
+              disabled={geminiSaving || !geminiApiKey.trim()}
+              className="px-5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white rounded-xl text-xs font-bold shadow-md shadow-pink-500/25 transition-all hover:scale-105 disabled:opacity-40 disabled:hover:scale-100 flex items-center gap-1.5"
+            >
+              <Key className="w-3.5 h-3.5" />
+              <span>{geminiSaving ? 'Validating & Saving...' : 'Save API Key'}</span>
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* Profile & Avatar Customization Card */}

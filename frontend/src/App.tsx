@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { JobTrackerPage } from './pages/JobTrackerPage';
+import { JobSearchPage } from './pages/JobSearchPage';
 import { InboxPage } from './pages/InboxPage';
 import { InterviewsPage } from './pages/InterviewsPage';
 import { CalendarPage } from './pages/CalendarPage';
@@ -51,6 +52,7 @@ export const App: React.FC = () => {
               }
             >
               <Route index element={<JobTrackerPage />} />
+              <Route path="job-search" element={<JobSearchPage />} />
               <Route path="inbox" element={<InboxPage />} />
               <Route path="calendar" element={<CalendarPage />} />
               <Route path="interviews" element={<InterviewsPage />} />

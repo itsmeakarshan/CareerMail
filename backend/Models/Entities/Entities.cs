@@ -24,6 +24,10 @@ public class User
 
     public string? AvatarUrl { get; set; }
 
+    [JsonIgnore]
+    [Column("gemini_api_key")]
+    public string? GeminiApiKey { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

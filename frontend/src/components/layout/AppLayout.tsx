@@ -69,10 +69,8 @@ export const AppLayout: React.FC = () => {
     { label: 'Sent', path: '/inbox?folder=SENT', icon: Send },
     { label: 'Drafts', path: '/inbox?folder=DRAFTS', icon: FileEdit },
     { label: 'Job Tracker', path: '/', icon: Briefcase },
+    { label: 'Job Search', path: '/job-search', icon: Sparkles },
     { label: 'Calendar', path: '/calendar', icon: CalendarDays },
-    { label: 'Interviews', path: '/interviews', icon: Video },
-    { label: 'Follow-ups', path: '/follow-ups', icon: Clock },
-    { label: 'Analytics', path: '/analytics', icon: BarChart3 },
     { label: 'Settings', path: '/settings', icon: Settings },
   ];
 

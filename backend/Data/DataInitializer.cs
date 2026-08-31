@@ -10,6 +10,15 @@ public static class DataInitializer
         // Automatically ensure database schema is created
         await context.Database.EnsureCreatedAsync();
 
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync("ALTER TABLE users ADD COLUMN IF NOT EXISTS gemini_api_key TEXT;");
+        }
+        catch
+        {
+            // Ignore if column already exists or in-memory DB
+        }
+
         // Seed demo user if not present
         if (!await context.Users.AnyAsync(u => u.Email == "arjun.sharma@email.com"))
         {

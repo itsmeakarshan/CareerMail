@@ -5,6 +5,7 @@ using CareerMail.Api.Data;
 using CareerMail.Api.Security;
 using CareerMail.Api.Services;
 using CareerMail.Api.Services.Analyzer;
+using CareerMail.Api.Services.JobProviders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -31,7 +32,8 @@ var formattedConn = ParsePostgreSqlConnectionString(rawConn, dbHost, dbPort, dbN
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseNpgsql(formattedConn);
+    options.UseNpgsql(formattedConn)
+           .UseSnakeCaseNamingConvention();
 });
 
 // 2. JWT Authentication
@@ -93,6 +95,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
 // 5. Dependency Injection Services
@@ -109,6 +112,13 @@ builder.Services.AddScoped<IRecruiterIntelligenceService, RecruiterIntelligenceS
 builder.Services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
 builder.Services.AddScoped<IGmailService, GmailService>();
 builder.Services.AddScoped<IEmailAnalyzer, RuleBasedEmailAnalyzer>();
+builder.Services.AddHttpClient<IGeminiCvService, GeminiCvService>();
+builder.Services.AddScoped<ICvParsingService, CvParsingService>();
+builder.Services.AddScoped<IJobMatchEngineService, JobMatchEngineService>();
+builder.Services.AddScoped<IJobProvider, JobicyJobProvider>();
+builder.Services.AddScoped<IJobProvider, RemoteOKJobProvider>();
+builder.Services.AddScoped<IJobProvider, AggregatorJobProvider>();
+builder.Services.AddScoped<IJobSearchService, JobSearchService>();
 
 var app = builder.Build();
 

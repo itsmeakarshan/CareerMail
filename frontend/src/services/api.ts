@@ -12,7 +12,10 @@ import {
   GoogleAuthUrlResponse,
   GoogleConfigResponse,
   Opportunity,
-  OpportunityScanResult
+  OpportunityScanResult,
+  CvProfile,
+  JobListing,
+  GeminiSettingsStatus
 } from '../types';
 
 const envApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
@@ -249,3 +252,92 @@ export const assistantApi = {
     });
   },
 };
+
+// Job Search API
+export const jobSearchApi = {
+  uploadCv: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = localStorage.getItem('careermail_token');
+    return fetch('/api/job-search/cv', {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'CV upload failed' }));
+        throw new Error(err.message || 'CV upload failed');
+      }
+      return res.json() as Promise<CvProfile>;
+    });
+  },
+
+  getCv: () => request<CvProfile | null>('/job-search/cv'),
+
+  searchJobs: (params?: { q?: string; location?: string; workType?: string; minScore?: number; sortBy?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.q) searchParams.set('q', params.q);
+    if (params?.location) searchParams.set('location', params.location);
+    if (params?.workType) searchParams.set('workType', params.workType);
+    if (params?.minScore !== undefined) searchParams.set('minScore', params.minScore.toString());
+    if (params?.sortBy) searchParams.set('sortBy', params.sortBy);
+
+    const queryStr = searchParams.toString();
+    return request<JobListing[]>(`/job-search/jobs${queryStr ? `?${queryStr}` : ''}`);
+  },
+
+  convertToApplication: (data: Partial<JobListing>) =>
+    request<JobApplication>('/job-search/convert-to-application', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  saveJob: (data: Partial<JobListing>) =>
+    request<any>(`/job-search/${data.id ? encodeURIComponent(data.id) : 'save'}/save`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  hideJob: (jobId: string) =>
+    request<any>(`/job-search/${encodeURIComponent(jobId)}/hide`, {
+      method: 'POST',
+    }),
+
+  getJobById: (jobId: string) =>
+    request<JobListing>(`/job-search/jobs/${encodeURIComponent(jobId)}`),
+
+  triggerSearch: (payload: { query?: string; location?: string; workType?: string; minScore?: number; sortBy?: string }) =>
+    request<JobListing[]>('/job-search/search', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  matchProfile: (payload: { query?: string; location?: string; workType?: string; minScore?: number }) =>
+    request<any>('/job-search/match', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+};
+
+// Settings API (Gemini AI Key Management)
+export const settingsApi = {
+  getGeminiSettings: () => request<GeminiSettingsStatus>('/settings/gemini'),
+  saveGeminiKey: (apiKey: string) =>
+    request<{ success: boolean; message: string; maskedKey: string; status: string }>('/settings/gemini', {
+      method: 'POST',
+      body: JSON.stringify({ apiKey }),
+    }),
+  testGeminiKey: (apiKey?: string) =>
+    request<{ success: boolean; message: string }>('/settings/gemini/test', {
+      method: 'POST',
+      body: JSON.stringify({ apiKey }),
+    }),
+  removeGeminiKey: () =>
+    request<{ success: boolean; message: string }>('/settings/gemini', {
+      method: 'DELETE',
+    }),
+};
+

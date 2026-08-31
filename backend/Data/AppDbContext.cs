@@ -16,6 +16,8 @@ public class AppDbContext : DbContext
     public DbSet<Email> Emails => Set<Email>();
     public DbSet<Interview> Interviews => Set<Interview>();
     public DbSet<FollowUp> FollowUps => Set<FollowUp>();
+    public DbSet<CvProfile> CvProfiles => Set<CvProfile>();
+    public DbSet<SavedJobListing> SavedJobListings => Set<SavedJobListing>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -265,3 +265,64 @@ export interface OpportunityScanResult {
   message: string;
   opportunities?: Opportunity[];
 }
+
+export interface CvProfile {
+  id: number;
+  fileName: string;
+  extractedSkills: string[];
+  targetRoles: string[];
+  experienceYears: number;
+  educationLevel: string;
+  preferredLocation: string;
+  isRemotePreferred: boolean;
+  uploadedAt: string;
+}
+
+export interface RelatedSkillMatch {
+  candidateSkill: string;
+  jobSkill: string;
+  weightMultiplier: number;
+  relationType: string;
+  explanation: string;
+}
+
+export interface GeminiSettingsStatus {
+  isConfigured: boolean;
+  isEnabled: boolean;
+  maskedKey: string;
+  status: string;
+}
+
+export interface JobListing {
+  id: string;
+  title: string;
+  company: string;
+  companyDomain?: string;
+  companyLogoUrl?: string;
+  location: string;
+  country?: string;
+  city?: string;
+  workMode?: string;
+  employmentType: string;
+  experienceLevel?: string;
+  salary: string;
+  description: string;
+  url: string;
+  postedDate: string;
+  source: string;
+  sourceJobId?: string;
+  skills: string[];
+  matchScore: number;
+  matchQualityLabel?: string;
+  matchingSkills: string[];
+  relatedSkills?: RelatedSkillMatch[];
+  missingSkills: string[];
+  skillsScore: number;
+  roleRelevanceScore: number;
+  experienceRelevanceScore: number;
+  locationScore: number;
+  educationScore: number;
+  explanation: string;
+}
+
+
