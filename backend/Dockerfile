@@ -1,19 +1,35 @@
-# Build stage
-FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-alpine AS build
+FROM python:3.12-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
 WORKDIR /app
 
-COPY *.csproj ./
-RUN dotnet restore
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY . ./
-RUN dotnet publish -c Release -o /app/out
+# Install python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Run stage
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview-alpine
-WORKDIR /app
-COPY --from=build /app/out .
+# Copy application source code
+COPY . .
 
-ENV ASPNETCORE_URLS=http://+:8080
+# Expose port
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "CareerMail.Api.dll"]
+# Container healthcheck
+HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/api/health || exit 1
+
+# Run uvicorn
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+

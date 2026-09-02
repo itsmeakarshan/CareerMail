@@ -19,7 +19,8 @@ import {
 } from '../types';
 
 const envApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
-const API_BASE = envApiUrl
+// Prefer relative /api to use Vite dev proxy seamlessly, or use absolute URL if configured
+const API_BASE = envApiUrl && envApiUrl.startsWith('http')
   ? (envApiUrl.endsWith('/api') ? envApiUrl : `${envApiUrl.replace(/\/+$/, '')}/api`)
   : '/api';
 
@@ -42,8 +43,22 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
         ...(options.headers || {}),
       },
     });
-  } catch {
-    throw new Error('Cannot reach backend server. Please ensure the C# .NET API is running on port 8080 (cd backend && dotnet run).');
+  } catch (err: any) {
+    // If the primary endpoint failed and it was relative, attempt direct backend URL as fallback
+    const fallbackBase = API_BASE.startsWith('http') ? '/api' : 'http://localhost:8080/api';
+    const fallbackUrl = `${fallbackBase}${endpoint}`;
+    try {
+      response = await fetch(fallbackUrl, {
+        ...options,
+        headers: {
+          ...getAuthHeaders(),
+          ...(options.headers || {}),
+        },
+      });
+    } catch {
+      console.error(`API request failed for both ${url} and ${fallbackUrl}:`, err);
+      throw new Error('Cannot reach backend server. Please ensure the Python FastAPI backend is running on port 8080 (cd backend && python run.py).');
+    }
   }
 
   if (response.status === 401) {
@@ -59,9 +74,19 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     let errorMsg = 'An error occurred';
     try {
       const errData = await response.json();
-      errorMsg = errData.message || (errData.errors ? Object.values(errData.errors).join(', ') : 'Request failed');
+      if (typeof errData.detail === 'string') {
+        errorMsg = errData.detail;
+      } else if (Array.isArray(errData.detail)) {
+        errorMsg = errData.detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ');
+      } else if (errData.message) {
+        errorMsg = errData.message;
+      } else if (errData.errors) {
+        errorMsg = Object.values(errData.errors).join(', ');
+      } else {
+        errorMsg = response.statusText || 'Request failed';
+      }
     } catch {
-      errorMsg = response.statusText;
+      errorMsg = response.statusText || 'Request failed';
     }
     throw new Error(errorMsg);
   }
@@ -260,7 +285,7 @@ export const jobSearchApi = {
     formData.append('file', file);
 
     const token = localStorage.getItem('careermail_token');
-    return fetch('/api/job-search/cv', {
+    return fetch(`${API_BASE}/job-search/cv`, {
       method: 'POST',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

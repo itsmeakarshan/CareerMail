@@ -7,17 +7,31 @@ interface ChartProps {
   applications?: JobApplication[];
 }
 
-type TimeframeOption = 'last_3_months' | 'this_month_daily' | 'last_14_days' | 'last_7_days';
+type TimeframeOption =
+  | 'last_30_days'
+  | 'this_month_daily'
+  | 'last_3_months'
+  | 'last_6_months'
+  | 'last_14_days'
+  | 'last_7_days';
 
 const TIMEFRAME_LABELS: Record<TimeframeOption, string> = {
-  last_3_months: 'Last 3 Months',
+  last_30_days: 'Last 30 Days (Daily)',
   this_month_daily: 'This Month (Daily)',
+  last_3_months: 'Last 3 Months',
+  last_6_months: 'Last 6 Months',
   last_14_days: 'Last 14 Days',
   last_7_days: 'Last 7 Days',
 };
 
+const normalizeDate = (d?: string | null): string => {
+  if (!d) return '';
+  return d.split('T')[0].trim().substring(0, 10);
+};
+
 export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applications = [] }) => {
-  const [timeframe, setTimeframe] = useState<TimeframeOption>('this_month_daily');
+  // Default to Last 30 Days for a complete rolling trend regardless of calendar day
+  const [timeframe, setTimeframe] = useState<TimeframeOption>('last_30_days');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -41,6 +55,58 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
 
     // If applications array is available, calculate directly from live applications
     if (applications && applications.length > 0) {
+      if (timeframe === 'last_30_days') {
+        const result: MonthlyTrend[] = [];
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - i);
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const dayStr = String(d.getDate()).padStart(2, '0');
+          const dateFormatted = `${y}-${m}-${dayStr}`;
+          const monthShort = months[d.getMonth()];
+
+          const count = applications.filter((app) => normalizeDate(app.dateApplied) === dateFormatted).length;
+
+          result.push({
+            month: `${monthShort} ${d.getDate()}`,
+            count,
+            label: `${monthShort} ${d.getDate()}, ${y}: ${count} Application${count === 1 ? '' : 's'}`,
+          });
+        }
+        return result;
+      }
+
+      if (timeframe === 'this_month_daily') {
+        const result: MonthlyTrend[] = [];
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+        const todayDay = now.getDate();
+        const monthShort = months[currentMonth];
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        // Render all days of the current month on the calendar scale
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dayStr = String(day).padStart(2, '0');
+          const monthStr = String(currentMonth + 1).padStart(2, '0');
+          const dateFormatted = `${currentYear}-${monthStr}-${dayStr}`;
+
+          const isFuture = day > todayDay;
+          const count = isFuture
+            ? 0
+            : applications.filter((app) => normalizeDate(app.dateApplied) === dateFormatted).length;
+
+          result.push({
+            month: String(day),
+            count,
+            label: isFuture
+              ? `${monthShort} ${day} (Upcoming)`
+              : `${monthShort} ${day}${day === todayDay ? ' (Today)' : ''}: ${count} Application${count === 1 ? '' : 's'}`,
+          });
+        }
+        return result;
+      }
+
       if (timeframe === 'last_3_months') {
         const result: MonthlyTrend[] = [];
         for (let i = 2; i >= 0; i--) {
@@ -51,7 +117,8 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
 
           const count = applications.filter((app) => {
             if (!app.dateApplied) return false;
-            const [appY, appM] = app.dateApplied.split('-').map(Number);
+            const norm = normalizeDate(app.dateApplied);
+            const [appY, appM] = norm.split('-').map(Number);
             return appY === y && appM === m + 1;
           }).length;
 
@@ -64,24 +131,25 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
         return result;
       }
 
-      if (timeframe === 'this_month_daily') {
+      if (timeframe === 'last_6_months') {
         const result: MonthlyTrend[] = [];
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth();
-        const todayDay = now.getDate();
-        const monthShort = months[currentMonth];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const y = d.getFullYear();
+          const m = d.getMonth();
+          const monthShort = months[m];
 
-        for (let day = 1; day <= todayDay; day++) {
-          const dayStr = String(day).padStart(2, '0');
-          const monthStr = String(currentMonth + 1).padStart(2, '0');
-          const dateFormatted = `${currentYear}-${monthStr}-${dayStr}`;
-
-          const count = applications.filter((app) => app.dateApplied === dateFormatted).length;
+          const count = applications.filter((app) => {
+            if (!app.dateApplied) return false;
+            const norm = normalizeDate(app.dateApplied);
+            const [appY, appM] = norm.split('-').map(Number);
+            return appY === y && appM === m + 1;
+          }).length;
 
           result.push({
-            month: String(day),
+            month: monthShort,
             count,
-            label: `${monthShort} ${day}: ${count} Application${count === 1 ? '' : 's'}`,
+            label: `${monthShort} ${y}: ${count} Application${count === 1 ? '' : 's'}`,
           });
         }
         return result;
@@ -98,7 +166,7 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
           const dateFormatted = `${y}-${m}-${dayStr}`;
           const monthShort = months[d.getMonth()];
 
-          const count = applications.filter((app) => app.dateApplied === dateFormatted).length;
+          const count = applications.filter((app) => normalizeDate(app.dateApplied) === dateFormatted).length;
 
           result.push({
             month: `${d.getMonth() + 1}/${d.getDate()}`,
@@ -121,7 +189,7 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
           const monthShort = months[d.getMonth()];
           const dayName = daysOfWeek[d.getDay()];
 
-          const count = applications.filter((app) => app.dateApplied === dateFormatted).length;
+          const count = applications.filter((app) => normalizeDate(app.dateApplied) === dateFormatted).length;
 
           result.push({
             month: dayName,
@@ -135,11 +203,17 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
 
     // Backend Analytics Response fallback
     if (data) {
-      if (timeframe === 'last_3_months' && data.last3MonthsTrends && data.last3MonthsTrends.length > 0) {
-        return data.last3MonthsTrends;
+      if (timeframe === 'last_30_days' && data.dailyTrendsLast30Days && data.dailyTrendsLast30Days.length > 0) {
+        return data.dailyTrendsLast30Days;
       }
       if (timeframe === 'this_month_daily' && data.thisMonthTrends && data.thisMonthTrends.length > 0) {
         return data.thisMonthTrends;
+      }
+      if (timeframe === 'last_3_months' && data.last3MonthsTrends && data.last3MonthsTrends.length > 0) {
+        return data.last3MonthsTrends;
+      }
+      if (timeframe === 'last_6_months' && data.last6MonthsTrends && data.last6MonthsTrends.length > 0) {
+        return data.last6MonthsTrends;
       }
       if (timeframe === 'last_14_days' && data.dailyTrendsLast14Days && data.dailyTrendsLast14Days.length > 0) {
         return data.dailyTrendsLast14Days;
@@ -149,39 +223,68 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
       }
     }
 
-    // Default 3 months
-    return [
-      { month: 'Jun', count: 0, label: 'Jun 2026: 0 Applications' },
-      { month: 'Jul', count: 0, label: 'Jul 2026: 0 Applications' },
-      { month: 'Aug', count: 28, label: 'Aug 2026: 28 Applications' },
-    ];
+    // Default 30-day baseline fallback
+    const fallback: MonthlyTrend[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const mShort = months[d.getMonth()];
+      fallback.push({
+        month: `${mShort} ${d.getDate()}`,
+        count: 0,
+        label: `${mShort} ${d.getDate()}: 0 Applications`,
+      });
+    }
+    return fallback;
   }, [data, applications, timeframe]);
 
-  const maxVal = Math.max(...points.map((p) => p.count), 5);
-  const total = points.reduce((acc, curr) => acc + curr.count, 0);
-  const peakPoint = points.reduce(
+  // For this_month_daily, only count up to today for footer metrics
+  const todayDay = new Date().getDate();
+  const countablePoints = useMemo(() => {
+    if (timeframe === 'this_month_daily') {
+      return points.slice(0, todayDay);
+    }
+    return points;
+  }, [points, timeframe, todayDay]);
+
+  const peakCount = Math.max(...countablePoints.map((p) => p.count), 0);
+  // Add 25% headroom so the peak point never slams against the top border/gridline
+  const targetMax = Math.max(Math.ceil((peakCount * 1.25) / 5) * 5, 5);
+  const maxVal = targetMax;
+  const total = countablePoints.reduce((acc, curr) => acc + curr.count, 0);
+  const peakPoint = countablePoints.reduce(
     (max, p) => (p.count > max.count ? p : max),
-    points[0] || { month: '', count: 0, label: '' }
+    countablePoints[0] || { month: '', count: 0, label: '' }
   );
 
   // SVG Chart Geometry
   const width = 540;
-  const height = 190;
-  const paddingLeft = 35;
-  const paddingRight = 20;
-  const paddingTop = 25;
+  const height = 195;
+  const paddingLeft = 38;
+  const paddingRight = 28;
+  const paddingTop = 28;
   const paddingBottom = 32;
 
   const chartWidth = width - paddingLeft - paddingRight;
   const chartHeight = height - paddingTop - paddingBottom;
   const bottomY = paddingTop + chartHeight;
 
-  // Calculate coordinates
-  const coords = points.map((p, i) => {
-    const x = paddingLeft + (i / (points.length - 1 || 1)) * chartWidth;
-    const y = paddingTop + chartHeight - (p.count / maxVal) * chartHeight;
-    return { x, y, count: p.count, month: p.month, label: p.label };
-  });
+  // Calculate coordinates across the full timeframe scale
+  const coords = useMemo(() => {
+    return points.map((p, i) => {
+      const x = paddingLeft + (i / (points.length - 1 || 1)) * chartWidth;
+      const y = paddingTop + chartHeight - (p.count / maxVal) * chartHeight;
+      return { x, y, count: p.count, month: p.month, label: p.label };
+    });
+  }, [points, chartWidth, chartHeight, maxVal, paddingLeft, paddingTop]);
+
+  // For "this_month_daily", draw line and area only up to today (the active month progress)
+  const activeCoords = useMemo(() => {
+    if (timeframe === 'this_month_daily') {
+      return coords.slice(0, todayDay);
+    }
+    return coords;
+  }, [coords, timeframe, todayDay]);
 
   // Clamped Monotonic Cubic Spline (prevents negative overshoot and dipping below axis)
   const generateClampedSmoothPath = (pts: { x: number; y: number; count: number }[]) => {
@@ -227,20 +330,23 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
     return path;
   };
 
-  const linePath = generateClampedSmoothPath(coords);
-  const areaPath = coords.length > 0
-    ? `${linePath} L ${coords[coords.length - 1].x} ${bottomY} L ${coords[0].x} ${bottomY} Z`
+  const linePath = generateClampedSmoothPath(activeCoords);
+  const areaPath = activeCoords.length > 1
+    ? `${linePath} L ${activeCoords[activeCoords.length - 1].x} ${bottomY} L ${activeCoords[0].x} ${bottomY} Z`
     : '';
 
   // Y-axis grid ticks
   const yTicks = [0, Math.ceil(maxVal / 2), maxVal];
 
-  // X-axis label decimation for readability when there are many daily points
+  // X-axis label decimation for readability
   const shouldShowLabel = (idx: number, totalPts: number) => {
-    if (totalPts <= 10) return true;
-    if (totalPts <= 15) return idx % 2 === 0 || idx === totalPts - 1;
-    if (totalPts <= 31) return idx === 0 || (idx + 1) % 5 === 0 || idx === totalPts - 1;
-    return idx % 4 === 0;
+    if (totalPts <= 7) return true;
+    if (totalPts <= 14) return idx % 2 === 0 || idx === totalPts - 1;
+    if (totalPts <= 31) {
+      // For ~30 days, display 1st, 5th, 10th, 15th, 20th, 25th, and last
+      return idx === 0 || (idx + 1) % 5 === 0 || idx === totalPts - 1;
+    }
+    return idx % 4 === 0 || idx === totalPts - 1;
   };
 
   return (
@@ -261,7 +367,7 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
           </div>
         </div>
 
-        {/* Timeframe Dropdown (Strictly Max 3 Months & Days Options) */}
+        {/* Timeframe Dropdown */}
         <div className="relative z-30" ref={dropdownRef}>
           <button
             type="button"
@@ -279,7 +385,7 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
 
           {/* Dropdown Menu */}
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-1.5 w-44 bg-white dark:bg-[#1e1f20] border border-[#e0e2e7] dark:border-[#282a2d] rounded-2xl shadow-2xl py-1.5 overflow-hidden animate-popIn">
+            <div className="absolute right-0 mt-1.5 w-48 bg-white dark:bg-[#1e1f20] border border-[#e0e2e7] dark:border-[#282a2d] rounded-2xl shadow-2xl py-1.5 overflow-hidden animate-popIn">
               {(Object.keys(TIMEFRAME_LABELS) as TimeframeOption[]).map((key) => {
                 const isSelected = timeframe === key;
                 return (
@@ -348,16 +454,21 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
             );
           })}
 
-          {/* X axis labels with decimation */}
+          {/* X axis labels */}
           {coords.map((pt, i) => {
             if (!shouldShowLabel(i, coords.length)) return null;
+            const isToday = timeframe === 'this_month_daily' && i === todayDay - 1;
             return (
               <text
                 key={i}
                 x={pt.x}
                 y={bottomY + 18}
                 textAnchor="middle"
-                className="fill-[#444746] dark:fill-slate-400 text-[11px] font-medium"
+                className={`text-[11px] ${
+                  isToday
+                    ? 'fill-pink-600 dark:fill-pink-400 font-bold'
+                    : 'fill-[#444746] dark:fill-slate-400 font-medium'
+                }`}
               >
                 {pt.month}
               </text>
@@ -380,9 +491,11 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
             />
           )}
 
-          {/* Interactive Data Points & Hover Targets */}
-          {coords.map((pt, i) => {
+          {/* Interactive Data Points & Hover Targets (Only active points up to today) */}
+          {activeCoords.map((pt, i) => {
             const isHovered = hoveredIndex === i;
+            const isToday = timeframe === 'this_month_daily' && i === todayDay - 1;
+
             return (
               <g
                 key={i}
@@ -392,6 +505,18 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
               >
                 {/* Hit target */}
                 <circle cx={pt.x} cy={pt.y} r="14" fill="transparent" />
+
+                {/* Pulsing ring for Today in This Month view */}
+                {isToday && pt.count > 0 && (
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r="9"
+                    fill="#f472b6"
+                    fillOpacity="0.25"
+                    className="animate-ping"
+                  />
+                )}
 
                 {/* Outer halo */}
                 <circle
@@ -419,20 +544,20 @@ export const ApplicationsOverTimeChart: React.FC<ChartProps> = ({ data, applicat
         </svg>
 
         {/* Hover Tooltip Box */}
-        {hoveredIndex !== null && coords[hoveredIndex] && (
+        {hoveredIndex !== null && activeCoords[hoveredIndex] && (
           <div
             className="absolute pointer-events-none transform -translate-x-1/2 -translate-y-full pb-3 transition-all z-20"
             style={{
-              left: `${(coords[hoveredIndex].x / width) * 100}%`,
-              top: `${(coords[hoveredIndex].y / height) * 100}%`,
+              left: `${(activeCoords[hoveredIndex].x / width) * 100}%`,
+              top: `${(activeCoords[hoveredIndex].y / height) * 100}%`,
             }}
           >
             <div className="bg-[#1e1f20] text-white border border-pink-500/40 px-3 py-2 rounded-2xl shadow-2xl text-xs font-semibold whitespace-nowrap flex flex-col items-center gap-0.5 animate-popIn backdrop-blur-md">
               <span className="text-pink-300 text-[11px] font-medium">
-                {coords[hoveredIndex].label || coords[hoveredIndex].month}
+                {activeCoords[hoveredIndex].label || activeCoords[hoveredIndex].month}
               </span>
               <span className="text-white font-extrabold text-sm">
-                {coords[hoveredIndex].count} Application{coords[hoveredIndex].count !== 1 ? 's' : ''}
+                {activeCoords[hoveredIndex].count} Application{activeCoords[hoveredIndex].count !== 1 ? 's' : ''}
               </span>
             </div>
           </div>

@@ -153,6 +153,7 @@ export interface AnalyticsData {
   last12MonthsTrends?: MonthlyTrend[];
   dailyTrendsLast7Days?: MonthlyTrend[];
   dailyTrendsLast14Days?: MonthlyTrend[];
+  dailyTrendsLast30Days?: MonthlyTrend[];
   dailyTrendsThisMonth?: MonthlyTrend[];
   applicationStatus: StatusDistribution[];
 }
